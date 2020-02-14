@@ -263,6 +263,9 @@ public class TestSuiteGeneratorHelper {
     case MOSUITE:
       return new MOSuiteStrategy();
     case DSE:
+      //TODO: Change to the new strategy when it's made
+      return new DSEStrategy();
+    case DSE_GA:
       return new DSEStrategy();
     case NOVELTY:
       return new NoveltyStrategy();

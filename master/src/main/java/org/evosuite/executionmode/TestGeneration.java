@@ -50,6 +50,16 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class TestGeneration {
 
+	public static final String GENERATE_TESTS_OPTION = "generateTests";
+	public static final String GENERATE_SUITE_OPTION = "generateSuite";
+	public static final String GENERATE_RANDOM_OPTION = "generateRandom";
+	public static final String REGRESSION_SUITE_OPTION = "regressionSuite";
+	public static final String REGRESSION_TESTS_OPTION = "regressionTests";
+	public static final String GENERATE_MO_SUITE_OPTION = "generateMOSuite";
+	public static final String GENERATE_NUM_RANDOM_OPTION = "generateNumRandom";
+	public static final String GENERATE_SUITE_USING_DSE_OPTION = "generateSuiteUsingDSE";
+	public static final String GENERATE_SUITE_USING_DSE_GA_OPTION = "generateSuiteUsingDSEGA";
+
 	private static Logger logger = LoggerFactory.getLogger(TestGeneration.class);
 	
 	public static List<List<TestGenerationResult>> executeTestGeneration(Options options, List<String> javaOpts,
@@ -114,21 +124,22 @@ public class TestGeneration {
 	
 	public static Option[] getOptions(){
 		return new Option[]{
-				new Option("generateSuite", "use whole suite generation. This is the default behavior"),
-				new Option("generateTests", "use individual test generation (old approach for reference purposes)"),
-				new Option("generateRandom", "use random test generation"),
-				new Option("generateNumRandom",true, "generate fixed number of random tests"),	
-				new Option("regressionSuite", "generate a regression test suite"),
-				new Option("regressionTests", "generate a regression test suite of individual tests"),
-				new Option("generateMOSuite", "use many objective test generation (MOSA). "),
-				new Option("generateSuiteUsingDSE", "use Dynamic Symbolic Execution to generate test suite")
+				new Option(GENERATE_SUITE_OPTION, "use whole suite generation. This is the default behavior"),
+				new Option(GENERATE_TESTS_OPTION, "use individual test generation (old approach for reference purposes)"),
+				new Option(GENERATE_RANDOM_OPTION , "use random test generation"),
+				new Option(GENERATE_NUM_RANDOM_OPTION,true, "generate fixed number of random tests"),
+				new Option(REGRESSION_SUITE_OPTION, "generate a regression test suite"),
+				new Option(REGRESSION_TESTS_OPTION , "generate a regression test suite of individual tests"),
+				new Option(GENERATE_MO_SUITE_OPTION , "use many objective test generation (MOSA). "),
+				new Option(GENERATE_SUITE_USING_DSE_OPTION , "use Dynamic Symbolic Execution to generate test suite"),
+				new Option(GENERATE_SUITE_USING_DSE_GA_OPTION , "use Dynamic Symbolic Execution alongside a Genetic Algorithm to generate test suite")
 		};
 	}
 
 	private static Strategy getChosenStrategy(List<String> javaOpts, CommandLine line) {
 		Strategy strategy = null;
 		if (javaOpts.contains("-Dstrategy="+Strategy.ENTBUG.name())
-				&& line.hasOption("generateTests")) {
+				&& line.hasOption(GENERATE_TESTS_OPTION)) {
 			strategy = Strategy.ENTBUG;
 			// TODO: Find a better way to integrate this
 		} else if(javaOpts.contains("-Dstrategy="+Strategy.NOVELTY.name())) {
@@ -137,22 +148,24 @@ public class TestGeneration {
 		} else if(javaOpts.contains("-Dstrategy="+Strategy.MAP_ELITES.name())) {
           // TODO: Find a better way to integrate this
           strategy = Strategy.MAP_ELITES;
-        } else if (line.hasOption("generateTests")) {
+        } else if (line.hasOption(GENERATE_TESTS_OPTION)) {
 			strategy = Strategy.ONEBRANCH;
-		} else if (line.hasOption("generateSuite")) {
+		} else if (line.hasOption(GENERATE_SUITE_OPTION)) {
 			strategy = Strategy.EVOSUITE;
-		} else if (line.hasOption("generateRandom")) {
+		} else if (line.hasOption(GENERATE_RANDOM_OPTION)) {
 			strategy = Strategy.RANDOM;
-		} else if (line.hasOption("regressionSuite")) {
+		} else if (line.hasOption(REGRESSION_SUITE_OPTION)) {
 			strategy = Strategy.REGRESSION;
-		} else if (line.hasOption("generateNumRandom")) {
+		} else if (line.hasOption(GENERATE_NUM_RANDOM_OPTION)) {
 			strategy = Strategy.RANDOM_FIXED;
 			javaOpts.add("-Dnum_random_tests="
-					+ line.getOptionValue("generateNumRandom"));
-		} else if (line.hasOption("generateMOSuite")){
+					+ line.getOptionValue(GENERATE_NUM_RANDOM_OPTION));
+		} else if (line.hasOption(GENERATE_MO_SUITE_OPTION)){
 			strategy = Strategy.MOSUITE;
-		} else if (line.hasOption("generateSuiteUsingDSE")) {
+		} else if (line.hasOption(GENERATE_SUITE_USING_DSE_OPTION)) {
 			strategy = Strategy.DSE;
+		} else if (line.hasOption(GENERATE_SUITE_USING_DSE_GA_OPTION)) {
+			strategy = Strategy.DSE_GA;
 		}
 		return strategy;
 	}
@@ -315,60 +328,9 @@ public class TestGeneration {
 			}
 		}
 
-		switch (strategy) {
-		case EVOSUITE:
-			cmdLine.add("-Dstrategy=EvoSuite");
-			break;
-		case ONEBRANCH:
-			cmdLine.add("-Dstrategy=OneBranch");
-			break;
-		case RANDOM:
-			cmdLine.add("-Dstrategy=Random");
-			break;
-		case RANDOM_FIXED:
-			cmdLine.add("-Dstrategy=Random_Fixed");
-			break;
-		case REGRESSION:
-			cmdLine.add("-Dstrategy=Regression");
-			break;
-		case ENTBUG:
-			cmdLine.add("-Dstrategy=EntBug");
-			break;
-		case MOSUITE:
-			cmdLine.add("-Dstrategy=MOSuite");
+		// Add strategy params to cmgLine
+		cmdLine.addAll(getStrategyCmdLineParams(strategy, args));
 
-			// Set up defaults for MOSA if not specified by user
-			boolean algorithmSet = false;
-			boolean selectionSet = false;
-			for (String arg : args) {
-				if (arg.startsWith("-Dalgorithm")) {
-					algorithmSet = true;
-				}
-				if (arg.startsWith("-Dselection_function")) {
-					selectionSet = true;
-				}
-			}
-
-			if(!selectionSet) {
-				cmdLine.add("-Dselection_function=RANK_CROWD_DISTANCE_TOURNAMENT");
-			}
-
-			if(!algorithmSet) {
-				cmdLine.add("-Dalgorithm=MOSA");
-			}
-			break;
-		case DSE:
-			cmdLine.add("-Dstrategy=DSE");
-			break;
-		case NOVELTY:
-			cmdLine.add("-Dstrategy=Novelty");
-			break;
-		case MAP_ELITES:
-		  cmdLine.add("-Dstrategy=MAP_ELITES");
-          break;
-		default:
-			throw new RuntimeException("Unsupported strategy: " + strategy);
-		}
 		cmdLine.add("-DTARGET_CLASS=" + target);
 		if (Properties.PROJECT_PREFIX != null) {
 			cmdLine.add("-DPROJECT_PREFIX=" + Properties.PROJECT_PREFIX);
@@ -577,6 +539,70 @@ public class TestGeneration {
 		}
 		
 		return results;
+	}
+
+	private static Collection<? extends String> getStrategyCmdLineParams(Strategy strategy, List<String> args) {
+		Collection<String> params = new ArrayList();
+
+		switch (strategy) {
+		case EVOSUITE:
+			params.add("-Dstrategy=EvoSuite");
+			break;
+		case ONEBRANCH:
+			params.add("-Dstrategy=OneBranch");
+			break;
+		case RANDOM:
+			params.add("-Dstrategy=Random");
+			break;
+		case RANDOM_FIXED:
+			params.add("-Dstrategy=Random_Fixed");
+			break;
+		case REGRESSION:
+			params.add("-Dstrategy=Regression");
+			break;
+		case ENTBUG:
+			params.add("-Dstrategy=EntBug");
+			break;
+		case MOSUITE:
+			params.add("-Dstrategy=MOSuite");
+
+			// Set up defaults for MOSA if not specified by user
+			boolean algorithmSet = false;
+			boolean selectionSet = false;
+			for (String arg : args) {
+				if (arg.startsWith("-Dalgorithm")) {
+					algorithmSet = true;
+				}
+				if (arg.startsWith("-Dselection_function")) {
+					selectionSet = true;
+				}
+			}
+
+			if(!selectionSet) {
+				params.add("-Dselection_function=RANK_CROWD_DISTANCE_TOURNAMENT");
+			}
+
+			if(!algorithmSet) {
+				params.add("-Dalgorithm=MOSA");
+			}
+			break;
+		case DSE:
+			params.add("-Dstrategy=DSE");
+			break;
+		case DSE_GA:
+			params.add("-Dstrategy=DSE_GA");
+			break;
+		case NOVELTY:
+			params.add("-Dstrategy=Novelty");
+			break;
+		case MAP_ELITES:
+		  params.add("-Dstrategy=MAP_ELITES");
+          break;
+		default:
+			throw new RuntimeException("Unsupported strategy: " + strategy);
+		}
+
+		return params;
 	}
 
 	private static void handleClassPath(List<String> cmdLine) {

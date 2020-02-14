@@ -23,6 +23,7 @@ import org.evosuite.EvoSuite;
 import org.evosuite.Properties;
 import org.evosuite.Properties.Strategy;
 import org.evosuite.SystemTestBase;
+import org.evosuite.executionmode.TestGeneration;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -56,7 +57,7 @@ public class MaxSystemTest extends SystemTestBase {
 
 		String targetClass = Max.class.getCanonicalName();
 		Properties.TARGET_CLASS = targetClass;
-		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+		String[] command = new String[] { "-" + TestGeneration.GENERATE_SUITE_USING_DSE_GA_OPTION, "-class", targetClass };
 
 		Object result = evosuite.parseCommandLine(command);
 
