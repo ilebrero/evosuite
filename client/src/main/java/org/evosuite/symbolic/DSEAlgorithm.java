@@ -22,12 +22,12 @@ import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.bv.IntegerVariable;
 import org.evosuite.symbolic.expr.fp.RealVariable;
 import org.evosuite.symbolic.expr.str.StringVariable;
+import org.evosuite.symbolic.solver.SmtUtils;
 import org.evosuite.symbolic.solver.SolverResult;
 import org.evosuite.symbolic.vm.ConstraintFactory;
 import org.evosuite.symbolic.vm.ExpressionFactory;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
-import org.evosuite.testcase.localsearch.DSETestGenerator;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.objectweb.asm.Type;
@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
  * This class implements a DSE algorithm *as* a subclass of genetic algorithm.
  * 
  * @author jgaleotti
- *
- * @param <T>
  */
 public class DSEAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
 
@@ -112,7 +110,7 @@ public class DSEAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
       for (int i = pathCondition.size() - 1; i >= 0; i--) {
         logger.debug("negating index " + i + " of path condition");
 
-        List<Constraint<?>> query = DSETestGenerator.buildQuery(pathCondition, i);
+        List<Constraint<?>> query = PathConditionUtils.buildNextPathToExploreConstraints(pathCondition, i);
         Set<Constraint<?>> constraintSet = canonicalize(query);
 
         if (shouldSkipCurrentConstraintSet(pathConditions, constraintSet, queryCache)) {
@@ -129,7 +127,7 @@ public class DSEAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
         List<Constraint<?>> varBounds = createVarBounds(query);
         query.addAll(varBounds);
 
-        SolverResult result = DSETestGenerator.solve(query);
+        SolverResult result = SmtUtils.solveSMTQuery(query);
         queryCache.put(constraintSet, result);
 
         logger.debug("Number of stored entries in query cache : " + queryCache.keySet().size());
