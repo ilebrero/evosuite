@@ -19,8 +19,6 @@
  */
 package org.evosuite.testcase.localsearch;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -293,7 +291,8 @@ public class DSETestGenerator {
 
 	/**
 	 * Creates a Solver query give a branch condition
-	 * 
+	 * TODO: Deciding which is the next path to explore is done here, refactor
+	 *
 	 * @param condition
 	 * @return
 	 */
