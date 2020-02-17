@@ -33,7 +33,7 @@ import org.evosuite.coverage.branch.BranchPool;
 import org.evosuite.rmi.ClientServices;
 import org.evosuite.statistics.RuntimeVariable;
 import org.evosuite.strategy.*;
-import org.evosuite.symbolic.DSEStrategy;
+import org.evosuite.symbolic.DSEWithGeneticAlgorithmStrategy;
 import org.evosuite.testcase.execution.ExecutionTraceImpl;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.utils.LoggingUtils;
@@ -264,9 +264,9 @@ public class TestSuiteGeneratorHelper {
       return new MOSuiteStrategy();
     case DSE:
       //TODO: Change to the new strategy when it's made
-      return new DSEStrategy();
+      return new DSEWithGeneticAlgorithmStrategy();
     case DSE_GA:
-      return new DSEStrategy();
+      return new DSEWithGeneticAlgorithmStrategy();
     case NOVELTY:
       return new NoveltyStrategy();
     case MAP_ELITES:

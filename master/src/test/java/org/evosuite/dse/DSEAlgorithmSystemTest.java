@@ -66,7 +66,7 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 		// Properties.CONCOLIC_TIMEOUT = Integer.MAX_VALUE;
 		Properties.RESET_STATIC_FIELD_GETS = true;
 
-		String cvc4_path = System.getenv("cvc4_path");
+		String cvc4_path = System.getenv("CVC4_PATH");
 		if (cvc4_path != null) {
 			Properties.CVC4_PATH = cvc4_path;
 		}
