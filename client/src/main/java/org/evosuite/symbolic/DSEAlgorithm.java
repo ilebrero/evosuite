@@ -110,7 +110,7 @@ public class DSEAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
       for (int i = pathCondition.size() - 1; i >= 0; i--) {
         logger.debug("negating index " + i + " of path condition");
 
-        List<Constraint<?>> query = PathConditionUtils.buildNextPathToExploreConstraints(pathCondition, i);
+        List<Constraint<?>> query = DSETestGenerator.buildQuery(pathCondition, i);
         Set<Constraint<?>> constraintSet = canonicalize(query);
 
         if (shouldSkipCurrentConstraintSet(pathConditions, constraintSet, queryCache)) {
