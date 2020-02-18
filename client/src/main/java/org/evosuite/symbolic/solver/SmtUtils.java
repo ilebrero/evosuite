@@ -21,6 +21,7 @@ package org.evosuite.symbolic.solver;
 
 import org.evosuite.symbolic.expr.Constraint;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -41,8 +42,15 @@ public abstract class SmtUtils {
 	 */
 	public static SolverResult solveSMTQuery(List<Constraint<?>> query) {
 		Solver solver = SolverFactory.getInstance().buildNewSolver();
-		SolverCache solverCache = SolverCache.getInstance();
-		SolverResult solverResult = solverCache.solve(solver, query);
+		SolverResult solverResult = null;
+
+		try {
+			solverResult = solver.solve(query);
+		} catch (SolverTimeoutException | SolverParseException | SolverEmptyQueryException | SolverErrorException | IOException e) {
+//			TODO: see how we are going to handle this later on
+			solverResult = null;
+		}
+
 		return solverResult;
 	}
 
