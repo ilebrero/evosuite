@@ -85,7 +85,6 @@ public class DSEAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
 
     HashSet<Set<Constraint<?>>> pathConditions = new HashSet<Set<Constraint<?>>>();
 
-    // TODO: Try out different ways to stop checking new paths
     for (int currentTestIndex = 0; currentTestIndex < generatedTests
         .size(); currentTestIndex++) {
 
