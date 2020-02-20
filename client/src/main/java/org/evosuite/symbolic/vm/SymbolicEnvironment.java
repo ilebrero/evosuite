@@ -30,7 +30,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
-import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
+import org.evosuite.symbolic.instrument.SymbolicInstrumentingClassLoader;
 import org.evosuite.testcase.execution.EvosuiteError;
 import org.objectweb.asm.Type;
 
@@ -43,8 +43,9 @@ public final class SymbolicEnvironment {
 
 	/**
 	 * Storage for symbolic information in the memory heap
+	 * This might be extended at some point
 	 */
-	public final SymbolicHeap heap = new SymbolicHeap();
+	public final SymbolicHeap heap;
 
 	/**
 	 * Stack of function/method/constructor invocation frames
@@ -57,10 +58,18 @@ public final class SymbolicEnvironment {
 	 */
 	private final Set<Class<?>> preparedClasses = new HashSet<Class<?>>();
 
-	private final ConcolicInstrumentingClassLoader classLoader;
+	private final SymbolicInstrumentingClassLoader instrumentingClassLoader;
 
-	public SymbolicEnvironment(ConcolicInstrumentingClassLoader classLoader) {
-		this.classLoader = classLoader;
+	public SymbolicEnvironment(SymbolicInstrumentingClassLoader classLoader, SymbolicHeap heap) {
+		this.instrumentingClassLoader = classLoader;
+		this.heap = heap;
+	}
+
+	public SymbolicEnvironment(SymbolicInstrumentingClassLoader classLoader) {
+		this(
+			classLoader,
+			new SymbolicHeap()
+		);
 	}
 
 	public Frame topFrame() {
@@ -91,7 +100,7 @@ public final class SymbolicEnvironment {
 			else {
 				// ensurePrepared component class
 				className = elemType.getClassName();
-				Class<?> claz = classLoader.getClassForName(className);
+				Class<?> claz = instrumentingClassLoader.getClassForName(className);
 				ensurePrepared(claz);
 				
 				// returns claz[] instead of claz
@@ -99,7 +108,7 @@ public final class SymbolicEnvironment {
 				return arrayClaz;
 			}
 		} else {
-			Class<?> claz = classLoader.getClassForName(className);
+			Class<?> claz = instrumentingClassLoader.getClassForName(className);
 			ensurePrepared(claz);
 			return claz;
 		}
