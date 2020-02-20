@@ -45,7 +45,7 @@ public final class SymbolicEnvironment {
 	 * Storage for symbolic information in the memory heap
 	 * This might be extended at some point
 	 */
-	public final SymbolicHeap heap;
+	public final SymbolicHeap heap = new SymbolicHeap();
 
 	/**
 	 * Stack of function/method/constructor invocation frames
@@ -60,16 +60,8 @@ public final class SymbolicEnvironment {
 
 	private final SymbolicInstrumentingClassLoader instrumentingClassLoader;
 
-	public SymbolicEnvironment(SymbolicInstrumentingClassLoader classLoader, SymbolicHeap heap) {
-		this.instrumentingClassLoader = classLoader;
-		this.heap = heap;
-	}
-
-	public SymbolicEnvironment(SymbolicInstrumentingClassLoader classLoader) {
-		this(
-			classLoader,
-			new SymbolicHeap()
-		);
+	public SymbolicEnvironment(SymbolicInstrumentingClassLoader instrumentingClassLoader) {
+		this.instrumentingClassLoader = instrumentingClassLoader;
 	}
 
 	public Frame topFrame() {
