@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic;
+package org.evosuite.symbolic.DSE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,10 @@ import java.util.Set;
 
 import org.evosuite.Properties;
 import org.evosuite.ga.stoppingconditions.MaxStatementsStoppingCondition;
+import org.evosuite.symbolic.BranchCondition;
+import org.evosuite.symbolic.PathCondition;
+import org.evosuite.symbolic.SymbolicEngine;
+import org.evosuite.symbolic.SymbolicObserver;
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.expr.ExpressionEvaluator;
 import org.evosuite.symbolic.instrument.ConcolicBytecodeInstrumentation;
@@ -56,7 +60,7 @@ import org.evosuite.dse.VM;
  * 
  * @author Gordon Fraser
  */
-public class ConcolicEngine extends SymbolicEngine{
+public class ConcolicEngine extends SymbolicEngine {
 
 	private static Logger logger = LoggerFactory.getLogger(ConcolicEngine.class);
 
