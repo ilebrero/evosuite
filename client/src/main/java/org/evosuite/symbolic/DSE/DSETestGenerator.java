@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic;
+package org.evosuite.symbolic.DSE;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,6 +28,8 @@ import java.util.Set;
 import org.evosuite.Properties;
 import org.evosuite.ga.localsearch.LocalSearchBudget;
 import org.evosuite.ga.localsearch.LocalSearchObjective;
+import org.evosuite.symbolic.BranchCondition;
+import org.evosuite.symbolic.PathCondition;
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.expr.Expression;
 import org.evosuite.symbolic.expr.Variable;
@@ -166,7 +168,7 @@ public class DSETestGenerator {
 			long startSolvingTime = System.currentTimeMillis();
 
 			// Get solution
-			SolverResult solverResult = SmtUtils.solveSMTQuery(query);
+			SolverResult solverResult = SolverUtils.solveQuery(query);
 
 			long estimatedSolvingTime = System.currentTimeMillis() - startSolvingTime;
 			DSEStats.getInstance().reportNewSolvingTime(estimatedSolvingTime);

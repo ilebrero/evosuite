@@ -117,8 +117,13 @@ public abstract class DSEAlgorithm extends DSEBaseAlgorithm {
 
 
     private void analizeResults(SolverResult smtQueryResult, List<TestCase> generatedTests, TestCase currentConcreteTest) {
-
+        // TODO: completar
     }
+
+     public TestSuiteChromosome generateSolution() {
+         // TODO: completar
+         return null;
+     }
 
     private SolverResult solveQuery(List<Constraint<?>> SMTQuery) {
         SolverResult smtQueryResult = null;
@@ -145,8 +150,4 @@ public abstract class DSEAlgorithm extends DSEBaseAlgorithm {
      protected abstract Set<Constraint<?>> normalize(List<Constraint<?>> query);
      protected abstract Set<Constraint<?>> normalizePathCondition(PathCondition currentPathCondition);
 
-     public TestSuiteChromosome generateSolution() {
-         // TODO: completar
-         return null;
-     }
 }

@@ -87,11 +87,12 @@ public class DSEStrategy extends TestGenerationStrategy {
             DSEAlgorithm algorithm = DSEAlgorithmFactory.getDSEAlgorithm(dseAlgorithmType);
 
 			StoppingCondition stoppingCondition = getStoppingCondition();
-			algorithm.addFitnessFunctions((List)fitnessFunctions);
+// TODO: implement fitness functions
+			//						algorithm.addFitnessFunctions((List)fitnessFunctions);
 			if (Properties.STOP_ZERO) {
 
 			}
-			algorithm.setStoppingCondition(stoppingCondition);
+//			algorithm.setStoppingCondition(stoppingCondition);
 			testSuite = algorithm.generateSolution();;
 
 		} else {

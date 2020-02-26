@@ -32,14 +32,14 @@ import java.util.List;
  * @author ignacio lebrero
  */
 public abstract class PathConditionUtils {
-    public static PathCondition negatenthBranchCondition(PathCondition pathCondition, int branchConditionPosition) {
-        List<BranchCondition> branchConditions = pathCondition.getBranchConditions();
-        BranchCondition nthBranchCondition = branchConditions.get(branchConditionPosition);
-
-        try {
-            BranchCondition negatedBranchCondition = nthBranchCondition.getClass().getConstructor().;
-        } catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-    }
+//    public static PathCondition negatenthBranchCondition(PathCondition pathCondition, int branchConditionPosition) {
+//        List<BranchCondition> branchConditions = pathCondition.getBranchConditions();
+//        BranchCondition nthBranchCondition = branchConditions.get(branchConditionPosition);
+//
+//        try {
+//            BranchCondition negatedBranchCondition = nthBranchCondition.getClass().getConstructor().;
+//        } catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
