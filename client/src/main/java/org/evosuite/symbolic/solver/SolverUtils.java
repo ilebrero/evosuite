@@ -123,10 +123,30 @@ public abstract class SolverUtils {
 			query.add(branchCondition.getConstraint());
 		}
 
-//		BranchCondition targetBranch = pc.get(conditionIndexToNegate);
-//		Constraint<?> negation = targetBranch.getConstraint().negate();
-//		query.addAll(targetBranch.getSupportingConstraints());
-//		query.add(negation);
+		// Compute cone of influence reduction
+		List<Constraint<?>> simplified_query = reduce(query);
+		return simplified_query;
+	}
+
+	 /**
+	 * Creates a Solver query give a branch condition
+	 *
+	 * @param pc
+	 * @param conditionIndexToNegate
+	  * @return
+	 */
+	public static List<Constraint<?>> buildQueryNegatingIthCondition(PathCondition pc, int conditionIndexToNegate) {
+		List<Constraint<?>> query = new LinkedList<Constraint<?>>();
+		for (int i = 0; i < conditionIndexToNegate; i++) {
+			BranchCondition b = pc.get(i);
+			query.addAll(b.getSupportingConstraints());
+			query.add(b.getConstraint());
+		}
+
+		BranchCondition targetBranch = pc.get(conditionIndexToNegate);
+		Constraint<?> negation = targetBranch.getConstraint().negate();
+		query.addAll(targetBranch.getSupportingConstraints());
+		query.add(negation);
 
 		// Compute cone of influence reduction
 		List<Constraint<?>> simplified_query = reduce(query);

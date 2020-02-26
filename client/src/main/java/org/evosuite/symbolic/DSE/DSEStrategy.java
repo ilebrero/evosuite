@@ -28,14 +28,13 @@ import org.evosuite.coverage.TestFitnessFactory;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.stoppingconditions.MaxStatementsStoppingCondition;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
-import org.evosuite.result.TestGenerationResultBuilder;
 import org.evosuite.rmi.ClientServices;
 import org.evosuite.rmi.service.ClientState;
 import org.evosuite.statistics.RuntimeVariable;
 import org.evosuite.strategy.TestGenerationStrategy;
 import org.evosuite.symbolic.DSE.algorithm.DSEAlgorithm;
 import org.evosuite.symbolic.DSE.algorithm.DSEAlgorithmFactory;
-import org.evosuite.symbolic.DSE.algorithm.DSEAlgorithmType;
+import org.evosuite.symbolic.DSE.algorithm.DSEAlgorithms;
 import org.evosuite.testcase.TestFitnessFunction;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
@@ -83,8 +82,10 @@ public class DSEStrategy extends TestGenerationStrategy {
 			LoggingUtils.getEvoLogger().info("* Starting evolution");
 			ClientServices.getInstance().getClientNode().changeState(ClientState.SEARCH);
 
-			DSEAlgorithmType dseAlgorithmType = Properties.DSE_ALGORITHM_TYPE;
-            DSEAlgorithm algorithm = DSEAlgorithmFactory.getDSEAlgorithm(dseAlgorithmType);
+			//TODO: move to dependency injection later on
+			DSEAlgorithmFactory dseFactory = new DSEAlgorithmFactory();
+			DSEAlgorithms dseAlgorithmType = Properties.DSE_ALGORITHM_TYPE;
+            DSEAlgorithm algorithm = dseFactory.getDSEAlgorithm(dseAlgorithmType);
 
 			StoppingCondition stoppingCondition = getStoppingCondition();
 // TODO: implement fitness functions

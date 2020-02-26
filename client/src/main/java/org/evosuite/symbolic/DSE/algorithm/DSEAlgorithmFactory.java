@@ -19,35 +19,35 @@
  */
 package org.evosuite.symbolic.DSE.algorithm;
 
-import org.evosuite.symbolic.DSE.algorithm.implementations.DSEAlgorithmPaper1;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-
 /**
  * Factory of DSE Algorithms
  *
  * @author ilebrero
  */
 public class DSEAlgorithmFactory {
-    private final static Map<DSEAlgorithmType, Supplier<DSEAlgorithm>> algorithms = new HashMap();
+    private final static String DSE_ALGORITHM_TYPE_NOT_PROVIDED = "A DSE algorithm type must be provided";
 
-    private static final String DSE_ALGORITHM_TYPE_NOT_PROVIDED = "A DSE algorithm type must be provided";
-
-    static {
-        algorithms.put(
-                DSEAlgorithmType.PAPER1, DSEAlgorithmPaper1::new
-        );
-    }
-
-    public static DSEAlgorithm getDSEAlgorithm(DSEAlgorithmType dseAlgorithmType) {
+    public DSEAlgorithm getDSEAlgorithm(DSEAlgorithms dseAlgorithmType) {
         if (dseAlgorithmType == null) {
             throw new IllegalArgumentException(DSE_ALGORITHM_TYPE_NOT_PROVIDED);
         }
 
-        Supplier<DSEAlgorithm> dseAlgorithm = algorithms.get(dseAlgorithmType);
-        return dseAlgorithm.get();
+        switch (dseAlgorithmType) {
+            case DEFAULT:
+                return buildDefaultAlgorithm();
+            default:
+                throw new IllegalStateException("DSEAlgorithm not yet implemented: " + dseAlgorithmType.name());
+        }
+
+    }
+
+    /**
+     * Builds a default version of the DSE algorithm.
+     *
+     * @return
+     */
+    private DSEAlgorithm buildDefaultAlgorithm() {
+        return new DSEAlgorithm();
     }
 }
 

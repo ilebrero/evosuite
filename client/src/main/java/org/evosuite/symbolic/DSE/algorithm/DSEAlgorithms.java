@@ -25,12 +25,12 @@ package org.evosuite.symbolic.DSE.algorithm;
  *
  * @author ignacio lebrero
  */
-public enum DSEAlgorithmType {
-    PAPER1("dummy test implementation");
+public enum DSEAlgorithms {
+    DEFAULT("Default implementation");
 
     private String description;
 
-    DSEAlgorithmType(String description) {
+    DSEAlgorithms(String description) {
         this.description = description;
     }
 
