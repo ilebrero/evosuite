@@ -32,6 +32,7 @@ import org.evosuite.symbolic.DSE.algorithm.strategies.implementations.PathSelect
 import org.evosuite.symbolic.DSE.algorithm.strategies.implementations.TestCaseBuildingStrategies.DefaultTestCaseBuildingStrategy;
 import org.evosuite.symbolic.DSE.algorithm.strategies.implementations.TestCaseSelectionStrategies.LastTestCaseSelectionStrategy;
 import org.evosuite.symbolic.PathCondition;
+import org.evosuite.symbolic.PathConditionUtils;
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.solver.Solver;
 import org.evosuite.symbolic.solver.SolverEmptyQueryException;
@@ -128,13 +129,16 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
         // Build initial testCase input
         generatedTests.add(testCaseBuildingStrategy.buildInitialTestCase(method));
-
         HashSet<Set<Constraint<?>>> alreadyGeneratedPathConditions = new HashSet();
-        while (keepSearchingCriteriaStrategy.ShouldKeepSearching(generatedTests)) {
+
+        // Any of the stopping conditions has been achieved?
+        while (!isFinished() && keepSearchingCriteriaStrategy.ShouldKeepSearching(generatedTests)) {
 
             // Do a concolic execution on an arbitrary test case
             TestCase currentConcreteTest = testCaseSelectionStrategy.getCurrentIterationBasedTestCase(generatedTests).clone();
             final PathCondition currentPathCondition = engine.execute((DefaultTestCase) currentConcreteTest);
+
+            checkPathConditionDivergence(currentPathCondition);
 
             // Next path condition generation
             List<Constraint<?>> query = pathSelectionStrategy.getNextPathConstraints(currentPathCondition);
@@ -142,7 +146,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             alreadyGeneratedPathConditions.add(normalizedQueryConstraints);
 
             if (!pathPruningStrategy.shouldSkipCurrentPath(alreadyGeneratedPathConditions, normalizedQueryConstraints, queryCache)) {
-                // TODO: check if this is really neded, probable the SMT language is asking for this.
                 query.addAll(
                     SolverUtils.createBoundsForQueryVariables(query)
                 );
@@ -154,6 +157,16 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         }
     }
 
+    /**
+     * Checks whether the current executed path condition diverged from the original one.
+     *
+     * @param currentPathCondition
+     */
+    private void checkPathConditionDivergence(PathCondition currentPathCondition) {
+        if (PathConditionUtils.hasPathConditionDiverged(currentPathCondition, currentPathCondition)) {
+            logger.debug("Warning | Path condition diverged for testCase: .............");
+        }
+    }
 
     /**
      * Analyzes the results of an smtQuery and appends to the tests cases if needed
