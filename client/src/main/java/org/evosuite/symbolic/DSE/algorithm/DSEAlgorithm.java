@@ -123,9 +123,10 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         this.keepSearchingCriteriaStrategy = keepSearchingCriteriaStrategy;
     }
 
-    // TODO: only static methods for, will extend later on
+    // TODO: only static methods for, will extend later on.
     public void algorithm(Method method) {
         List<TestCase> generatedTests = new ArrayList();
+        Map<TestCase, PathCondition> generatedPathConditions = new HashMap<>();
 
         // Build initial testCase input
         generatedTests.add(testCaseBuildingStrategy.buildInitialTestCase(method));
@@ -136,9 +137,11 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
             // Do a concolic execution on an arbitrary test case
             TestCase currentConcreteTest = testCaseSelectionStrategy.getCurrentIterationBasedTestCase(generatedTests).clone();
-            final PathCondition currentPathCondition = engine.execute((DefaultTestCase) currentConcreteTest);
+            PathCondition currentConcreteTestExpectedPathConditionPrefix = generatedPathConditions.get(currentConcreteTest);
 
-            checkPathConditionDivergence(currentPathCondition);
+            // Operate related path condition updates
+            final PathCondition currentPathCondition = engine.execute((DefaultTestCase) currentConcreteTest);
+            checkPathConditionDivergence(currentPathCondition, currentConcreteTestExpectedPathConditionPrefix);
 
             // Next path condition generation
             List<Constraint<?>> query = pathSelectionStrategy.getNextPathConstraints(currentPathCondition);
@@ -154,17 +157,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
                 SolverResult smtQueryResult = solveQuery(query);
                 analizeResults(normalizedQueryConstraints, smtQueryResult, generatedTests, currentConcreteTest);
             }
-        }
-    }
-
-    /**
-     * Checks whether the current executed path condition diverged from the original one.
-     *
-     * @param currentPathCondition
-     */
-    private void checkPathConditionDivergence(PathCondition currentPathCondition) {
-        if (PathConditionUtils.hasPathConditionDiverged(currentPathCondition, currentPathCondition)) {
-            logger.debug("Warning | Path condition diverged for testCase: .............");
         }
     }
 

@@ -43,25 +43,39 @@ public class PathConditionUtils {
 	 *  	    check where the divergence generated but there may be an aprox technique that
 	 *  	    may give us some information about it.
 	 *
-	 * @param original
+	 * @param expectedPrefixPathCondition
 	 * @param newPathCondition
 	 * @return
 	 */
-	public static boolean hasPathConditionDiverged(PathCondition original, PathCondition newPathCondition) {
-		List<BranchCondition> originalBranchConditions = original.getBranchConditions();
+	public static boolean hasPathConditionDiverged(PathCondition expectedPrefixPathCondition, PathCondition newPathCondition) {
+		List<BranchCondition> expectedPrefixBranchConditions = expectedPrefixPathCondition.getBranchConditions();
 		List<BranchCondition> newBranchConditions = newPathCondition.getBranchConditions();
 
-		for (int currentBranchConditionIndex = 0; currentBranchConditionIndex < originalBranchConditions.size(); ++currentBranchConditionIndex) {
-			BranchCondition originalBranchCondition = originalBranchConditions.get(currentBranchConditionIndex);
+		for (int currentBranchConditionIndex = 0; currentBranchConditionIndex < expectedPrefixBranchConditions.size(); ++currentBranchConditionIndex) {
+			BranchCondition expectedPrefixBranchCondition = expectedPrefixBranchConditions.get(currentBranchConditionIndex);
 			BranchCondition newBranchCondition = newBranchConditions.get(currentBranchConditionIndex);
 
-			// if the original path is not a prefix of the current one, there's a divergence
-			if (!originalBranchCondition.equals(newBranchCondition)) {
+			// if the expectedPrefix path is not a prefix of the current one, there's a divergence
+			if (!expectedPrefixBranchCondition.equals(newBranchCondition)) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Calculates the path divergece vs total paths ratio.
+	 *
+	 * @param pathDivergeAmount
+	 * @param totalPathsAmount
+	 * @return
+	 */
+	public static double calculatePathDivergenceRatio(int pathDivergeAmount, int totalPathsAmount) {
+		double divergenceAmount = pathDivergeAmount;
+		double pathsAmount = totalPathsAmount;
+
+		return pathDivergeAmount / totalPathsAmount;
 	}
 
 }
