@@ -22,6 +22,7 @@ package org.evosuite.symbolic.DSE.algorithm;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
+import org.evosuite.symbolic.DSE.DSEStatistics;
 import org.evosuite.symbolic.DSE.algorithm.listener.SymbolicExecutionSearchListener;
 import org.evosuite.symbolic.PathCondition;
 import org.evosuite.symbolic.PathConditionUtils;
@@ -45,6 +46,8 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> {
 
 	private static final Logger logger = LoggerFactory.getLogger(DSEBaseAlgorithm.class);
 
+	protected final DSEStatistics statisticsLogger;
+
 	/** Listeners */
 	protected transient Set<SymbolicExecutionSearchListener> listeners = new HashSet<SymbolicExecutionSearchListener>();
 
@@ -57,6 +60,10 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> {
 	/** Amount of divergences **/
 	protected Integer totalAmountOfPaths = 0;
 	protected Integer amountOfPathDivergences = 0;
+
+	public DSEBaseAlgorithm(DSEStatistics dseStatistics) {
+		this.statisticsLogger = dseStatistics;
+	}
 
 	/**
 	 * Add new fitness function (i.e., for new mutation)
@@ -196,11 +203,12 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> {
      * @param currentPathCondition
      */
     protected void checkPathConditionDivergence(PathCondition currentPathCondition, PathCondition expectedPathCondition) {
-    	totalAmountOfPaths++;
+    	statisticsLogger.reportNewPathExplored();
 
         if (PathConditionUtils.hasPathConditionDiverged(expectedPathCondition, currentPathCondition)) {
             logger.debug(PATH_DIVERGENCE_FOUND_WARNING_MESSAGE);
-        	amountOfPathDivergences++;
+        	statisticsLogger.reportNewPathDivergence();
+
         }
     }
 

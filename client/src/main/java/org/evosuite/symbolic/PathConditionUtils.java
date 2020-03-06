@@ -40,7 +40,7 @@ public class PathConditionUtils {
 	 *
 	 *  TODO: In the future we can support explaining which condition diverged.
 	 *  		And Maybe talk about what happened, it's doesn't seem to be trivial to
-	 *  	    check where the divergence generated but there may be an aprox technique that
+	 *  	    check where the divergence generated but there may be an aprox. technique that
 	 *  	    may give us some information about it.
 	 *
 	 * @param expectedPrefixPathCondition

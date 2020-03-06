@@ -20,6 +20,7 @@
 package org.evosuite.symbolic.DSE.algorithm;
 
 import org.evosuite.symbolic.DSE.ConcolicEngine;
+import org.evosuite.symbolic.DSE.DSEStatistics;
 import org.evosuite.symbolic.DSE.DSETestGenerator;
 import org.evosuite.symbolic.DSE.algorithm.strategies.TestCaseBuildingStrategy;
 import org.evosuite.symbolic.DSE.algorithm.strategies.TestCaseSelectionStrategy;
@@ -92,6 +93,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
     public DSEAlgorithm() {
         this(
+            DSEStatistics.getInstance(), //TODO: move this to a dependency injection schema
             new ConcolicEngine(),
             SolverFactory.getInstance().buildNewSolver(),
 
@@ -105,6 +107,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
     }
 
     public DSEAlgorithm(
+            DSEStatistics dseStatistics,
             ConcolicEngine engine,
             Solver solver,
             PathPruningStrategy pathPruningStrategy,
@@ -113,6 +116,8 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             TestCaseBuildingStrategy testCaseBuildingStrategy,
             TestCaseSelectionStrategy testCaseSelectionStrategy
     ) {
+        super(dseStatistics);
+
         this.engine = engine;
         this.solver = solver;
 
@@ -162,6 +167,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
     /**
      * Analyzes the results of an smtQuery and appends to the tests cases if needed
+     *
      *  @param query
      * @param smtQueryResult
      * @param generatedTests
@@ -214,6 +220,9 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      */
      public TestSuiteChromosome generateSolution() {
          // TODO: completar
+
+         // Run this before finish
+         statisticsLogger.logStatistics();
          return null;
      }
 
