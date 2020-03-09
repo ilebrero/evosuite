@@ -19,11 +19,14 @@
  */
 package org.evosuite.symbolic.DSE.algorithm.strategies.implementations.TestCaseBuildingStrategies;
 
+import org.evosuite.symbolic.DSE.DSETestCase;
 import org.evosuite.symbolic.DSE.algorithm.strategies.TestCaseBuildingStrategy;
+import org.evosuite.symbolic.PathCondition;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.utils.TestCaseUtils;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 /**
  * Strategy for building the initial test case with default values
@@ -32,7 +35,14 @@ import java.lang.reflect.Method;
  */
 public class DefaultTestCaseBuildingStrategy implements TestCaseBuildingStrategy {
     @Override
-    public TestCase buildInitialTestCase(Method method) {
-        return TestCaseUtils.buildTestCaseWithDefaultValues(method);
+    public DSETestCase buildInitialTestCase(Method method) {
+        TestCase testCase = TestCaseUtils.buildTestCaseWithDefaultValues(method);
+        PathCondition emptyPathCondition = new PathCondition(new ArrayList());
+
+        return new DSETestCase(
+            testCase,
+            emptyPathCondition,
+            0 // Initial test case will always be seen the first time.
+        );
     }
 }
