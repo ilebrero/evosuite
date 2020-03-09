@@ -19,7 +19,7 @@
  */
 package org.evosuite.symbolic.DSE.algorithm.strategies;
 
-import org.evosuite.symbolic.PathCondition;
+import org.evosuite.symbolic.DSE.algorithm.DSEPathCondition;
 
 import java.util.List;
 
@@ -29,5 +29,5 @@ import java.util.List;
  * @author ignacio lebrero
  */
 public interface PathSelectionStrategy {
-    List<PathCondition> generateChildren(PathCondition currentPathcondition);
+    List<DSEPathCondition> generateChildren(DSEPathCondition currentPathConditionChild);
 }

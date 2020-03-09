@@ -20,6 +20,7 @@
 package org.evosuite.symbolic.DSE.algorithm.strategies.implementations.PathSelectionStrategies;
 
 import org.evosuite.symbolic.BranchCondition;
+import org.evosuite.symbolic.DSE.algorithm.DSEPathCondition;
 import org.evosuite.symbolic.DSE.algorithm.strategies.PathSelectionStrategy;
 import org.evosuite.symbolic.PathCondition;
 
@@ -34,23 +35,32 @@ import java.util.List;
  */
 public class generationalGenerationStrategy implements PathSelectionStrategy {
     @Override
-    public List<PathCondition> generateChildren(PathCondition currentPathCondition) {
-        List<PathCondition> generatedChildren = new ArrayList<>();
-        List<BranchCondition> acumulatedBranchConditions = new ArrayList<>();
+    public List<DSEPathCondition> generateChildren(DSEPathCondition currentPathConditionChild) {
+        List<DSEPathCondition> generatedChildren = new ArrayList<>();
+        List<BranchCondition> accumulatedBranchConditions = new ArrayList<>();
+        List<BranchCondition> currentPathConditionBranchConditions = currentPathConditionChild.getPathCondition().getBranchConditions();
+        int currentPathConditionIndexGeneratedFrom = currentPathConditionChild.getGeneratedFromIndex();
 
-        for (BranchCondition currentBranchCondition : currentPathCondition.getBranchConditions()) {
-            acumulatedBranchConditions.add(currentBranchCondition.getNegatedVersion());
+        // Important!! We start from the index the test was generated from to avoid re-create already checked paths
+        for (int indexBound = currentPathConditionIndexGeneratedFrom; indexBound < currentPathConditionBranchConditions.size(); indexBound++) {
+            BranchCondition currentBranchCondition = currentPathConditionBranchConditions.get(indexBound);
 
-            // adds the negated last condition
-            generatedChildren.add(
+            // We add the negated BranchCondition version to the current created pathCondition
+            accumulatedBranchConditions.add(currentBranchCondition.getNegatedVersion());
+
+            DSEPathCondition newChild = new DSEPathCondition(
                 new PathCondition(
-                        new ArrayList(acumulatedBranchConditions)
-                )
+                        new ArrayList(accumulatedBranchConditions)
+                ),
+                indexBound
             );
 
+            // adds the negated last condition
+            generatedChildren.add(newChild);
+
             // replaces the negated branch condition with the original one for continuing generating
-            acumulatedBranchConditions.set(
-                acumulatedBranchConditions.size() - 1,
+            accumulatedBranchConditions.set(
+                accumulatedBranchConditions.size() - 1,
                 currentBranchCondition
             );
         }

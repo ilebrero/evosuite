@@ -19,7 +19,7 @@
  */
 package org.evosuite.symbolic.DSE;
 
-import org.evosuite.symbolic.PathCondition;
+import org.evosuite.symbolic.DSE.algorithm.DSEPathCondition;
 import org.evosuite.testcase.TestCase;
 
 /**
@@ -33,7 +33,7 @@ public class DSETestCase implements Comparable<DSETestCase>, Cloneable {
     /**
      * A priority score based on any sort of metric.
      *
-     * e.g.: Godefroid P., Levin Y. M. & Molnar D. (2008) Automated Whitebox Fuzz Testing, pg. 5.
+     * e.g.: Godefroid P., Levin Y. M. & Molnar D. (2008) Automated White Box Fuzz Testing, pg. 5.
      */
     private double score;
 
@@ -46,9 +46,9 @@ public class DSETestCase implements Comparable<DSETestCase>, Cloneable {
      * Path condition from wich the test case was created.
      * Useful for checking path divergences.
      */
-    private PathCondition originalPathCondition;
+    private DSEPathCondition originalPathCondition;
 
-    public DSETestCase(TestCase testCase, PathCondition originalPathCondition, double score) {
+    public DSETestCase(TestCase testCase, DSEPathCondition originalPathCondition, double score) {
         this.score = score;
         this.testCase = testCase;
         this.originalPathCondition = originalPathCondition;
@@ -62,7 +62,7 @@ public class DSETestCase implements Comparable<DSETestCase>, Cloneable {
         return testCase;
     }
 
-    public PathCondition getOriginalPathCondition() {
+    public DSEPathCondition getOriginalPathCondition() {
         return originalPathCondition;
     }
 

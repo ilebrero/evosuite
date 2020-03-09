@@ -161,21 +161,24 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             DSETestCase currentTestCase = testCaseSelectionStrategy.getCurrentIterationBasedTestCase(generatedTests).clone();
 
             // Runs the current test case
-            PathCondition currentExecutedPathCondition = engine.execute((DefaultTestCase) currentTestCase.getTestCase());
+            DSEPathCondition currentExecutedPathCondition = executeConcolicEngine(currentTestCase);
 
             // Checks for a divergence
-            checkPathConditionDivergence(currentExecutedPathCondition, currentTestCase.getOriginalPathCondition());
+            checkPathConditionDivergence(
+                    currentExecutedPathCondition.getPathCondition(),
+                    currentTestCase.getOriginalPathCondition().getPathCondition()
+            );
 
             // Generates the children
-            List<PathCondition> children = pathSelectionStrategy.generateChildren(currentExecutedPathCondition);
+            List<DSEPathCondition> children = pathSelectionStrategy.generateChildren(currentExecutedPathCondition);
 
             // We look at all the children
-            for (PathCondition child : children) {
-                List<Constraint<?>> childQuery = SolverUtils.buildQuery(child);
+            for (DSEPathCondition child : children) {
+                List<Constraint<?>> childQuery = SolverUtils.buildQuery(child.getPathCondition());
                 Set<Constraint<?>> normalizedChildQuery = normalize(childQuery);
                 alreadyGeneratedChildren.add(normalizedChildQuery);
 
-                // Almost equivalent to a < 0 score, except we are not running those
+                // Almost equivalent to a < 0 score, except we are not running these ones on the queue
                 if (!pathPruningStrategy.shouldSkipCurrentPath(alreadyGeneratedChildren, normalizedChildQuery, queryCache)) {
 
                     // Post-processing stuff
@@ -183,17 +186,18 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
                         SolverUtils.createBoundsForQueryVariables(childQuery)
                     );
 
+                    // Solves the SMT query
                     logger.debug(SOLVER_QUERY_STARTED_MESSAGE, childQuery.size());
                     SolverResult smtQueryResult = solveQuery(childQuery);
-
-                    DSETestCase newTestCase = analizeResults(
+                    Map<String, Object> smtSolution = getQuerySolution(
                         normalizedChildQuery,
-                        smtQueryResult,
-                        currentTestCase,
-                        child
+                        smtQueryResult
                     );
 
-                    if (newTestCase != null) {
+                    if (smtSolution != null) {
+                        // Generates the new tests based on the current solution
+                        DSETestCase newTestCase = generateNewtestCase(currentTestCase, child, smtSolution);
+
                         generatedTests.add(newTestCase);
                         resultTestCases.add(newTestCase);
                     }
@@ -204,16 +208,42 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         return resultTestCases;
     }
 
+    private DSETestCase generateNewtestCase(DSETestCase currentConcreteTest, DSEPathCondition currentPathcondition, Map<String, Object> smtSolution) {
+        DSETestCase newTestCase =  new DSETestCase(
+            DSETestGenerator.updateTest(currentConcreteTest.getTestCase(), smtSolution),
+            currentPathcondition,
+            0 // TODO: implement the score section
+        );
+        logger.debug("Created new test case from SAT solution: {}", newTestCase.getTestCase().toCode());
+        logger.debug("New test case score: {}", newTestCase.getScore());
+        //          TODO: re implement this part
+        //          double fitnessBeforeAddingNewTest = this.getBestIndividual().getFitness();
+        //          logger.debug("Fitness before adding new test" + fitnessBeforeAddingNewTest);
+        //          getBestIndividual().addTest(newTest);
+        //          calculateFitness(getBestIndividual());
+        //
+        //          double fitnessAfterAddingNewTest = this.getBestIndividual().getFitness();
+        //          logger.debug("Fitness after adding new test " + fitnessAfterAddingNewTest);
+        //          this.notifyIteration();
+        //
+        //          if (fitnessAfterAddingNewTest == 0) {
+        //            logger.debug("No more DSE test generation since fitness is 0");
+        //            return;
+        //          }
+
+        return newTestCase;
+    }
+
+
     /**
      * Analyzes the results of an smtQuery and appends to the tests cases if needed
-     *   @param query
+     *
+     * @param query
      * @param smtQueryResult
-     * @param currentConcreteTest
-     * @param originalPathCondition
      * @return
      */
-    private DSETestCase analizeResults(Set<Constraint<?>> query, SolverResult smtQueryResult, DSETestCase currentConcreteTest, PathCondition originalPathCondition) {
-        DSETestCase newTestCase = null;
+    private Map<String, Object> getQuerySolution(Set<Constraint<?>> query, SolverResult smtQueryResult) {
+         Map<String, Object> solution = null;
 
         if (smtQueryResult == null) {
             logger.debug("Solver outcome is null (probably failure/unknown/timeout)");
@@ -222,31 +252,9 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
             if (smtQueryResult.isSAT()) {
                 logger.debug("query is SAT (solution found)");
-                Map<String, Object> solution = smtQueryResult.getModel();
+                solution = smtQueryResult.getModel();
                 logger.debug("solver found solution " + solution.toString());
 
-                newTestCase = new DSETestCase(
-                    DSETestGenerator.updateTest(currentConcreteTest.getTestCase(), solution),
-                    originalPathCondition,
-                    0 // TODO: implement the score section
-                );
-                logger.debug("Created new test case from SAT solution: {}", newTestCase.getTestCase().toCode());
-                logger.debug("New test case score: {}", newTestCase.getScore());
-
-                //          TODO: re implement this part
-                //          double fitnessBeforeAddingNewTest = this.getBestIndividual().getFitness();
-                //          logger.debug("Fitness before adding new test" + fitnessBeforeAddingNewTest);
-                //          getBestIndividual().addTest(newTest);
-                //          calculateFitness(getBestIndividual());
-                //
-                //          double fitnessAfterAddingNewTest = this.getBestIndividual().getFitness();
-                //          logger.debug("Fitness after adding new test " + fitnessAfterAddingNewTest);
-                //          this.notifyIteration();
-                //
-                //          if (fitnessAfterAddingNewTest == 0) {
-                //            logger.debug("No more DSE test generation since fitness is 0");
-                //            return;
-                //          }
 
             } else {
                 assert (smtQueryResult.isUNSAT());
@@ -257,7 +265,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             }
         }
 
-        return newTestCase;
+        return solution;
     }
 
     /**
@@ -327,4 +335,17 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      private Set<Constraint<?>> normalize(List<Constraint<?>> query) {
         return new HashSet<Constraint<?>>(query);
      }
+
+    /**
+     * Executes concolicaly the current TestCase
+     *
+     * @param currentTestCase
+     * @return
+     */
+    private DSEPathCondition executeConcolicEngine(DSETestCase currentTestCase) {
+        PathCondition result = engine.execute((DefaultTestCase) currentTestCase.getTestCase());
+        int currentGeneratedFromIndex = currentTestCase.getOriginalPathCondition().getGeneratedFromIndex();
+
+        return new DSEPathCondition(result, currentGeneratedFromIndex);
+    }
 }
