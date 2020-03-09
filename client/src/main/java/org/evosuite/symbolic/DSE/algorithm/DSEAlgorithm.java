@@ -23,11 +23,11 @@ import org.evosuite.symbolic.DSE.ConcolicEngine;
 import org.evosuite.symbolic.DSE.DSEStatistics;
 import org.evosuite.symbolic.DSE.DSETestCase;
 import org.evosuite.symbolic.DSE.DSETestGenerator;
-import org.evosuite.symbolic.DSE.algorithm.strategies.TestCaseBuildingStrategy;
-import org.evosuite.symbolic.DSE.algorithm.strategies.TestCaseSelectionStrategy;
-import org.evosuite.symbolic.DSE.algorithm.strategies.PathSelectionStrategy;
 import org.evosuite.symbolic.DSE.algorithm.strategies.KeepSearchingCriteriaStrategy;
 import org.evosuite.symbolic.DSE.algorithm.strategies.PathPruningStrategy;
+import org.evosuite.symbolic.DSE.algorithm.strategies.PathSelectionStrategy;
+import org.evosuite.symbolic.DSE.algorithm.strategies.TestCaseBuildingStrategy;
+import org.evosuite.symbolic.DSE.algorithm.strategies.TestCaseSelectionStrategy;
 import org.evosuite.symbolic.DSE.algorithm.strategies.implementations.KeepSearchingCriteriaStrategies.LastExecutionCreatedATestCaseStrategy;
 import org.evosuite.symbolic.DSE.algorithm.strategies.implementations.PathPruningStrategies.AlreadySeenSkipStrategy;
 import org.evosuite.symbolic.DSE.algorithm.strategies.implementations.PathSelectionStrategies.generationalGenerationStrategy;
@@ -133,8 +133,10 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
     /**
      * Symbolic algorithm general schema.
      *
-     * Current implementation represents the high level algorithm of SAGE.
-     * For more details take a look at:
+     * Current implementation represents the high level algorithm of SAGE without the running&checking section
+     * since our goal is just to generate the test suite.
+     *
+     * For more details, please take a look at:
      *     Godefroid P., Levin Y. M. & Molnar D. (2008) Automated Whitebox Fuzz Testing
      *
      * @param method
@@ -196,7 +198,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
                     if (smtSolution != null) {
                         // Generates the new tests based on the current solution
-                        DSETestCase newTestCase = generateNewtestCase(currentTestCase, child, smtSolution);
+                        DSETestCase newTestCase = generateNewTestCase(currentTestCase, child, smtSolution);
 
                         generatedTests.add(newTestCase);
                         resultTestCases.add(newTestCase);
@@ -208,14 +210,16 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         return resultTestCases;
     }
 
-    private DSETestCase generateNewtestCase(DSETestCase currentConcreteTest, DSEPathCondition currentPathcondition, Map<String, Object> smtSolution) {
+    private DSETestCase generateNewTestCase(DSETestCase currentConcreteTest, DSEPathCondition currentPathCondition, Map<String, Object> smtSolution) {
         DSETestCase newTestCase =  new DSETestCase(
             DSETestGenerator.updateTest(currentConcreteTest.getTestCase(), smtSolution),
-            currentPathcondition,
+            currentPathCondition,
             0 // TODO: implement the score section
         );
+
         logger.debug("Created new test case from SAT solution: {}", newTestCase.getTestCase().toCode());
         logger.debug("New test case score: {}", newTestCase.getScore());
+
         //          TODO: re implement this part
         //          double fitnessBeforeAddingNewTest = this.getBestIndividual().getFitness();
         //          logger.debug("Fitness before adding new test" + fitnessBeforeAddingNewTest);
@@ -233,7 +237,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
         return newTestCase;
     }
-
 
     /**
      * Analyzes the results of an smtQuery and appends to the tests cases if needed
@@ -253,7 +256,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             if (smtQueryResult.isSAT()) {
                 logger.debug("query is SAT (solution found)");
                 solution = smtQueryResult.getModel();
-                logger.debug("solver found solution " + solution.toString());
+                logger.debug("solver found solution {}", solution.toString());
 
 
             } else {
@@ -277,7 +280,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
          TestSuiteChromosome testSuite = new TestSuiteChromosome();
 
 //       Method a  = new Method();
-//       testSuite.addTests(transformResultToChrmosome(runDSEAlgorithm(a)));
+//       testSuite.addTests(transformResultToChromosome(runDSEAlgorithm(a)));
 
          // Post-process work
          // TODO: complete, here we can have optimizations like testSuite redundancy reduction.
@@ -293,7 +296,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      * @param testCaseResults
      * @return
      */
-    private Collection<TestChromosome> transformResultToChrmosome(List<DSETestCase> testCaseResults) {
+    private Collection<TestChromosome> transformResultToChromosome(List<DSETestCase> testCaseResults) {
         List<TestChromosome> res = new ArrayList<>();
 
 
