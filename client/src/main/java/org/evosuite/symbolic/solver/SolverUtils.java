@@ -41,12 +41,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Logic for calling the SMT solver
+ * SMT solver related Logic.
  * TODO: in the future it could a good idea to avoid using static objects and move
  * 		 to a dependency injection schema.
  *
  * @author ilebrero
- *
  */
 public abstract class SolverUtils {
 
@@ -70,7 +69,12 @@ public abstract class SolverUtils {
 		return solverResult;
 	}
 
-	// TODO: check that this is ok
+	/**
+	 * Creates boundaries for the SMT query variables.
+	 *
+	 * @param query
+	 * @return
+	 */
      public static Collection<? extends Constraint<?>> createBoundsForQueryVariables(List<Constraint<?>> query) {
         Set<Variable<?>> variables = new HashSet<Variable<?>>();
         for (Constraint<?> constraint : query) {
@@ -110,7 +114,7 @@ public abstract class SolverUtils {
 
      /**
 	 * Creates a Solver query give a branch condition
-	 * TODO: this is only for DSE, it may be good to put it in some other utils
+	 * TODO: this is exclusive for DSE, it may be good to put it in some other utils
 	 *
 	 * @param pc
 	 * @return
