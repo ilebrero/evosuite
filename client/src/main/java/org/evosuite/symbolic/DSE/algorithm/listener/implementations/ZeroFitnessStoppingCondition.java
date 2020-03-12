@@ -1,18 +1,22 @@
 package org.evosuite.symbolic.DSE.algorithm.listener.implementations;
 
-import org.evosuite.ga.Chromosome;
 import org.evosuite.symbolic.DSE.algorithm.DSEBaseAlgorithm;
-import org.evosuite.symbolic.DSE.algorithm.listener.StoppingCondition;
 
-public class ZeroFitnessStoppingCondition implements StoppingCondition {
-    @Override
-    public void forceCurrentValue(long value) {
+/**
+ * Adaptation of {@link org.evosuite.ga.stoppingconditions.ZeroFitnessStoppingCondition} for the DSE module.
+ *
+ * @author Ignacio Lebrero
+ */
+public class ZeroFitnessStoppingCondition extends StoppingConditionImpl {
 
-    }
+    private static final long serialVersionUID = 6593889710447350828L;
+
+    /** Keep track of lowest fitness seen so far */
+	private double lastFitness = Double.MAX_VALUE;
 
     @Override
     public long getCurrentValue() {
-        return 0;
+        return (long) lastFitness;
     }
 
     @Override
@@ -22,17 +26,17 @@ public class ZeroFitnessStoppingCondition implements StoppingCondition {
 
     @Override
     public boolean isFinished() {
-        return false;
+        return lastFitness <= 0.0;
     }
 
     @Override
     public void reset() {
-
+        lastFitness = Double.MAX_VALUE;
     }
 
     @Override
     public void setLimit(long limit) {
-
+        // Nothing
     }
 
     @Override
@@ -42,21 +46,7 @@ public class ZeroFitnessStoppingCondition implements StoppingCondition {
 
     @Override
     public void iteration(DSEBaseAlgorithm algorithm) {
-
-    }
-
-    @Override
-    public void searchFinished(DSEBaseAlgorithm algorithm) {
-
-    }
-
-    @Override
-    public void fitnessEvaluation(Chromosome individual) {
-
-    }
-
-    @Override
-    public void modification(Chromosome individual) {
-
+        // Why would the new iteration have worst fitness than the previous one????
+        lastFitness = Math.min(lastFitness, algorithm.getGeneratedTestSuite().getFitness());
     }
 }

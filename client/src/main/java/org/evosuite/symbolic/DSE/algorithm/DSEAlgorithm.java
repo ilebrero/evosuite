@@ -300,8 +300,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      * @return
      */
      public TestSuiteChromosome generateSolution() {
-         TestSuiteChromosome testSuite = new TestSuiteChromosome();
-
 //       Method a  = new Method();
 //       testSuite.addTests(transformResultToChromosome(runDSEAlgorithm(a)));
 

@@ -20,19 +20,14 @@
 package org.evosuite.symbolic.DSE.algorithm.listener;
 
 
+import java.security.InvalidParameterException;
+
 /**
- * Same StoppingCondition as the GA algorithm.
+ * Adaptation of {@link org.evosuite.ga.stoppingconditions.StoppingCondition} for the DSE module.
  *
  * @author Ignacio Lebrero
  */
 public interface StoppingCondition extends SearchListener {
-    /**
-	 * Force a specific amount of used up budget. Handle with care!
-	 *
-	 * @param value
-	 *            The new amount of used up budget for this StoppingCondition
-	 */
-	public abstract void forceCurrentValue(long value);
 
 	/**
 	 * How much of the budget have we used up
@@ -67,5 +62,5 @@ public interface StoppingCondition extends SearchListener {
 	 *
 	 * @param limit a long.
 	 */
-	void setLimit(long limit);
+	void setLimit(long limit) throws InvalidParameterException;
 }

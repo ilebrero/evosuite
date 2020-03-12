@@ -23,7 +23,7 @@ import org.evosuite.ga.Chromosome;
 import org.evosuite.symbolic.DSE.algorithm.DSEBaseAlgorithm;
 
 /**
- * Same SearchListener as the GA algorithm.
+ * Adaptation of {@link org.evosuite.ga.metaheuristics.SearchListener} for the DSE module.
  *
  * @author Ignacio Lebrero
  */
@@ -55,11 +55,4 @@ public interface SearchListener {
 	 * @param individual a {@link org.evosuite.ga.Chromosome} object.
 	 */
 	public void fitnessEvaluation(Chromosome individual);
-
-	/**
-	 * Called before a chromosome is mutated
-	 *
-	 * @param individual a {@link org.evosuite.ga.Chromosome} object.
-	 */
-	public void modification(Chromosome individual);
 }

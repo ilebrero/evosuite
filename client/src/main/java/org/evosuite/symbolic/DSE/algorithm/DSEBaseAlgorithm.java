@@ -20,9 +20,9 @@
 package org.evosuite.symbolic.DSE.algorithm;
 
 import org.evosuite.ga.Chromosome;
-import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.symbolic.DSE.DSEStatistics;
 import org.evosuite.symbolic.DSE.DSETestCase;
+import org.evosuite.symbolic.DSE.algorithm.listener.StoppingCondition;
 import org.evosuite.symbolic.PathCondition;
 import org.evosuite.symbolic.PathConditionUtils;
 import org.evosuite.testcase.TestCase;
@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -119,6 +120,75 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> {
 	}
 
 	/**
+	 * <p>
+	 * addStoppingCondition
+	 * </p>
+	 *
+	 * @param condition
+	 *            a {@link org.evosuite.ga.stoppingconditions.StoppingCondition}
+	 *            object.
+	 */
+	public void addStoppingCondition(StoppingCondition condition) {
+		Iterator<StoppingCondition> it = stoppingConditions.iterator();
+		while (it.hasNext()) {
+			if (it.next().getClass().equals(condition.getClass())) {
+				return;
+			}
+		}
+		logger.debug("Adding new stopping condition");
+		stoppingConditions.add(condition);
+	}
+
+	public Set<StoppingCondition> getStoppingConditions() {
+		return stoppingConditions;
+	}
+
+	// TODO: Override equals method in StoppingCondition
+	/**
+	 * <p>
+	 * setStoppingCondition
+	 * </p>
+	 *
+	 * @param condition
+	 *            a {@link org.evosuite.ga.stoppingconditions.StoppingCondition}
+	 *            object.
+	 */
+	public void setStoppingCondition(StoppingCondition condition) {
+		stoppingConditions.clear();
+		logger.debug("Setting stopping condition");
+		stoppingConditions.add(condition);
+	}
+
+	/**
+	 * <p>
+	 * removeStoppingCondition
+	 * </p>
+	 *
+	 * @param condition
+	 *            a {@link org.evosuite.ga.stoppingconditions.StoppingCondition}
+	 *            object.
+	 */
+	public void removeStoppingCondition(StoppingCondition condition) {
+		Iterator<StoppingCondition> it = stoppingConditions.iterator();
+		while (it.hasNext()) {
+			if (it.next().getClass().equals(condition.getClass())) {
+				it.remove();
+			}
+		}
+	}
+
+	/**
+	 * <p>
+	 * resetStoppingConditions
+	 * </p>
+	 */
+	public void resetStoppingConditions() {
+		for (StoppingCondition c : stoppingConditions) {
+			c.reset();
+		}
+	}
+
+	/**
 	 * Determine whether any of the stopping conditions hold
 	 *
 	 * @return a boolean.
@@ -150,6 +220,10 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> {
 		return (double) currentbudget / (double) totalbudget;
 	}
 
+	public TestSuiteChromosome getGeneratedTestSuite() {
+		return testSuite;
+	}
+	
     /**
      * Checks whether the current executed path condition diverged from the original one.
      * TODO: Maybe we can give some info about the PathCondition that diverged later on
