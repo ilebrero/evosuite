@@ -69,7 +69,7 @@ public class DSEStrategy extends TestGenerationStrategy {
 	@Override
 	public TestSuiteChromosome generateTests() {
 		LoggingUtils.getEvoLogger().info(SETTING_UP_DSE_GENERATION_INFO_MESSAGE);
-		Properties.CRITERION = new Criterion[] { Criterion.LINE };
+		Properties.CRITERION = Properties.DSE_ALGORITHM_TYPE.getCriteria();
 		Criterion[] criterion = Properties.CRITERION;
 
 		long startTime = System.currentTimeMillis() / 1000;

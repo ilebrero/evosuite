@@ -204,7 +204,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             Set<Constraint<?>> normalizedChildQuery = normalize(childQuery);
             seenChildren.add(normalizedChildQuery);
 
-            // Almost equivalent to a < 0 score, except we are not running these ones on the queue
             if (!pathPruningStrategy.shouldSkipCurrentPath(seenChildren, normalizedChildQuery, queryCache)) {
 
                 // Post-processing stuff
@@ -241,26 +240,11 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         logger.debug("Created new test case from SAT solution: {}", newDSETestCase.getTestCase().toCode());
         logger.debug("New test case score: {}", newDSETestCase.getScore());
 
-        //          TODO: re implement this part
-        //          double fitnessBeforeAddingNewTest = this.getBestIndividual().getFitness();
-        //          logger.debug("Fitness before adding new test" + fitnessBeforeAddingNewTest);
-        //          getBestIndividual().addTest(newTest);
-        //          calculateFitness(getBestIndividual());
-        //
-        //          double fitnessAfterAddingNewTest = this.getBestIndividual().getFitness();
-        //          logger.debug("Fitness after adding new test " + fitnessAfterAddingNewTest);
-        //          this.notifyIteration();
-        //
-        //          if (fitnessAfterAddingNewTest == 0) {
-        //            logger.debug("No more DSE test generation since fitness is 0");
-        //            return;
-        //          }
-
         return newDSETestCase;
     }
 
     /**
-     * Analyzes the results of an smtQuery and appends to the tests cases if needed
+     * Analyzes the results of an smtQuery
      *
      * @param query
      * @param smtQueryResult
@@ -282,9 +266,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
             } else {
                 assert (smtQueryResult.isUNSAT());
-
-                // Special value for unsat queries
-                // queryCache.put(query, null);
                 logger.debug("query is UNSAT (no solution found)");
             }
         }
@@ -299,7 +280,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      */
      public TestSuiteChromosome generateSolution() {
          notifyGenerationStarted();
-
 //       Method a  = new Method();
 //       testSuite.addTests(transformResultToChromosome(runDSEAlgorithm(a)));
 
@@ -320,6 +300,8 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      */
     private SolverResult solveQuery(List<Constraint<?>> SMTQuery) {
         SolverResult smtQueryResult = null;
+
+        logger.debug("* Solving current SMT query");
         try {
             smtQueryResult = solver.solve(SMTQuery);
         } catch (SolverTimeoutException
@@ -329,6 +311,8 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
                 | IOException e) {
             logger.debug(SOLVER_ERROR_DEBUG_MESSAGE, e.getMessage());
         }
+
+        logger.debug("* Finished solving current SMT query with result isSat: {}", smtQueryResult.isSAT());
         return smtQueryResult;
     }
 
@@ -349,8 +333,12 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      * @return
      */
     private DSEPathCondition executeConcolicEngine(DSETestCase currentTestCase) {
+        logger.debug("* Executing concolically the current test case");
+
         PathCondition result = engine.execute((DefaultTestCase) currentTestCase.getTestCase());
         int currentGeneratedFromIndex = currentTestCase.getOriginalPathCondition().getGeneratedFromIndex();
+
+        logger.debug("* Finished concolic execution.");
 
         return new DSEPathCondition(result, currentGeneratedFromIndex);
     }
