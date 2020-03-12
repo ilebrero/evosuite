@@ -178,7 +178,7 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> {
 		testSuite.addTest(newTestCase);
         calculateFitness();
 
-        newCoverage = getFitness();
+        newCoverage = testSuite.getCoverage();
 
 		testSuite.deleteTest(newTestCase);
 		calculateFitness();
