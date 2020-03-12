@@ -202,6 +202,34 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> {
 	}
 
 	/**
+	 * Notify all search listeners of iteration
+	 */
+	protected void notifyIteration() {
+		for (StoppingCondition stoppingCondition : stoppingConditions) {
+			stoppingCondition.iteration(this);
+		}
+	}
+
+	/**
+	 * Notify all search listeners of search start
+	 */
+	protected void notifyGenerationStarted() {
+		for (StoppingCondition stoppingCondition : stoppingConditions) {
+			stoppingCondition.generationStarted(this);
+		}
+	}
+
+	/**
+	 * Notify all stopping conditions of search end
+	 */
+	protected void notifyGenerationFinished() {
+		for (StoppingCondition stoppingCondition : stoppingConditions) {
+			stoppingCondition.generationFinished(this);
+		}
+	}
+
+
+	/**
 	 * Returns the progress of the search.
 	 *
 	 * @return a value [0.0, 1.0]

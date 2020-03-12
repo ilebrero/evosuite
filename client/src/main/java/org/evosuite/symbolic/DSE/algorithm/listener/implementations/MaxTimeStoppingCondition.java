@@ -18,7 +18,7 @@ public class MaxTimeStoppingCondition extends StoppingConditionImpl {
     private long startTime;
 
     @Override
-    public void searchStarted(DSEBaseAlgorithm algorithm) {
+    public void generationStarted(DSEBaseAlgorithm algorithm) {
         reset();
     }
 

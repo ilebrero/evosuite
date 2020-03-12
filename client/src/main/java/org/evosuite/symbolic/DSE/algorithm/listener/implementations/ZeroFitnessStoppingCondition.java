@@ -40,7 +40,7 @@ public class ZeroFitnessStoppingCondition extends StoppingConditionImpl {
     }
 
     @Override
-    public void searchStarted(DSEBaseAlgorithm algorithm) {
+    public void generationStarted(DSEBaseAlgorithm algorithm) {
 
     }
 

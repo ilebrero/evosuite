@@ -33,7 +33,7 @@ public interface SearchListener {
 	 *
 	 * @param algorithm a {@link org.evosuite.symbolic.DSE.algorithm.DSEBaseAlgorithm} object.
 	 */
-	public void searchStarted(DSEBaseAlgorithm algorithm);
+	public void generationStarted(DSEBaseAlgorithm algorithm);
 
 	/**
 	 * Called after each iteration of the search
@@ -47,7 +47,7 @@ public interface SearchListener {
 	 *
 	 * @param algorithm a {@link org.evosuite.symbolic.DSE.algorithm.DSEBaseAlgorithm} object.
 	 */
-	public void searchFinished(DSEBaseAlgorithm algorithm);
+	public void generationFinished(DSEBaseAlgorithm algorithm);
 
 	/**
 	 * Called after every single fitness evaluation

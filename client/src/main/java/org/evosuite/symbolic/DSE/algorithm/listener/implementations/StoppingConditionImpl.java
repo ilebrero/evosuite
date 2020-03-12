@@ -45,7 +45,7 @@ public abstract class StoppingConditionImpl implements StoppingCondition, Serial
     }
 
     @Override
-    public void searchFinished(DSEBaseAlgorithm algorithm) {
+    public void generationFinished(DSEBaseAlgorithm algorithm) {
         //Nothing
     }
 
@@ -55,7 +55,7 @@ public abstract class StoppingConditionImpl implements StoppingCondition, Serial
     }
 
     @Override
-    public void searchStarted(DSEBaseAlgorithm algorithm) {
+    public void generationStarted(DSEBaseAlgorithm algorithm) {
         //Nothing
     }
 }
