@@ -180,7 +180,9 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             // This gets wrapped into the building and fitness strategy selected due to the PriorityQueue sorting nature
             DSETestCase currentTestCase = testCaseSelectionStrategy.getCurrentIterationBasedTestCase(testCasesWorkList);
 
+            // NOTE: We consider Adding a testCase an iteration
             addNewTestCaseToTestSuite(currentTestCase);
+            notifyIteration();
             if (isFinished()) return;
 
             // Runs the current test case
@@ -200,8 +202,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             List<DSEPathCondition> children = pathSelectionStrategy.generateChildren(currentExecutedPathCondition);
 
             processChildren(seenChildren, testCasesWorkList, currentTestCase, children);
-
-            notifyIteration();
         }
     }
 
