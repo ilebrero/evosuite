@@ -49,7 +49,13 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	private static final long serialVersionUID = -3426910907322781226L;
 
 	/** Logger Messages */
-	private static final String PATH_DIVERGENCE_FOUND_WARNING_MESSAGE = "Warning | Path condition diverged";
+	public static final String PATH_DIVERGENCE_FOUND_WARNING_MESSAGE = "Warning | Path condition diverged";
+	public static final String SETTING_STOPPING_CONDITION_DEBUG_MESSAGE = "Setting stopping condition";
+	public static final String ADDING_NEW_STOPPING_CONDITION_DEBUG_MESSAGE = "Adding new stopping condition";
+	public static final String FITNESS_AFTER_ADDING_NEW_TEST_DEBUG_MESSAGE = "Fitness after adding new test: {}";
+	public static final String FITNESS_BEFORE_ADDING_NEW_TEST__DEBUG_MESSAGE = "Fitness before adding new test: {}";
+	public static final String CALCULATING_FITNESS_FOR_CURRENT_TEST_SUITE_DEBUG_MESSAGE = "Calculating fitness for current test suite";
+	public static final String ABOUT_TO_ADD_A_NEW_TEST_CASE_TO_THE_TEST_SUITE_DEBUG_MESSAGE = "About to add a new testCase to the test suite";
 
 	private static final Logger logger = LoggerFactory.getLogger(DSEBaseAlgorithm.class);
 
@@ -58,11 +64,11 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	/** Fitness Functions */
 	protected List<TestSuiteFitnessFunction> fitnessFunctions = new ArrayList();
 
-	/** DSE statistics */
-	protected transient final DSEStatistics statisticsLogger;
-
 	/** List of conditions on which to end the search */
 	protected transient Set<StoppingCondition> stoppingConditions = new HashSet();
+
+	/** DSE statistics */
+	protected transient final DSEStatistics statisticsLogger;
 
 	public DSEBaseAlgorithm(DSEStatistics dseStatistics) {
 		this.statisticsLogger = dseStatistics;
@@ -107,7 +113,7 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	 * Calculates current test suite fitness
 	 */
 	public void calculateFitness() {
-		logger.debug("Calculating fitness for current test suite");
+		logger.debug(CALCULATING_FITNESS_FOR_CURRENT_TEST_SUITE_DEBUG_MESSAGE);
 
 		for (TestSuiteFitnessFunction fitnessFunction : fitnessFunctions) {
 			fitnessFunction.getFitness(testSuite);
@@ -137,7 +143,7 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 				return;
 			}
 		}
-		logger.debug("Adding new stopping condition");
+		logger.debug(ADDING_NEW_STOPPING_CONDITION_DEBUG_MESSAGE);
 		stoppingConditions.add(condition);
 	}
 
@@ -157,7 +163,7 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	 */
 	public void setStoppingCondition(StoppingCondition condition) {
 		stoppingConditions.clear();
-		logger.debug("Setting stopping condition");
+		logger.debug(SETTING_STOPPING_CONDITION_DEBUG_MESSAGE);
 		stoppingConditions.add(condition);
 	}
 
@@ -305,13 +311,13 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	 * @param dseTestCase
 	 */
     protected void addNewTestCaseToTestSuite(DSETestCase dseTestCase) {
-        logger.debug("About to add a new testCase to the test suite");
-        logger.debug("Fitness before adding new test: {}", testSuite.getFitness());
+        logger.debug(ABOUT_TO_ADD_A_NEW_TEST_CASE_TO_THE_TEST_SUITE_DEBUG_MESSAGE);
+        logger.debug(FITNESS_BEFORE_ADDING_NEW_TEST__DEBUG_MESSAGE, testSuite.getFitness());
 
         testSuite.addTest(dseTestCase.getTestCase());
         calculateFitness();
 
-        logger.debug("Fitness after adding new test: {}", testSuite.getFitness());
+        logger.debug(FITNESS_AFTER_ADDING_NEW_TEST_DEBUG_MESSAGE, testSuite.getFitness());
     }
 
     /**
