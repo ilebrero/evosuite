@@ -57,6 +57,8 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	public static final String CALCULATING_FITNESS_FOR_CURRENT_TEST_SUITE_DEBUG_MESSAGE = "Calculating fitness for current test suite";
 	public static final String ABOUT_TO_ADD_A_NEW_TEST_CASE_TO_THE_TEST_SUITE_DEBUG_MESSAGE = "About to add a new testCase to the test suite";
 
+	public static final int PATH_DIVERGED_BASED_TEST_CASE_PENALTY_SCORE = 0;
+
 	private static final Logger logger = LoggerFactory.getLogger(DSEBaseAlgorithm.class);
 
 	protected final TestSuiteChromosome testSuite = new TestSuiteChromosome();
@@ -287,7 +289,7 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	 */
     protected double getTestScore(TestCase newTestCase, boolean hasPathConditionDiverged) {
     	// In case of divergence we add the worst score that there could be
-    	if (hasPathConditionDiverged) return 0;
+    	if (hasPathConditionDiverged) return PATH_DIVERGED_BASED_TEST_CASE_PENALTY_SCORE;
 
     	double oldCoverage;
     	double newCoverage;
