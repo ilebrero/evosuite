@@ -164,6 +164,9 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      */
     @Override
     protected void runAlgorithm(Method method) {
+        // Path divergence check
+        boolean hasPathConditionDiverged;
+
         // Children cache
         HashSet<Set<Constraint<?>>> seenChildren = new HashSet();
 
@@ -193,7 +196,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             ));
 
             // Checks for a divergence
-            checkPathConditionDivergence(
+            hasPathConditionDiverged = checkPathConditionDivergence(
                     currentExecutedPathCondition.getPathCondition(),
                     currentTestCase.getOriginalPathCondition().getPathCondition()
             );
@@ -201,11 +204,11 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             // Generates the children
             List<DSEPathCondition> children = pathSelectionStrategy.generateChildren(currentExecutedPathCondition);
 
-            processChildren(seenChildren, testCasesWorkList, currentTestCase, children);
+            processChildren(seenChildren, testCasesWorkList, currentTestCase, children, hasPathConditionDiverged);
         }
     }
 
-    private void processChildren(HashSet<Set<Constraint<?>>> seenChildren, PriorityQueue<DSETestCase> testCasesWorkList, DSETestCase currentTestCase, List<DSEPathCondition> children) {
+    private void processChildren(HashSet<Set<Constraint<?>>> seenChildren, PriorityQueue<DSETestCase> testCasesWorkList, DSETestCase currentTestCase, List<DSEPathCondition> children, boolean hasPathConditionDiverged) {
         // We look at all the children
         for (DSEPathCondition child : children) {
             List<Constraint<?>> childQuery = SolverUtils.buildQuery(child.getPathCondition());
@@ -228,20 +231,25 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
                 if (smtSolution != null) {
                     // Generates the new tests based on the current solution
-                    DSETestCase newTestCase = generateNewTestCase(currentTestCase, child, smtSolution);
+                    DSETestCase newTestCase = generateNewTestCase(
+                        currentTestCase,
+                        child,
+                        smtSolution,
+                        hasPathConditionDiverged);
+
                     testCasesWorkList.offer(newTestCase);
                 }
             }
         }
     }
 
-    private DSETestCase generateNewTestCase(DSETestCase currentConcreteTest, DSEPathCondition currentPathCondition, Map<String, Object> smtSolution) {
+    private DSETestCase generateNewTestCase(DSETestCase currentConcreteTest, DSEPathCondition currentPathCondition, Map<String, Object> smtSolution, boolean hasPathConditionDiverged) {
         TestCase newTestCase = DSETestGenerator.updateTest(currentConcreteTest.getTestCase(), smtSolution);
 
         DSETestCase newDSETestCase =  new DSETestCase(
             newTestCase,
             currentPathCondition,
-            getTestScore(newTestCase)
+            getTestScore(newTestCase, hasPathConditionDiverged)
         );
 
         logger.debug("Created new test case from SAT solution: {}", newDSETestCase.getTestCase().toCode());

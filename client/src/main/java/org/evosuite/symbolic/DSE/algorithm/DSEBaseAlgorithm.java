@@ -260,22 +260,29 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	 *
      * @param currentPathCondition
      */
-    protected void checkPathConditionDivergence(PathCondition currentPathCondition, PathCondition expectedPathCondition) {
+    protected boolean checkPathConditionDivergence(PathCondition currentPathCondition, PathCondition expectedPathCondition) {
+		boolean hasPathConditionDiverged = PathConditionUtils.hasPathConditionDiverged(expectedPathCondition, currentPathCondition);
     	statisticsLogger.reportNewPathExplored();
 
-        if (PathConditionUtils.hasPathConditionDiverged(expectedPathCondition, currentPathCondition)) {
+        if (hasPathConditionDiverged) {
             logger.debug(PATH_DIVERGENCE_FOUND_WARNING_MESSAGE);
         	statisticsLogger.reportNewPathDivergence();
         }
+
+        return hasPathConditionDiverged;
     }
 
 	/**
 	 * Score calculation is based on fitness improvement against the current testSuite.
 	 *
 	 * @param newTestCase
+	 * @param hasPathConditionDiverged
 	 * @return
 	 */
-    protected double getTestScore(TestCase newTestCase) {
+    protected double getTestScore(TestCase newTestCase, boolean hasPathConditionDiverged) {
+    	// In case of divergence we add the worst score that there could be
+    	if (hasPathConditionDiverged) return 0;
+
     	double oldCoverage;
     	double newCoverage;
 
