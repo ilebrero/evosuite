@@ -31,6 +31,7 @@ import org.evosuite.symbolic.vm.ConstraintFactory;
 import org.evosuite.symbolic.vm.ExpressionFactory;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
+import org.evosuite.testcase.utils.TestCaseUtils;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.objectweb.asm.Type;
@@ -146,7 +147,7 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
             Map<String, Object> solution = result.getModel();
             logger.debug("solver found solution " + solution.toString());
 
-            TestCase newTest = DSETestGenerator.updateTest(currentTestCase, solution);
+            TestCase newTest = TestCaseUtils.updateTest(currentTestCase, solution);
             logger.debug("Created new test case from SAT solution:" + newTest.toCode());
             generatedTests.add(newTest);
 

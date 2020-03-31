@@ -19,12 +19,6 @@
  */
 package org.evosuite.symbolic.DSE;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.evosuite.Properties;
 import org.evosuite.ga.localsearch.LocalSearchBudget;
 import org.evosuite.ga.localsearch.LocalSearchObjective;
@@ -32,18 +26,23 @@ import org.evosuite.symbolic.BranchCondition;
 import org.evosuite.symbolic.PathCondition;
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.expr.Variable;
-import org.evosuite.symbolic.solver.*;
+import org.evosuite.symbolic.solver.SolverResult;
+import org.evosuite.symbolic.solver.SolverUtils;
 import org.evosuite.testcase.DefaultTestCase;
-import org.evosuite.testcase.execution.ExecutionResult;
-import org.evosuite.testcase.statements.Statement;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
+import org.evosuite.testcase.execution.ExecutionResult;
+import org.evosuite.testcase.utils.TestCaseUtils;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
-import org.evosuite.testcase.statements.PrimitiveStatement;
-import org.evosuite.utils.Randomness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Attempts to create a new test case by applying DSE. The algorithm
@@ -184,7 +183,7 @@ public class DSETestGenerator {
 				Map<String, Object> model = solverResult.getModel();
 				TestCase oldTest = test.getTestCase();
 				ExecutionResult oldResult = test.getLastExecutionResult().clone();
-				TestCase newTest = updateTest(oldTest, model);
+				TestCase newTest = TestCaseUtils.updateTest(oldTest, model);
 				logger.info("New test: " + newTest.toCode());
 				test.setTestCase(newTest);
 				// test.clearCachedMutationResults(); // TODO Mutation
@@ -287,94 +286,6 @@ public class DSETestGenerator {
 				return true;
 		}
 		return false;
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static TestCase updateTest(TestCase test, Map<String, Object> values) {
-
-		TestCase newTest = test.clone();
-		newTest.clearCoveredGoals();
-
-		for (Object key : values.keySet()) {
-			Object val = values.get(key);
-			if (val != null) {
-				logger.info("New value: " + key + ": " + val);
-				if (val instanceof Long) {
-					Long value = (Long) val;
-					String name = ((String) key).replace("__SYM", "");
-					// logger.warn("New long value for " + name + " is " +
-					// value);
-					PrimitiveStatement p = getStatement(newTest, name);
-					if (p.getValue().getClass().equals(Character.class)) {
-						char charValue = (char) value.intValue();
-						p.setValue(charValue);
-					} else if (p.getValue().getClass().equals(Long.class)) {
-						p.setValue(value);
-					} else if (p.getValue().getClass().equals(Integer.class)) {
-						p.setValue(value.intValue());
-					} else if (p.getValue().getClass().equals(Short.class)) {
-						p.setValue(value.shortValue());
-					} else if (p.getValue().getClass().equals(Boolean.class)) {
-						p.setValue(value.intValue() > 0);
-					} else if (p.getValue().getClass().equals(Byte.class)) {
-						p.setValue(value.byteValue());
-
-					} else
-						logger.warn("New value is of an unsupported type: " + p.getValue().getClass() + val);
-				} else if (val instanceof String) {
-					String name = ((String) key).replace("__SYM", "");
-					PrimitiveStatement p = getStatement(newTest, name);
-					// logger.warn("New string value for " + name + " is " +
-					// val);
-					assert (p != null) : "Could not find variable " + name + " in test: " + newTest.toCode()
-							+ " / Orig test: " + test.toCode() + ", seed: " + Randomness.getSeed();
-					if (p.getValue().getClass().equals(Character.class))
-						p.setValue((char) Integer.parseInt(val.toString()));
-					else
-						p.setValue(val.toString());
-				} else if (val instanceof Double) {
-					Double value = (Double) val;
-					String name = ((String) key).replace("__SYM", "");
-					PrimitiveStatement p = getStatement(newTest, name);
-					// logger.warn("New double value for " + name + " is " +
-					// value);
-					assert (p != null) : "Could not find variable " + name + " in test: " + newTest.toCode()
-							+ " / Orig test: " + test.toCode() + ", seed: " + Randomness.getSeed();
-
-					if (p.getValue().getClass().equals(Double.class))
-						p.setValue(value);
-					else if (p.getValue().getClass().equals(Float.class))
-						p.setValue(value.floatValue());
-					else
-						logger.warn("New value is of an unsupported type: " + val);
-				} else {
-					logger.debug("New value is of an unsupported type: " + val);
-				}
-			} else {
-				logger.debug("New value is null");
-
-			}
-		}
-		return newTest;
-
-	}
-
-	/**
-	 * Get the statement that defines this variable
-	 * 
-	 * @param test
-	 * @param name
-	 * @return
-	 */
-	private static PrimitiveStatement<?> getStatement(TestCase test, String name) {
-		for (Statement statement : test) {
-
-			if (statement instanceof PrimitiveStatement<?>) {
-				if (statement.getReturnValue().getName().equals(name))
-					return (PrimitiveStatement<?>) statement;
-			}
-		}
-		return null;
 	}
 
 }

@@ -47,6 +47,7 @@ import org.evosuite.symbolic.solver.SolverTimeoutException;
 import org.evosuite.symbolic.solver.SolverUtils;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
+import org.evosuite.testcase.utils.TestCaseUtils;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.utils.ClassUtil;
 import org.slf4j.Logger;
@@ -224,14 +225,13 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             // Runs the current test case
             DSEPathCondition currentExecutedPathCondition = executeConcolicEngine(currentTestCase);
             seenChildren.add(
-                    normalize(
-                            currentExecutedPathCondition.getPathCondition().getConstraints()
-            ));
+                 normalize(
+                     currentExecutedPathCondition.getPathCondition().getConstraints()));
 
             // Checks for a divergence
             hasPathConditionDiverged = checkPathConditionDivergence(
-                    currentExecutedPathCondition.getPathCondition(),
-                    currentTestCase.getOriginalPathCondition().getPathCondition()
+                currentExecutedPathCondition.getPathCondition(),
+                currentTestCase.getOriginalPathCondition().getPathCondition()
             );
 
             // Generates the children
@@ -289,7 +289,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      * @return
      */
     private DSETestCase generateNewTestCase(DSETestCase currentConcreteTest, DSEPathCondition currentPathCondition, Map<String, Object> smtSolution, boolean hasPathConditionDiverged) {
-        TestCase newTestCase = DSETestGenerator.updateTest(currentConcreteTest.getTestCase(), smtSolution);
+        TestCase newTestCase = TestCaseUtils.updateTest(currentConcreteTest.getTestCase(), smtSolution);
 
         DSETestCase newDSETestCase =  new DSETestCase(
             newTestCase,
