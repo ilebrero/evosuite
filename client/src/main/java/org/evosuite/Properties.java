@@ -26,7 +26,7 @@ import org.evosuite.runtime.LoopCounter;
 import org.evosuite.runtime.Runtime;
 import org.evosuite.runtime.RuntimeSettings;
 import org.evosuite.runtime.sandbox.Sandbox;
-import org.evosuite.symbolic.DSE.algorithm.DSEAlgorithms;
+import org.evosuite.symbolic.dse.algorithm.DSEAlgorithms;
 import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.FileIOUtils;
 import org.slf4j.Logger;

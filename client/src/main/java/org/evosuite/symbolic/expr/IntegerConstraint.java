@@ -21,7 +21,7 @@ package org.evosuite.symbolic.expr;
 
 import org.evosuite.Properties;
 import org.evosuite.symbolic.ConstraintTooLongException;
-import org.evosuite.symbolic.DSE.DSEStatistics;
+import org.evosuite.symbolic.dse.DSEStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

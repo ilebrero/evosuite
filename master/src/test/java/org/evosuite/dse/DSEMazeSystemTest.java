@@ -31,27 +31,11 @@ import org.evosuite.Properties.SolverType;
 import org.evosuite.Properties.StoppingCondition;
 import org.evosuite.Properties.Strategy;
 import org.evosuite.SystemTestBase;
-import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
-import org.evosuite.symbolic.DSE.algorithm.DSEBaseAlgorithm;
+import org.evosuite.symbolic.dse.algorithm.DSEBaseAlgorithm;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.examples.with.different.packagename.dse.Add;
-import com.examples.with.different.packagename.dse.ArrayLengthExample;
-import com.examples.with.different.packagename.dse.BooleanExample;
-import com.examples.with.different.packagename.dse.ByteExample;
-import com.examples.with.different.packagename.dse.CharExample;
-import com.examples.with.different.packagename.dse.DoubleExample;
-import com.examples.with.different.packagename.dse.FloatExample;
-import com.examples.with.different.packagename.dse.LongExample;
-import com.examples.with.different.packagename.dse.Max;
-import com.examples.with.different.packagename.dse.Min;
-import com.examples.with.different.packagename.dse.MinUnreachableCode;
-import com.examples.with.different.packagename.dse.NoStaticMethod;
-import com.examples.with.different.packagename.dse.ObjectExample;
-import com.examples.with.different.packagename.dse.ShortExample;
-import com.examples.with.different.packagename.dse.StringExample;
 import com.examples.with.different.packagename.solver.MazeClient;
 
 public class DSEMazeSystemTest extends SystemTestBase {
