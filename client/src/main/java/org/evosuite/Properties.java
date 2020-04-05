@@ -2539,5 +2539,14 @@ public class Properties {
 		return isRegression;
 	}
 
+	public static boolean isDSEStrategySelected() {
+		return STRATEGY.equals(Strategy.DSE);
+	}
+
+	public static boolean isDSEEnabledInLocalSearch() {
+		return DSE_PROBABILITY > 0.0
+			&& LOCAL_SEARCH_RATE > 0
+			&& LOCAL_SEARCH_PROBABILITY > 0.0;
+	}
 
 }

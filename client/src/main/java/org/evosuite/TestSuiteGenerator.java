@@ -504,12 +504,9 @@ public class TestSuiteGenerator {
 		if (ArrayUtil.contains(Properties.CRITERION, Criterion.DEFUSE) && Properties.ANALYSIS_CRITERIA.isEmpty())
 			DefUseCoverageSuiteFitness.printCoverage();
 
-		DSEStatistics.getInstance().trackConstraintTypes();
+		DSEStatistics.getInstance().trackStatistics();
 
-		DSEStatistics.getInstance().trackSolverStatistics();
-
-		if (Properties.DSE_PROBABILITY > 0.0 && Properties.LOCAL_SEARCH_RATE > 0
-				&& Properties.LOCAL_SEARCH_PROBABILITY > 0.0) {
+		if (Properties.isDSEEnabledInLocalSearch() || Properties.isDSEStrategySelected()) {
 			DSEStatistics.getInstance().logStatistics();
 		}
 
