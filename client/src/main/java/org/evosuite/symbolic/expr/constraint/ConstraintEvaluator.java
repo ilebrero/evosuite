@@ -14,23 +14,10 @@
  * You should have received a copy of the GNU Lesser General Public License along with EvoSuite. If
  * not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.expr;
+package org.evosuite.symbolic.expr.constraint;
 
-import java.util.StringTokenizer;
-import java.util.Vector;
-
-import org.evosuite.symbolic.expr.bv.IntegerConstant;
-import org.evosuite.symbolic.expr.bv.IntegerUnaryExpression;
-import org.evosuite.symbolic.expr.bv.StringBinaryComparison;
-import org.evosuite.symbolic.expr.bv.StringBinaryToIntegerExpression;
-import org.evosuite.symbolic.expr.bv.StringMultipleComparison;
-import org.evosuite.symbolic.expr.bv.StringMultipleToIntegerExpression;
-import org.evosuite.symbolic.expr.bv.StringUnaryToIntegerExpression;
-import org.evosuite.symbolic.expr.reader.StringReaderExpr;
-import org.evosuite.symbolic.expr.str.StringValue;
-import org.evosuite.symbolic.expr.token.HasMoreTokensExpr;
-import org.evosuite.symbolic.expr.token.TokenizerExpr;
-import org.evosuite.utils.RegexDistanceUtils;
+import org.evosuite.symbolic.expr.Comparator;
+import org.evosuite.symbolic.expr.ExpressionEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

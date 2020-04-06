@@ -14,11 +14,14 @@
  * You should have received a copy of the GNU Lesser General Public License along with EvoSuite. If
  * not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.expr;
+package org.evosuite.symbolic.expr.constraint;
 
 import org.evosuite.Properties;
 import org.evosuite.symbolic.ConstraintTooLongException;
 import org.evosuite.symbolic.dse.DSEStatistics;
+import org.evosuite.symbolic.expr.Comparator;
+import org.evosuite.symbolic.expr.Constraint;
+import org.evosuite.symbolic.expr.Expression;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.bv.StringComparison;
 import org.slf4j.Logger;

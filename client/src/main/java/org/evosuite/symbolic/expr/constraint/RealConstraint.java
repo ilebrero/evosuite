@@ -17,11 +17,14 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.expr;
+package org.evosuite.symbolic.expr.constraint;
 
 import org.evosuite.Properties;
 import org.evosuite.symbolic.ConstraintTooLongException;
 import org.evosuite.symbolic.dse.DSEStatistics;
+import org.evosuite.symbolic.expr.Comparator;
+import org.evosuite.symbolic.expr.Constraint;
+import org.evosuite.symbolic.expr.Expression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +47,7 @@ public final class RealConstraint extends Constraint<Double> {
 	 *            a {@link org.evosuite.symbolic.expr.Expression} object.
 	 */
 	public RealConstraint(Expression<Double> left, Comparator cmp,
-			Expression<Double> right) {
+												Expression<Double> right) {
 		super();
 		this.left = left;
 		this.cmp = cmp;
