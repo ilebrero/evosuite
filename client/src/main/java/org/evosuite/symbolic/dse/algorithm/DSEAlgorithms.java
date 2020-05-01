@@ -31,7 +31,7 @@ public enum DSEAlgorithms {
     SAGE(
             "SAGE",
             "Default implementation based on: Automated Whitebox Fuzz Testing, Godefroid, Levin, Molnar",
-            new Properties.Criterion[]{Properties.Criterion.LINE});
+            new Properties.Criterion[]{Properties.Criterion.BRANCH});
 
     private String name;
     private String description;

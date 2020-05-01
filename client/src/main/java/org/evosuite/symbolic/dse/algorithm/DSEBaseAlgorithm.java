@@ -287,7 +287,7 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
     /**
      * Checks whether the current executed path condition diverged from the original one.
      * TODO: Maybe we can give some info about the PathCondition that diverged later on
-	 *
+	 	 *
      * @param currentPathCondition
      */
     protected boolean checkPathConditionDivergence(PathCondition currentPathCondition, PathCondition expectedPathCondition) {
@@ -304,6 +304,9 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 
 	/**
 	 * Score calculation is based on coverage improvement against the current testSuite.
+	 *
+	 * TODO: This could be better if there was a way to run the testsuite alongside the new tests
+	 * 			 without having to rerun it without it to recover old values.
 	 *
 	 * @param newTestCase
 	 * @param hasPathConditionDiverged

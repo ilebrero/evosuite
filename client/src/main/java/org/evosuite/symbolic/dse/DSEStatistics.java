@@ -20,6 +20,8 @@
 package org.evosuite.symbolic.dse;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +47,32 @@ import org.slf4j.LoggerFactory;
 public class DSEStatistics {
 
 	static Logger logger = LoggerFactory.getLogger(DSEStatistics.class);
+
+	/**
+	 * 	Tracking of runtime variables used in DSE,
+	 *  please add them here when adding a new one so they are saved in the backend
+	 **/
+	public static List<String> dseRuntimeVariables = new ArrayList( Arrays.asList(
+		// Solver
+		RuntimeVariable.NumberOfSATQueries.name(),
+		RuntimeVariable.NumberOfUNSATQueries.name(),
+		RuntimeVariable.NumberOfTimeoutQueries.name(),
+		RuntimeVariable.NumberOfUsefulNewTests.name(),
+		RuntimeVariable.NumberOfUnusefulNewTests.name(),
+
+		// Execution times
+		RuntimeVariable.TotalTimeSpentSolvingConstraints.name(),
+		RuntimeVariable.TotalTimeSpentExecutingTestCases.name(),
+		RuntimeVariable.TotalTimeSpentExecutingConcolicaly.name(),
+		RuntimeVariable.TotalTimeSpentExecutingNonConcolicTestCases.name(),
+
+		// Path conditions
+		RuntimeVariable.MaxPathConditionLength.name(),
+		RuntimeVariable.MinPathConditionLength.name(),
+		RuntimeVariable.AvgPathConditionLength.name(),
+		RuntimeVariable.NumberOfPathsExplored.name(),
+		RuntimeVariable.NumberOfPathsDiverged.name()
+	));
 
 	private static DSEStatistics instance = null;
 
@@ -76,6 +104,7 @@ public class DSEStatistics {
 	private long nrOfTimeouts = 0;
 	private long totalSolvingTimeMillis = 0;
 	private long totalConcolicExecutionTimeMillis = 0;
+	private long totalTestExecutionTime = 0;
 
 	// New solutions found metrics
 	private long nrOfSolutionWithNoImprovement = 0;
@@ -259,9 +288,12 @@ public class DSEStatistics {
 
 	private void logTimeStatistics() {
 		logger.info("* Time Statistics");
-		logger.info(String.format("  - Time spent solving constraints: %sms", totalSolvingTimeMillis));
+		logger.info(String.format("  - Time spent executing test cases: %sms", totalTestExecutionTime));
 		logger.info(String.format("  - Time spent executing test concolically: %sms",
-				totalConcolicExecutionTimeMillis));
+			totalConcolicExecutionTimeMillis));
+		logger.info(String.format("  - Time spent executing non concolic test cases: %sms",
+			totalTestExecutionTime - totalConcolicExecutionTimeMillis));
+		logger.info(String.format("  - Time spent solving constraints: %sms", totalSolvingTimeMillis));
 	}
 
 	private  void logSolverStatistics() {
@@ -462,6 +494,25 @@ public class DSEStatistics {
 	}
 
 	/**
+	 * Reports a new test execution time (use of testCaseExecutor)
+	 *
+	 * @param testExecutionTimeMillis
+	 */
+	public void reportNewTestExecutionTime(long testExecutionTimeMillis) {
+		totalTestExecutionTime += testExecutionTimeMillis;
+	}
+
+	/**
+	 * Reports total test execution time (use of testCaseExecutor)
+	 * TestCaseExecutor is already incrementally saving execution time
+	 *
+	 * @param testExecutionTimeMillis
+	 */
+	public void reportTotalTestExecutionTime(long testExecutionTimeMillis) {
+		totalTestExecutionTime = testExecutionTimeMillis;
+	}
+
+	/**
 	 * Reports a new concolic execution time (use of instrumentation and path
 	 * constraint collection)
 	 *
@@ -548,7 +599,12 @@ public class DSEStatistics {
 	 */
 	private void trackExecutionTimeStatistics() {
 		trackOutputVariable(RuntimeVariable.TotalTimeSpentSolvingConstraints, totalSolvingTimeMillis);
+		trackOutputVariable(RuntimeVariable.TotalTimeSpentExecutingTestCases, totalTestExecutionTime);
 		trackOutputVariable(RuntimeVariable.TotalTimeSpentExecutingConcolicaly, totalConcolicExecutionTimeMillis);
+		trackOutputVariable(
+			RuntimeVariable.TotalTimeSpentExecutingNonConcolicTestCases,
+			totalTestExecutionTime - totalConcolicExecutionTimeMillis
+		);
 	}
 
 	/**

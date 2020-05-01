@@ -405,8 +405,11 @@ public enum RuntimeVariable {
 	NumberOfPathsExplored,
 	NumberOfPathsDiverged,
 
-	/** How much time was spent executing tests concolicaly */
-	TotalTimeSpentExecutingConcolicaly
+	/** How much time was spent executing tests */
+	TotalTimeSpentExecutingConcolicaly,
+	TotalTimeSpentExecutingTestCases,
+	TotalTimeSpentExecutingNonConcolicTestCases
+
 
 	;
 	/* -------------------------------------------------- */

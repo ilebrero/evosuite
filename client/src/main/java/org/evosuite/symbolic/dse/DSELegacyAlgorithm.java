@@ -31,6 +31,7 @@ import org.evosuite.symbolic.vm.ConstraintFactory;
 import org.evosuite.symbolic.vm.ExpressionFactory;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
+import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.evosuite.testcase.utils.TestCaseUtils;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
@@ -63,7 +64,7 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
    * 
    */
   private void generateTestCasesAndAppendToBestIndividual(Method staticEntryMethod) {
-
+    DSEStatistics statisticsLogger = DSEStatistics.getInstance();
     double fitnessBeforeAddingDefaultTest = this.getBestIndividual().getFitness();
     logger.debug("Fitness before adding default test case:" + fitnessBeforeAddingDefaultTest);
 
@@ -107,6 +108,8 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
       logger
           .debug("Path condition collected with : " + pathCondition.size() + " branches");
 
+      statisticsLogger.reportNewPathExplored();
+
       Set<Constraint<?>> constraintsSet = canonicalize(pathCondition.getConstraints());
       pathConditions.add(constraintsSet);
       logger.debug("Number of stored path condition: " + pathConditions.size());
@@ -126,15 +129,25 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
           return;
         }
 
+        DSEStatistics.getInstance().reportNewConstraints(query);
         logger.debug("Solving query with  " + query.size() + " constraints");
 
         List<Constraint<?>> varBounds = createVarBounds(query);
         query.addAll(varBounds);
 
+        long startSolvingTime = System.currentTimeMillis();
+
+			  // Get solution
         SolverResult result = SolverUtils.solveQuery(query);
+
+        long estimatedSolvingTime = System.currentTimeMillis() - startSolvingTime;
+        DSEStatistics.getInstance().reportNewSolvingTime(estimatedSolvingTime);
+
 
         if (result == null) {
           logger.debug("Solver outcome is null (probably failure/unknown");
+          // This doesn't necessarily is a timeout, but we model it this way
+          statisticsLogger.reportSolverError();
         } else {
 
           // Saving the result when is not null just to be sure not to save spurious
@@ -144,6 +157,7 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
 
           if (result.isSAT()) {
             logger.debug("query is SAT (solution found)");
+            statisticsLogger.reportNewSAT();
             Map<String, Object> solution = result.getModel();
             logger.debug("solver found solution " + solution.toString());
 
@@ -171,6 +185,7 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
           } else {
             assert (result.isUNSAT());
             logger.debug("query is UNSAT (no solution found)");
+            statisticsLogger.reportNewUNSAT();
           }
         }
       }
@@ -455,6 +470,12 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
           + entryMethod.getName());
 
     }
+
+    /** Test case total execution time **/
+    DSEStatistics.getInstance().reportTotalTestExecutionTime(TestCaseExecutor.timeExecuted);
+
+    /** Test case total execution time **/
+    DSEStatistics.getInstance().logStatistics();
 
     this.updateFitnessFunctionsAndValues();
     this.notifySearchFinished();

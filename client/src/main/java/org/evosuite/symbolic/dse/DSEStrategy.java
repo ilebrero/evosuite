@@ -56,7 +56,7 @@ import java.util.List;
 public class DSEStrategy extends TestGenerationStrategy {
 
 	public static final String SETTING_UP_DSE_GENERATION_INFO_MESSAGE = "* Setting up DSE test suite generation";
-	public static final String NOT_SOUITALE_METHOD_FOUND_INFO_MESSAGE = "* Found no testable methods in the target class {}";
+	public static final String NOT_SUITABLE_METHOD_FOUND_INFO_MESSAGE = "* Found no testable methods in the target class {}";
 
 	/** DSE Stopping conditions */
 	private final MaxTimeStoppingCondition maxTimeStoppingCondition = new MaxTimeStoppingCondition();
@@ -74,7 +74,7 @@ public class DSEStrategy extends TestGenerationStrategy {
 		List<TestFitnessFunction> goals = FitnessFunctionsUtils.getFitnessFunctionsGoals(criterion, true);
 		if (!canGenerateTestsForSUT()) {
 			LoggingUtils.getEvoLogger().info(
-				NOT_SOUITALE_METHOD_FOUND_INFO_MESSAGE,
+				NOT_SUITABLE_METHOD_FOUND_INFO_MESSAGE,
 				Properties.TARGET_CLASS
 			);
 			ClientServices.getInstance().getClientNode().trackOutputVariable(RuntimeVariable.Total_Goals, goals.size());

@@ -42,6 +42,7 @@ import org.evosuite.rmi.service.ClientState;
 import org.evosuite.rmi.service.ClientStateInformation;
 import org.evosuite.runtime.util.AtMostOnceLogger;
 import org.evosuite.statistics.backend.*;
+import org.evosuite.symbolic.dse.DSEStatistics;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.utils.Listener;
 import org.evosuite.utils.LoggingUtils;
@@ -245,7 +246,7 @@ public class SearchStatistics implements Listener<ClientStateInformation>{
 
 		/** Fix for DSE as we want to save the output vars in this case */
 		if (Properties.isDSEStrategySelected()) {
-			variableNames.addAll(outputVariables.keySet());
+			variableNames.addAll(DSEStatistics.dseRuntimeVariables);
 		}
 
 		/* cannot use what we received, as due to possible bugs/errors those might not be constant

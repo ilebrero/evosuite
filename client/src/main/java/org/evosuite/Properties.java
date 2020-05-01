@@ -387,6 +387,15 @@ public class Properties {
 
 	//----------- DSE, which is a special case of LS ---------------
 
+		/** ilebrero: Mostly for benchmarks for new module, I dont think the legacy strategy is gonna be used anymore **/
+	public enum DSE_MODULE_VERSION {
+		LEGACY,
+		NEW
+	}
+
+	@Parameter(key = "dse_module_version", group = "DSE", description = "Module version of DSE, mostly used for benchmarking between modules. For other things the new one is recomended.")
+	public static DSE_MODULE_VERSION CURRENT_DSE_MODULE_VERSION = DSE_MODULE_VERSION.NEW;
+
 	@Parameter(key = "dse_probability", group = "DSE", description = "Probability used to specify when to use DSE instead of regular LS when LS is applied")
     @DoubleValue(min = 0.0, max = 1.0)
 	public static double DSE_PROBABILITY = 0.5;

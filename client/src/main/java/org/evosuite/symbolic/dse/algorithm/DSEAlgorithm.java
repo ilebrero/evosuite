@@ -46,6 +46,7 @@ import org.evosuite.symbolic.solver.SolverTimeoutException;
 import org.evosuite.symbolic.solver.SolverUtils;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
+import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.evosuite.testcase.utils.TestCaseUtils;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.utils.ClassUtil;
@@ -290,7 +291,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
     private DSETestCase generateNewTestCase(DSETestCase currentConcreteTest, DSEPathCondition currentPathCondition, Map<String, Object> smtSolution, boolean hasPathConditionDiverged) {
         TestCase newTestCase = TestCaseUtils.updateTest(currentConcreteTest.getTestCase(), smtSolution);
 
-        DSETestCase newDSETestCase =  new DSETestCase(
+        DSETestCase newDSETestCase = new DSETestCase(
             newTestCase,
             currentPathCondition,
             getTestScore(newTestCase, hasPathConditionDiverged)
@@ -364,6 +365,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
          // Run this before finish
          notifyGenerationFinished();
+         statisticsLogger.reportTotalTestExecutionTime(TestCaseExecutor.timeExecuted);
          statisticsLogger.logStatistics();
          return testSuite;
      }
@@ -371,13 +373,30 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
     /**
      * Solves an SMT query
      *
+     * TODO: check if moving the time estimation to a lower level layer improves precision.
+     *
      * @param SMTQuery
      * @return
      */
     private SolverResult solveQuery(List<Constraint<?>> SMTQuery) {
+        long startSolvingTime;
+        long estimatedSolvingTime;
+        SolverResult smtQueryResult;
+
+			  logger.debug(SOLVING_CURRENT_SMT_QUERY_DEBUG_MESSAGE);
+
+			  /** Track solving time and solve the query **/
+        startSolvingTime = System.currentTimeMillis();
+        smtQueryResult = doSolveQuery(SMTQuery);
+        estimatedSolvingTime = System.currentTimeMillis() - startSolvingTime;
+			  DSEStatistics.getInstance().reportNewSolvingTime(estimatedSolvingTime);
+
+        return smtQueryResult;
+    }
+
+    private SolverResult doSolveQuery(List<Constraint<?>> SMTQuery) {
         SolverResult smtQueryResult = null;
 
-        logger.debug(SOLVING_CURRENT_SMT_QUERY_DEBUG_MESSAGE);
         try {
             smtQueryResult = solver.solve(SMTQuery);
         } catch (SolverTimeoutException
@@ -387,7 +406,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
                 | IOException e) {
             logger.debug(SOLVER_ERROR_DEBUG_MESSAGE, e.getMessage());
         }
-
         return smtQueryResult;
     }
 
