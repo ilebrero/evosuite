@@ -48,6 +48,9 @@ public class DSEStatistics {
 
 	static Logger logger = LoggerFactory.getLogger(DSEStatistics.class);
 
+	/** Messages Constants **/
+	public static final String NO_QUERY_CACHE_CALLS_WERE_MADE = "No query cache calls were made";
+
 	/**
 	 * 	Tracking of runtime variables used in DSE,
 	 *  please add them here when adding a new one so they are saved in the backend
@@ -60,13 +63,18 @@ public class DSEStatistics {
 		RuntimeVariable.NumberOfUsefulNewTests.name(),
 		RuntimeVariable.NumberOfUnusefulNewTests.name(),
 
-		// Execution times
+		// Query Cache
+		RuntimeVariable.QueryCacheSize.name(),
+		RuntimeVariable.QueryCacheCalls.name(),
+		RuntimeVariable.QueryCacheHitRate.name(),
+
+		// Execution Times
 		RuntimeVariable.TotalTimeSpentSolvingConstraints.name(),
 		RuntimeVariable.TotalTimeSpentExecutingTestCases.name(),
 		RuntimeVariable.TotalTimeSpentExecutingConcolicaly.name(),
 		RuntimeVariable.TotalTimeSpentExecutingNonConcolicTestCases.name(),
 
-		// Path conditions
+		// Path Conditions
 		RuntimeVariable.MaxPathConditionLength.name(),
 		RuntimeVariable.MinPathConditionLength.name(),
 		RuntimeVariable.AvgPathConditionLength.name(),
@@ -105,6 +113,11 @@ public class DSEStatistics {
 	private long totalSolvingTimeMillis = 0;
 	private long totalConcolicExecutionTimeMillis = 0;
 	private long totalTestExecutionTime = 0;
+
+	// Solver cahe
+	private long queryCacheHits = 0;
+	private long querycacheSize = 0;
+	private long queryCacheCalls = 0;
 
 	// New solutions found metrics
 	private long nrOfSolutionWithNoImprovement = 0;
@@ -210,9 +223,12 @@ public class DSEStatistics {
 
 		logger.info("");
 		logger.info("#### DSE Statistics");
-		logger.info("");
 
+		logger.info("");
 		logSolverStatistics();
+
+		logger.info("");
+		logSolverQueryCacheStatistics();
 
 		logger.info("");
 		logConstraintSizeStatistics();
@@ -241,6 +257,13 @@ public class DSEStatistics {
 		logger.info("");
 		logger.info("###################");
 		logger.info("");
+	}
+
+	private void logSolverQueryCacheStatistics() {
+		logger.info("* Solver Query Cache:");
+		logger.info(String.format("  - Query Cache size: %s", querycacheSize));
+		logger.info(String.format("  - Query Cache calls: %s", queryCacheCalls));
+		logger.info(String.format("  - Query Cache hitRare: %s", getQueryCacheHitRate(queryCacheHits, queryCacheCalls)));
 	}
 
 	private void logPathsExploredStatistics() {
@@ -543,11 +566,19 @@ public class DSEStatistics {
 	}
 
 	/**
+	 * Solver Query Cache related reports
+	 */
+	public void reportNewQueryCacheHit() { queryCacheHits++;	}
+	public void reportNewQueryCacheCall() { queryCacheCalls++;	}
+	public void reportNewQueryCachedValue() { querycacheSize++; }
+
+	/**
 	 * Entry point for statistics tracking on output variables
 	 */
 	public void trackStatistics() {
 		trackConstraintTypes();
 		trackSolverStatistics();
+		trackQueryCacheStatistics();
 		trackExplorationStatistics();
 		trackExecutionTimeStatistics();
 	}
@@ -577,7 +608,15 @@ public class DSEStatistics {
 		trackOutputVariable(RuntimeVariable.RealAndStringConstraints, realStringOnly);
 		trackOutputVariable(RuntimeVariable.IntegerRealAndStringConstraints, integerRealStringConstraints);
 		trackOutputVariable(RuntimeVariable.TotalNumberOfConstraints, total);
+	}
 
+	/**
+	 * Sets the path exploration related output variables to be saved.
+	 */
+	private void trackQueryCacheStatistics() {
+			trackOutputVariable(RuntimeVariable.QueryCacheSize, querycacheSize);
+			trackOutputVariable(RuntimeVariable.QueryCacheCalls, queryCacheCalls);
+			trackOutputVariable(RuntimeVariable.QueryCacheHitRate, getQueryCacheHitRate(queryCacheHits, queryCacheCalls));
 	}
 
 	/**
@@ -622,4 +661,23 @@ public class DSEStatistics {
 	private void trackOutputVariable(RuntimeVariable var, Object value) {
 		ClientServices.getInstance().getClientNode().trackOutputVariable(var, value);
 	}
+
+
+	/**
+	 * Calculates the cache hit rate.
+	 * If theres no calls to the cache, we simply return 0.
+	 *
+	 * @param cacheHits
+	 * @param cacheCalls
+	 * @return
+	 */
+	private double getQueryCacheHitRate(long cacheHits, long cacheCalls) {
+		if (cacheCalls == 0){
+			logger.info(NO_QUERY_CACHE_CALLS_WERE_MADE);
+			return 0;
+		}
+
+		return (double) cacheHits / (double) cacheCalls;
+	}
+
 }

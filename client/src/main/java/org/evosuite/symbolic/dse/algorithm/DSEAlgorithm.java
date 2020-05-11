@@ -245,7 +245,6 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         // We look at all the children
         for (DSEPathCondition child : children) {
             List<Constraint<?>> childQuery = SolverUtils.buildQuery(child.getPathCondition());
-
             Set<Constraint<?>> normalizedChildQuery = normalize(childQuery);
 
             if (!pathPruningStrategy.shouldSkipCurrentPath(seenChildren, normalizedChildQuery, queryCache)) {
@@ -320,6 +319,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             statisticsLogger.reportSolverError();
         } else {
             queryCache.put(query, smtQueryResult);
+            statisticsLogger.reportNewQueryCachedValue();
 
             if (smtQueryResult.isSAT()) {
                 logger.debug(SOLVER_OUTCOME_IS_SAT_DEBUG_MESSAGE);

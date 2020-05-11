@@ -408,7 +408,13 @@ public enum RuntimeVariable {
 	/** How much time was spent executing tests */
 	TotalTimeSpentExecutingConcolicaly,
 	TotalTimeSpentExecutingTestCases,
-	TotalTimeSpentExecutingNonConcolicTestCases
+	TotalTimeSpentExecutingNonConcolicTestCases,
+
+	/** Solver Cache Statistics */
+	QueryCacheSize,
+	QueryCacheCalls,
+	QueryCacheHitRate
+
 
 
 	;

@@ -99,7 +99,7 @@ public class ConcolicEngine extends SymbolicEngine {
 		 * Memory model
 		 * Path constraint and symbolic environment
 		 * */
-		SymbolicEnvironment symbolicEnvironment = new SymbolicEnvironment(instrumentingClassLoader);;
+		SymbolicEnvironment symbolicEnvironment = new SymbolicEnvironment(instrumentingClassLoader);
 		PathConditionCollector pathConditionCollector = new PathConditionCollector();
 
 		/**

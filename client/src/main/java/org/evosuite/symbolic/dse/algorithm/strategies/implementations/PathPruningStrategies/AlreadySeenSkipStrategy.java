@@ -19,6 +19,7 @@
  */
 package org.evosuite.symbolic.dse.algorithm.strategies.implementations.PathPruningStrategies;
 
+import org.evosuite.symbolic.dse.DSEStatistics;
 import org.evosuite.symbolic.dse.algorithm.strategies.PathPruningStrategy;
 import org.evosuite.symbolic.PathConditionUtils;
 import org.evosuite.symbolic.expr.Constraint;
@@ -35,32 +36,37 @@ import org.slf4j.LoggerFactory;
 public class AlreadySeenSkipStrategy implements PathPruningStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(AlreadySeenSkipStrategy.class);
+    private static final DSEStatistics statisticsLogger = DSEStatistics.getInstance();
 
     //TODO: recheck this conditions, is there something we can do with the unsat cached paths?
     @Override
     public boolean shouldSkipCurrentPath(HashSet<Set<Constraint<?>>> alreadyGeneratedPathConditions, Set<Constraint<?>> constraintSet, Map<Set<Constraint<?>>, SolverResult> queryCache) {
-        if (queryCache.containsKey(constraintSet)) {
-          logger.debug("skipping solving of current query since it is in the query cache");
-          return true;
-        }
+      statisticsLogger.reportNewQueryCacheCall();
 
-        if (PathConditionUtils.isConstraintSetSubSetOf(constraintSet, queryCache.keySet())) {
-          logger.debug(
-              "skipping solving of current query because it is satisfiable and solved by previous path condition");
-          return true;
-        }
+      if (queryCache.containsKey(constraintSet)) {
+        statisticsLogger.reportNewQueryCacheHit();
+        logger.debug("skipping solving of current query since it is in the query cache");
+        return true;
+      }
 
-        if (alreadyGeneratedPathConditions.contains(constraintSet)) {
-          logger.debug("skipping solving of current query because of existing path condition");
-          return true;
-        }
+      if (PathConditionUtils.isConstraintSetSubSetOf(constraintSet, queryCache.keySet())) {
+        statisticsLogger.reportNewQueryCacheHit();
+        logger.debug(
+            "skipping solving of current query because it is satisfiable and solved by previous path condition");
+        return true;
+      }
 
-        if (PathConditionUtils.isConstraintSetSubSetOf(constraintSet, alreadyGeneratedPathConditions)) {
-          logger.debug(
-              "skipping solving of current query because it is satisfiable and solved by previous path condition");
-          return true;
-        }
+      if (alreadyGeneratedPathConditions.contains(constraintSet)) {
+        logger.debug("skipping solving of current query because of existing path condition");
+        return true;
+      }
 
-        return false;
+      if (PathConditionUtils.isConstraintSetSubSetOf(constraintSet, alreadyGeneratedPathConditions)) {
+        logger.debug(
+            "skipping solving of current query because it is satisfiable and solved by previous path condition");
+        return true;
+      }
+
+      return false;
     }
 }

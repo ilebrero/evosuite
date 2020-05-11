@@ -50,6 +50,7 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
 
   private static final Logger logger = LoggerFactory.getLogger(DSELegacyAlgorithm.class);
 
+  private static DSEStatistics statisticsLogger = DSEStatistics.getInstance();
   /**
    * A cache of previous results from the constraint solver
    */
@@ -64,7 +65,6 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
    * 
    */
   private void generateTestCasesAndAppendToBestIndividual(Method staticEntryMethod) {
-    DSEStatistics statisticsLogger = DSEStatistics.getInstance();
     double fitnessBeforeAddingDefaultTest = this.getBestIndividual().getFitness();
     logger.debug("Fitness before adding default test case:" + fitnessBeforeAddingDefaultTest);
 
@@ -153,6 +153,7 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
           // Saving the result when is not null just to be sure not to save spurious
           // solver failures / unknowns as already satisfiable in the cache.
           queryCache.put(constraintSet, result);
+          statisticsLogger.reportNewQueryCachedValue();
           logger.debug("Number of stored entries in query cache : " + queryCache.keySet().size());
 
           if (result.isSAT()) {
@@ -206,12 +207,16 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
    * @return
    */
   private boolean shouldSkipCurrentConstraintSet(HashSet<Set<Constraint<?>>> pathConditions, Set<Constraint<?>> constraintSet, Map<Set<Constraint<?>>, SolverResult> queryCache) {
+    statisticsLogger.reportNewQueryCacheCall();
+
     if (queryCache.containsKey(constraintSet)) {
+      statisticsLogger.reportNewQueryCacheHit();
       logger.debug("skipping solving of current query since it is in the query cache");
       return true;
     }
 
     if (isSubSetOf(constraintSet, queryCache.keySet())) {
+      statisticsLogger.reportNewQueryCacheHit();
       logger.debug(
           "skipping solving of current query because it is satisfiable and solved by previous path condition");
       return true;
