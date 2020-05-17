@@ -175,7 +175,7 @@ public abstract class AbstractVM implements IVM {
 	}
 
 	@Override
-	public void AASTORE(Object receiver, int index) { /* stub */
+	public void AASTORE(Object receiver, int index, Object value) { /* stub */
 	}
 
 	@Override

@@ -1164,20 +1164,24 @@ public final class HeapVM extends AbstractVM {
 	 * .html#aastore
 	 */
 	@Override
-	public void AASTORE(Object conc_array, int conc_index) {
+	public void AASTORE(Object conc_array, int conc_index, Object conc_value) {
 		// pop arguments
 		@SuppressWarnings("unused")
-		ReferenceExpression value_ref = env.topFrame().operandStack.popRef();
+		ReferenceExpression symb_value = env.topFrame().operandStack.popRef();
 		IntegerValue symb_index = env.topFrame().operandStack.popBv32();
 		ReferenceExpression array_ref = env.topFrame().operandStack.popRef();
 
-		/* check reference initialization */
+		/* check references initialization */
 		env.heap.initializeReference(conc_array, array_ref);
+		env.heap.initializeReference(conc_value, symb_value);
 
-		/* null-check */
+		/* array null-check */
 		if (nullReferenceViolation(array_ref, conc_array)) {
 			return;
 		}
+
+		// TODO: check cases for value
+		//       When not typing???
 
 		/* negative index */
 		if (negativeIndexViolation(conc_index, symb_index)) {
@@ -1194,6 +1198,8 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length))
 			return;
 
+		/* symbolically store the reference value */
+		env.heap.array_store(conc_array, symb_array, conc_index, symb_value);
 		// NonNullReference are not stored in the symbolic heap fields
 		return;
 

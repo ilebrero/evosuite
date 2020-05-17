@@ -2003,14 +2003,14 @@ public final class VM {
 		ignoreCallback = false;
 	}
 
-	public static void AASTORE(Object receiver, int index) {
+	public static void AASTORE(Object receiver, int index, Object value) {
 		if (ignoreCallback)
 			return;
 		ignoreCallback = true;
 		vm.countCallback();
 		try {
 			for (IVM listener : vm.listeners)
-				listener.AASTORE(receiver, index);
+				listener.AASTORE(receiver, index, value);
 		} catch (Throwable t) {
 			handleException(t);
 		}

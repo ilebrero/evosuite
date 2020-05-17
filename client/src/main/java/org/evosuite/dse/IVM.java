@@ -343,13 +343,13 @@ public interface IVM {
 
 	public void DASTORE(Object receiver, int index);
 
-	public void AASTORE(Object receiver, int index);
-
 	public void BASTORE(Object receiver, int index);
 
 	public void CASTORE(Object receiver, int index);
 
 	public void SASTORE(Object receiver, int index);
+
+	public void AASTORE(Object receiver, int index, Object value);
 
 	public void POP();
 

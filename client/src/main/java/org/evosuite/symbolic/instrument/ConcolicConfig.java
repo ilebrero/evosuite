@@ -104,6 +104,7 @@ public final class ConcolicConfig
   public static final String    L_V = "("+REF+            ")"+VOID; //$NON-NLS-1$//$NON-NLS-2$
   public static final String   LG_V = "("+REF+STR+        ")"+VOID; //$NON-NLS-1$ //$NON-NLS-2$
   public static final String   LI_V = "("+REF+INT+        ")"+VOID; //$NON-NLS-1$ //$NON-NLS-2$
+  public static final String  LIL_V = "("+REF+INT+REF+    ")"+VOID; //$NON-NLS-1$ //$NON-NLS-2$
   public static final String  LII_V = "("+REF+INT+INT+    ")"+VOID; //$NON-NLS-1$ //$NON-NLS-2$
   public static final String   IL_V = "("+INT+REF+        ")"+VOID; //$NON-NLS-1$ //$NON-NLS-2$
   public static final String   LL_V = "("+REF+REF+        ")"+VOID; //$NON-NLS-1$ //$NON-NLS-2$

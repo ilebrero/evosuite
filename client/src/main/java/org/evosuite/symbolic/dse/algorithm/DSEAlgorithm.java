@@ -63,11 +63,10 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
-/**
+  /**
    * Structure of a DSE Algorithm,
    *
-   * Current implementation represents the high level algorithm of SAGE without the running&checking section
-   * since the goal is just to generate the test suite.
+   * Current implementation represents an abstracted version of SAGE's genetic algorithm.
    *
    * For more details, please take a look at:
    *     Godefroid P., Levin Y. M. & Molnar D. (2008) Automated Whitebox Fuzz Testing

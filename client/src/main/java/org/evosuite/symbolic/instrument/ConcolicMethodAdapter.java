@@ -63,6 +63,7 @@ import static org.evosuite.symbolic.instrument.ConcolicConfig.LGGI_V;
 import static org.evosuite.symbolic.instrument.ConcolicConfig.LG_V;
 import static org.evosuite.symbolic.instrument.ConcolicConfig.LII_V;
 import static org.evosuite.symbolic.instrument.ConcolicConfig.LI_V;
+import static org.evosuite.symbolic.instrument.ConcolicConfig.LIL_V;
 import static org.evosuite.symbolic.instrument.ConcolicConfig.LLGGI_V;
 import static org.evosuite.symbolic.instrument.ConcolicConfig.L_V;
 import static org.evosuite.symbolic.instrument.ConcolicConfig.SII_V;
@@ -351,8 +352,6 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 		case BASTORE:
 		case CASTORE:
 		case SASTORE:
-		case AASTORE:
-			// TODO: Dup????
 			/* ..., arrayref, index, value */
 			stack.c1b1a1__c1b1a1c1();
 			/* ..., arrayref, index, value, arrayref */
@@ -370,6 +369,17 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 			/* ..., arrayref, index, value, arrayref, index */
 			instructionDescriptor = LI_V;
 			break;
+
+		case AASTORE:
+			/* ..., arrayref, index, value */
+  		stack.c1b1a1__c1b1a1c1();
+  		/* ..., arrayref, index, value, arrayref */
+  		stack.c1b1a1__c1b1a1c1();
+  		/* ..., arrayref, index, value, arrayref, index */
+  		stack.c1b1a1__c1b1a1c1();
+  		/* ..., arrayref, index, value, arrayref, index, value */
+  		instructionDescriptor = LIL_V;
+  		break;
 
 		case ATHROW:
 		case ARRAYLENGTH: // http://java.sun.com/docs/books/jvms/second_edition/html/Instructions2.doc.html#ARRAYLENGTH
