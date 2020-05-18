@@ -77,7 +77,7 @@ public class DSEMazeSystemTest extends SystemTestBase {
 		String targetClass = MazeClient.class.getCanonicalName();
 		Properties.TARGET_CLASS = targetClass;
 
-		String[] command = new String[] { "-generateSuite", "-class", targetClass };
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
 
 		Object result = evosuite.parseCommandLine(command);
 		DSEBaseAlgorithm<?> dse = getDSEAFromResult(result);
@@ -87,10 +87,8 @@ public class DSEMazeSystemTest extends SystemTestBase {
 
 		assertFalse(best.getTests().isEmpty());
 
-		assertEquals(58, best.getNumOfCoveredGoals());
-
-		// This is due to "private MazeClient() {};"
-        assertEquals(1, best.getNumOfNotCoveredGoals());
+		assertEquals(27, best.getNumOfCoveredGoals());
+		assertEquals(0, best.getNumOfNotCoveredGoals());
 	}
 
 }
