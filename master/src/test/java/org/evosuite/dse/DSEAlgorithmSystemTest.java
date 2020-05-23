@@ -524,9 +524,8 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 		TestSuiteChromosome best = dse.getGeneratedTestSuite();
 		System.out.println("EvolvedTestSuite:\n" + best);
 
-		assertFalse(best.getTests().isEmpty());
-
-//		assertTrue(best.getNumOfCoveredGoals() >= 3);
+		assertEquals(7, best.getNumOfCoveredGoals() );
+		assertEquals(2, best.getNumOfNotCoveredGoals() );
 	}
 
 

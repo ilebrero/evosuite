@@ -72,15 +72,18 @@ public class PathConditionUtils {
 	 * @return
 	 */
 	public static boolean hasPathConditionDiverged(PathCondition expectedPrefixPathCondition, PathCondition newPathCondition) {
-		List<BranchCondition> expectedPrefixBranchConditions = expectedPrefixPathCondition.getBranchConditions();
-		List<BranchCondition> newBranchConditions = newPathCondition.getBranchConditions();
+		List<PathConditionNode> expectedPrefixPathConditionNodes = expectedPrefixPathCondition.getPathConditionNodes();
+		List<PathConditionNode> newPathConditionNodes = newPathCondition.getPathConditionNodes();
 
-		for (int currentBranchConditionIndex = 0; currentBranchConditionIndex < expectedPrefixBranchConditions.size(); ++currentBranchConditionIndex) {
-			BranchCondition expectedPrefixBranchCondition = expectedPrefixBranchConditions.get(currentBranchConditionIndex);
-			BranchCondition newBranchCondition = newBranchConditions.get(currentBranchConditionIndex);
+		// If the path is is less than the current one, we are in a divergence
+		if (expectedPrefixPathCondition.size() > newPathConditionNodes.size()) return true;
+
+		for (int currentBranchConditionIndex = 0; currentBranchConditionIndex < expectedPrefixPathConditionNodes.size(); ++currentBranchConditionIndex) {
+			PathConditionNode expectedPrefixPathConditionNode = expectedPrefixPathConditionNodes.get(currentBranchConditionIndex);
+			PathConditionNode newPathConditionNode = newPathConditionNodes.get(currentBranchConditionIndex);
 
 			// if the expectedPrefix path is not a prefix of the new one, there's a divergence
-			if (!expectedPrefixBranchCondition.equals(newBranchCondition)) {
+			if (!expectedPrefixPathConditionNode.equals(newPathConditionNode)) {
 				return true;
 			}
 		}

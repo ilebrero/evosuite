@@ -20,8 +20,10 @@
 package org.evosuite.testcase.utils;
 
 import org.evosuite.testcase.TestCase;
+import org.evosuite.testcase.statements.ArrayStatement;
 import org.evosuite.testcase.statements.PrimitiveStatement;
 import org.evosuite.testcase.statements.Statement;
+import org.evosuite.testcase.variable.ArraySymbolicLengthName;
 import org.evosuite.utils.Randomness;
 import org.objectweb.asm.Type;
 import org.evosuite.symbolic.TestCaseBuilder;
@@ -34,26 +36,37 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Map;
 
+/**
+ * Test case helper methods.
+ *
+ * @author Ignacio Lebrero
+ */
 public class TestCaseUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(TestCaseUtils.class);
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-	public static TestCase updateTest(TestCase test, Map<String, Object> values) {
+	public static TestCase updateTest(TestCase test, Map<String, Object> updatedValues) {
 
 		TestCase newTest = test.clone();
 		newTest.clearCoveredGoals();
 
-		for (Object key : values.keySet()) {
-			Object val = values.get(key);
-			if (val != null) {
-				logger.info("New value: " + key + ": " + val);
-				if (val instanceof Long) {
-					Long value = (Long) val;
-					String name = ((String) key).replace("__SYM", "");
+		for (String symbolicVariableName : updatedValues.keySet()) {
+			Object updateValue = updatedValues.get(symbolicVariableName);
+			if (updateValue != null) {
+				logger.info("New value: " + symbolicVariableName + ": " + updateValue);
+
+				//It's a dimension of the array's length
+				if (ArraySymbolicLengthName.isArraySymbolicLengthVariableName(symbolicVariableName)) {
+          ArraySymbolicLengthName arraySymbolicLengthName = new ArraySymbolicLengthName(symbolicVariableName);
+          processArrayLengthValue(newTest, arraySymbolicLengthName, (Long) updateValue);
+        } else if (updateValue instanceof Long) {
+					Long value = (Long) updateValue;
+
+					String name = ((String) symbolicVariableName).replace("__SYM", "");
 					// logger.warn("New long value for " + name + " is " +
 					// value);
-					PrimitiveStatement p = getStatement(newTest, name);
+					PrimitiveStatement p = (PrimitiveStatement) getStatement(newTest, name, StatementClassChecker.PRIMITIVE_STATEMENT);
 					if (p.getValue().getClass().equals(Character.class)) {
 						char charValue = (char) value.intValue();
 						p.setValue(charValue);
@@ -69,22 +82,22 @@ public class TestCaseUtils {
 						p.setValue(value.byteValue());
 
 					} else
-						logger.warn("New value is of an unsupported type: " + p.getValue().getClass() + val);
-				} else if (val instanceof String) {
-					String name = ((String) key).replace("__SYM", "");
-					PrimitiveStatement p = getStatement(newTest, name);
+						logger.warn("New value is of an unsupported type: " + p.getValue().getClass() + updateValue);
+				} else if (updateValue instanceof String) {
+					String name = ((String) symbolicVariableName).replace("__SYM", "");
+					PrimitiveStatement p = getPrimitiveStatement(newTest, name);
 					// logger.warn("New string value for " + name + " is " +
 					// val);
 					assert (p != null) : "Could not find variable " + name + " in test: " + newTest.toCode()
 							+ " / Orig test: " + test.toCode() + ", seed: " + Randomness.getSeed();
 					if (p.getValue().getClass().equals(Character.class))
-						p.setValue((char) Integer.parseInt(val.toString()));
+						p.setValue((char) Integer.parseInt(updateValue.toString()));
 					else
-						p.setValue(val.toString());
-				} else if (val instanceof Double) {
-					Double value = (Double) val;
-					String name = ((String) key).replace("__SYM", "");
-					PrimitiveStatement p = getStatement(newTest, name);
+						p.setValue(updateValue.toString());
+				} else if (updateValue instanceof Double) {
+					Double value = (Double) updateValue;
+					String name = ((String) symbolicVariableName).replace("__SYM", "");
+					PrimitiveStatement p = getPrimitiveStatement(newTest, name);
 					// logger.warn("New double value for " + name + " is " +
 					// value);
 					assert (p != null) : "Could not find variable " + name + " in test: " + newTest.toCode()
@@ -95,9 +108,9 @@ public class TestCaseUtils {
 					else if (p.getValue().getClass().equals(Float.class))
 						p.setValue(value.floatValue());
 					else
-						logger.warn("New value is of an unsupported type: " + val);
+						logger.warn("New value is of an unsupported type: " + updateValue);
 				} else {
-					logger.debug("New value is of an unsupported type: " + val);
+					logger.debug("New value is of an unsupported type: " + updateValue);
 				}
 			} else {
 				logger.debug("New value is null");
@@ -108,8 +121,22 @@ public class TestCaseUtils {
 
 	}
 
+  /**
+   * Updates the length of an array
+   *
+   * @param newTest
+   * @param arraySymbolicLengthName
+   * @param updateValue
+   */
+  private static void processArrayLengthValue(TestCase newTest, ArraySymbolicLengthName arraySymbolicLengthName, Long updateValue) {
+    ArrayStatement arrayStatement = (ArrayStatement) getStatement(newTest, arraySymbolicLengthName.getArrayReferenceName(), StatementClassChecker.ARRAY_STATEMENT);
+    arrayStatement.setLength(
+      updateValue.intValue(),
+      arraySymbolicLengthName.getDimension()
+    );
+  }
 
-   /**
+  /**
    * Builds a default test case for a static target method
    *
    * @param targetStaticMethod
@@ -169,7 +196,7 @@ public class TestCaseUtils {
           break;
         }
         case Type.ARRAY: {
-          VariableReference arrayVariable = testCaseBuilder.appendArrayStmt(argumentClass, 0);
+          VariableReference arrayVariable = testCaseBuilder.appendArrayStmt(argumentClass, buildDimensionsArray(argumentType));
           arguments.add(arrayVariable);
           break;
         }
@@ -196,6 +223,24 @@ public class TestCaseUtils {
     return testCase;
   }
 
+
+  /**
+   * Creates the lengths array required to create the array referenes
+   *
+   * @param argumentType
+   * @return
+   */
+  public static int[] buildDimensionsArray(Type argumentType) {
+    int dimensions = argumentType.getDimensions();
+    int[] lengths = new int[dimensions];
+
+    for (int dimension = 0; dimension < dimensions; ++dimension) {
+      lengths[dimension] = 0;
+    }
+
+    return lengths;
+  }
+
   /**
 	 * Get the statement that defines this variable
 	 *
@@ -203,7 +248,7 @@ public class TestCaseUtils {
 	 * @param name
 	 * @return
 	 */
-	private static PrimitiveStatement<?> getStatement(TestCase test, String name) {
+	public static PrimitiveStatement<?> getPrimitiveStatement(TestCase test, String name) {
 		for (Statement statement : test) {
 
 			if (statement instanceof PrimitiveStatement<?>) {
@@ -214,4 +259,21 @@ public class TestCaseUtils {
 		return null;
 	}
 
+	  /**
+	 * Get the statement that defines this variable
+	 *
+	 * @param test
+	 * @param name
+	 * @param typeCheckFunction
+     * @return
+	 */
+	public static Statement getStatement(TestCase test, String name, StatementClassChecker typeCheckFunction) {
+		for (Statement statement : test) {
+			if (typeCheckFunction.checkClassType(statement)) {
+				if (statement.getReturnValue().getName().equals(name))
+					return statement;
+			}
+		}
+		return null;
+	}
 }

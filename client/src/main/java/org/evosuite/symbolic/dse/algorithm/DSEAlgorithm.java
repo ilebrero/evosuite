@@ -429,7 +429,12 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
 
         TestCase clonedCurrentTestCase = currentTestCase.getTestCase().clone();
         PathCondition result = engine.execute((DefaultTestCase) clonedCurrentTestCase);
-        int currentGeneratedFromIndex = currentTestCase.getOriginalPathCondition().getGeneratedFromIndex();
+
+        // In case of a divergence, we need to keep the lowest value
+        int currentGeneratedFromIndex = Math.min(
+          currentTestCase.getOriginalPathCondition().getGeneratedFromIndex(),
+          result.getPathConditionNodes().size()
+        );
 
         logger.debug(FINISHED_CONCOLIC_EXECUTION_DEBUG_MESSAGE);
 

@@ -396,6 +396,9 @@ public class Properties {
 	@Parameter(key = "dse_module_version", group = "DSE", description = "Module version of DSE, mostly used for benchmarking between modules. For other things the new one is recomended.")
 	public static DSE_MODULE_VERSION CURRENT_DSE_MODULE_VERSION = DSE_MODULE_VERSION.NEW;
 
+	@Parameter(key = "dse_enable_arrays_support", group = "DSE", description = "If arrays should be supported by the concolic engine")
+	public static boolean IS_DSE_ARRAYS_SUPPORT_ENABLED = true;
+
 	@Parameter(key = "dse_probability", group = "DSE", description = "Probability used to specify when to use DSE instead of regular LS when LS is applied")
     @DoubleValue(min = 0.0, max = 1.0)
 	public static double DSE_PROBABILITY = 0.5;

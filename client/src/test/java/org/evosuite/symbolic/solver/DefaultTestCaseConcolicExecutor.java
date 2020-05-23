@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.evosuite.Properties;
-import org.evosuite.symbolic.BranchCondition;
+import org.evosuite.symbolic.PathConditionNode;
 import org.evosuite.symbolic.dse.ConcolicEngine;
 import org.evosuite.symbolic.PathCondition;
 import org.evosuite.symbolic.expr.Constraint;
@@ -42,11 +42,11 @@ import org.evosuite.testcase.DefaultTestCase;
 public abstract class DefaultTestCaseConcolicExecutor {
 
 	public static Collection<Constraint<?>> execute(DefaultTestCase tc) {
-		List<BranchCondition> pc = getPathCondition(tc);
+		List<PathConditionNode> pc = getPathCondition(tc);
 
 		Set<Variable<?>> variables = new HashSet<Variable<?>>();
 		Collection<Constraint<?>> constraints = new LinkedList<Constraint<?>>();
-		for (BranchCondition condition : pc) {
+		for (PathConditionNode condition : pc) {
 			constraints.addAll(condition.getSupportingConstraints());
 			Constraint<?> constraint = condition.getConstraint();
 			constraints.add(constraint);
@@ -65,7 +65,7 @@ public abstract class DefaultTestCaseConcolicExecutor {
 		return constraints;
 	}
 
-	private static List<BranchCondition> getPathCondition(DefaultTestCase tc) {
+	private static List<PathConditionNode> getPathCondition(DefaultTestCase tc) {
 		Properties.CLIENT_ON_THREAD = true;
 		Properties.PRINT_TO_SYSTEM = true;
 		Properties.TIMEOUT = 5000;
@@ -75,7 +75,7 @@ public abstract class DefaultTestCaseConcolicExecutor {
 		System.out.println(tc.toCode());
 
 		PathCondition pc = new ConcolicEngine().execute(tc);
-		List<BranchCondition> branch_conditions = pc.getBranchConditions();
+		List<PathConditionNode> branch_conditions = pc.getPathConditionNodes();
 
 		printConstraints(branch_conditions);
 		return branch_conditions;

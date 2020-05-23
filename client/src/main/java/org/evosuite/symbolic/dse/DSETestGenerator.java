@@ -22,7 +22,7 @@ package org.evosuite.symbolic.dse;
 import org.evosuite.Properties;
 import org.evosuite.ga.localsearch.LocalSearchBudget;
 import org.evosuite.ga.localsearch.LocalSearchObjective;
-import org.evosuite.symbolic.BranchCondition;
+import org.evosuite.symbolic.PathConditionNode;
 import org.evosuite.symbolic.PathCondition;
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.expr.Variable;
@@ -110,7 +110,7 @@ public class DSETestGenerator {
 			return null;
 		}
 
-		for (BranchCondition c : collectedPathCondition.getBranchConditions()) {
+		for (PathConditionNode c : collectedPathCondition.getPathConditionNodes()) {
 			logger.info(" -> " + c.getConstraint());
 		}
 
@@ -127,7 +127,7 @@ public class DSETestGenerator {
 
 		//
 		for (int conditionIndex = 0; conditionIndex < collectedPathCondition.size(); conditionIndex++) {
-			BranchCondition condition = collectedPathCondition.get(conditionIndex);
+			PathConditionNode condition = collectedPathCondition.get(conditionIndex);
 
 			if (LocalSearchBudget.getInstance().isFinished()) {
 				logger.debug("Local search budget used up: " + Properties.LOCAL_SEARCH_BUDGET_TYPE);
@@ -224,7 +224,7 @@ public class DSETestGenerator {
 			final PathCondition collectedPathCondition) {
 		List<Integer> conditionIndexesNotCoveredTwoWays = new LinkedList<Integer>();
 		for (int conditionIndex = 0; conditionIndex < collectedPathCondition.size(); conditionIndex++) {
-			BranchCondition b = collectedPathCondition.get(conditionIndex);
+			PathConditionNode b = collectedPathCondition.get(conditionIndex);
 			if (!isCoveredTwoWays(test, b.getInstructionIndex())) {
 				conditionIndexesNotCoveredTwoWays.add(conditionIndex);
 			}

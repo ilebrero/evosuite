@@ -32,7 +32,6 @@ import org.evosuite.runtime.testdata.EvoSuiteLocalAddress;
 import org.evosuite.runtime.testdata.EvoSuiteRemoteAddress;
 import org.evosuite.runtime.testdata.EvoSuiteURL;
 import org.evosuite.symbolic.expr.Expression;
-import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.bv.IntegerValue;
 import org.evosuite.symbolic.expr.bv.IntegerVariable;
 import org.evosuite.symbolic.expr.bv.RealToIntegerCast;
@@ -78,13 +77,20 @@ import org.evosuite.testcase.statements.numeric.LongPrimitiveStatement;
 import org.evosuite.testcase.statements.numeric.ShortPrimitiveStatement;
 import org.evosuite.testcase.variable.ArrayIndex;
 import org.evosuite.testcase.variable.ArrayReference;
+import org.evosuite.testcase.variable.ArraySymbolicLengthName;
 import org.evosuite.testcase.variable.FieldReference;
 import org.evosuite.testcase.variable.VariableReference;
+import org.evosuite.testcase.variable.ArrayLengthSymbolicUtil;
 import org.objectweb.asm.Type;
+
+import static org.evosuite.testcase.variable.ArrayLengthSymbolicUtil.UNIDIMENTIONAL_ARRAY_VALUE;
 
 public class SymbolicObserver extends ExecutionObserver {
 
-	private static final String INIT = "<init>";
+	private static final String INIT 			  = "<init>";
+	private static final String TEST_CLASS  = "SymbolicObserver";
+	private static final String TEST_METHOD = "TestCreation";
+
 	private final SymbolicEnvironment env;
 
 	public SymbolicObserver(SymbolicEnvironment env) {
@@ -242,41 +248,52 @@ public class SymbolicObserver extends ExecutionObserver {
 
 			if (arrayRef.getArrayDimensions() == 1) {
 				int length = arrayRef.getArrayLength();
-				IntegerConstant lengthExpr = ExpressionFactory.buildNewIntegerConstant(length);
+				ArraySymbolicLengthName arraySymbolicLengthName = new ArraySymbolicLengthName(arrayRef.getName(), UNIDIMENTIONAL_ARRAY_VALUE);
+				IntegerValue lengthExpression = ArrayLengthSymbolicUtil.buildArraySymbolicLengthExpression(length, arraySymbolicLengthName);
+
+				if (lengthExpression.containsSymbolicVariable()) {
+					symb_expressions.put(arraySymbolicLengthName.getSymbolicName(), lengthExpression);
+				}
+
 				Class<?> component_class = arrayRef.getComponentClass();
-				env.topFrame().operandStack.pushBv32(lengthExpr);
+				env.topFrame().operandStack.pushBv32(lengthExpression);
 				if (component_class.equals(int.class)) {
-					VM.NEWARRAY(length, COMPONENT_TYPE_INT);
+					VM.NEWARRAY(length, COMPONENT_TYPE_INT, TEST_CLASS, TEST_METHOD);
 				} else if (component_class.equals(char.class)) {
-					VM.NEWARRAY(length, COMPONENT_TYPE_CHAR);
+					VM.NEWARRAY(length, COMPONENT_TYPE_CHAR, TEST_CLASS, TEST_METHOD);
 				} else if (component_class.equals(short.class)) {
-					VM.NEWARRAY(length, COMPONENT_TYPE_SHORT);
+					VM.NEWARRAY(length, COMPONENT_TYPE_SHORT, TEST_CLASS, TEST_METHOD);
 				} else if (component_class.equals(byte.class)) {
-					VM.NEWARRAY(length, COMPONENT_TYPE_BYTE);
+					VM.NEWARRAY(length, COMPONENT_TYPE_BYTE, TEST_CLASS, TEST_METHOD);
 				} else if (component_class.equals(float.class)) {
-					VM.NEWARRAY(length, COMPONENT_TYPE_FLOAT);
+					VM.NEWARRAY(length, COMPONENT_TYPE_FLOAT, TEST_CLASS, TEST_METHOD);
 				} else if (component_class.equals(long.class)) {
-					VM.NEWARRAY(length, COMPONENT_TYPE_LONG);
+					VM.NEWARRAY(length, COMPONENT_TYPE_LONG, TEST_CLASS, TEST_METHOD);
 				} else if (component_class.equals(boolean.class)) {
-					VM.NEWARRAY(length, COMPONENT_TYPE_BOOLEAN);
+					VM.NEWARRAY(length, COMPONENT_TYPE_BOOLEAN, TEST_CLASS, TEST_METHOD);
 				} else if (component_class.equals(double.class)) {
-					VM.NEWARRAY(length, COMPONENT_TYPE_DOUBLE);
+					VM.NEWARRAY(length, COMPONENT_TYPE_DOUBLE, TEST_CLASS, TEST_METHOD);
 				} else {
 					// push arguments
 					String componentTypeName = component_class.getName().replace('.', '/');
-					VM.ANEWARRAY(length, componentTypeName);
+					VM.ANEWARRAY(length, componentTypeName, TEST_CLASS, TEST_METHOD);
 				}
 			} else {
 				// push dimensions
 				List<Integer> dimensions = arrayRef.getLengths();
-				for (int i = 0; i < arrayRef.getArrayDimensions(); i++) {
-					int length = dimensions.get(i);
-					IntegerConstant lengthExpr = ExpressionFactory.buildNewIntegerConstant(length);
-					env.topFrame().operandStack.pushBv32(lengthExpr);
+				for (int dimension = 0; dimension < arrayRef.getArrayDimensions(); dimension++) {
+					int length = dimensions.get(dimension);
+					ArraySymbolicLengthName dimensionSymbolicLengthName = new ArraySymbolicLengthName(arrayRef.getName(), dimension);
+					IntegerValue lengthExpression = ArrayLengthSymbolicUtil.buildArraySymbolicLengthExpression(length, dimensionSymbolicLengthName);
+
+					if (lengthExpression.containsSymbolicVariable()) {
+						symb_expressions.put(dimensionSymbolicLengthName.getSymbolicName(), lengthExpression);
+					}
+
+					env.topFrame().operandStack.pushBv32(lengthExpression);
 				}
 				String arrayTypeDesc = Type.getDescriptor(conc_array.getClass());
-				VM.MULTIANEWARRAY(arrayTypeDesc, arrayRef.getArrayDimensions());
-
+				VM.MULTIANEWARRAY(arrayTypeDesc, arrayRef.getArrayDimensions(), TEST_CLASS, TEST_METHOD);
 			}
 			ReferenceConstant symb_array = (ReferenceConstant) env.topFrame().operandStack.popRef();
 			env.heap.initializeReference(conc_array, symb_array);

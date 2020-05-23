@@ -19,7 +19,7 @@
  */
 package org.evosuite.symbolic.solver;
 
-import org.evosuite.symbolic.BranchCondition;
+import org.evosuite.symbolic.PathConditionNode;
 import org.evosuite.symbolic.PathCondition;
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.expr.Expression;
@@ -31,6 +31,7 @@ import org.evosuite.symbolic.expr.fp.RealVariable;
 import org.evosuite.symbolic.expr.str.StringVariable;
 import org.evosuite.symbolic.vm.ConstraintFactory;
 import org.evosuite.symbolic.vm.ExpressionFactory;
+import org.evosuite.testcase.variable.ArraySymbolicLengthName;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -83,7 +84,7 @@ public abstract class SolverUtils {
 
         List<Constraint<?>> boundsForVariables = new ArrayList<Constraint<?>>();
         for (Variable<?> variable : variables) {
-          if (variable instanceof IntegerVariable) {
+        	if (variable instanceof IntegerVariable) {
             IntegerVariable integerVariable = (IntegerVariable) variable;
             Long minValue = integerVariable.getMinValue();
             Long maxValue = integerVariable.getMaxValue();
@@ -122,9 +123,9 @@ public abstract class SolverUtils {
 	public static List<Constraint<?>> buildQuery(PathCondition pc) {
 		List<Constraint<?>> query = new LinkedList<Constraint<?>>();
 
-		for (BranchCondition branchCondition : pc.getBranchConditions()) {
-			query.addAll(branchCondition.getSupportingConstraints());
-			query.add(branchCondition.getConstraint());
+		for (PathConditionNode pathConditionNode : pc.getPathConditionNodes()) {
+			query.addAll(pathConditionNode.getSupportingConstraints());
+			query.add(pathConditionNode.getConstraint());
 		}
 
 		// Compute cone of influence reduction
@@ -142,12 +143,12 @@ public abstract class SolverUtils {
 	public static List<Constraint<?>> buildQueryNegatingIthCondition(PathCondition pc, int conditionIndexToNegate) {
 		List<Constraint<?>> query = new LinkedList<Constraint<?>>();
 		for (int i = 0; i < conditionIndexToNegate; i++) {
-			BranchCondition b = pc.get(i);
+			PathConditionNode b = pc.get(i);
 			query.addAll(b.getSupportingConstraints());
 			query.add(b.getConstraint());
 		}
 
-		BranchCondition targetBranch = pc.get(conditionIndexToNegate);
+		PathConditionNode targetBranch = pc.get(conditionIndexToNegate);
 		Constraint<?> negation = targetBranch.getConstraint().negate();
 		query.addAll(targetBranch.getSupportingConstraints());
 		query.add(negation);
