@@ -100,6 +100,30 @@ public final class SmtExprPrinter implements SmtExprVisitor<String, Void> {
 	}
 
 	@Override
+	public String visit(SmtArrayVariable.SmtIntegerArrayVariable n, Void arg) {
+		String varName = n.getName();
+		return varName;
+	}
+
+	@Override
+	public String visit(SmtArrayVariable.SmtRealArrayVariable n, Void arg) {
+		String varName = n.getName();
+		return varName;
+	}
+
+	@Override
+	public String visit(SmtArrayConstant.SmtIntegerArrayConstant n, Void arg) {
+		throw new UnsupportedOperationException(
+			"We shouldn't be using constant arrays as this point, they must be reduced to concrete values during execution.");
+	}
+
+	@Override
+	public String visit(SmtArrayConstant.SmtRealArrayConstant n, Void arg) {
+		throw new UnsupportedOperationException(
+			"We shouldn't be using constant arrays as this point, they must be reduced to concrete values during execution.");
+	}
+
+	@Override
 	public String visit(SmtBooleanConstant n, Void arg) {
 		if (n.booleanValue() == true) {
 			return "true";

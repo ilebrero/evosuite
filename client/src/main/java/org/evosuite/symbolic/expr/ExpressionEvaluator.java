@@ -16,6 +16,7 @@
  */
 package org.evosuite.symbolic.expr;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
@@ -24,6 +25,10 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
+import org.evosuite.symbolic.expr.array.ArrayConstant;
+import org.evosuite.symbolic.expr.array.ArrayStore;
+import org.evosuite.symbolic.expr.array.ArrayVariable;
+import org.evosuite.symbolic.expr.array.ArraySelect;
 import org.evosuite.symbolic.expr.bv.IntegerBinaryExpression;
 import org.evosuite.symbolic.expr.bv.IntegerComparison;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
@@ -288,7 +293,6 @@ public class ExpressionEvaluator implements ExpressionVisitor<Object, Void> {
     switch (op) {
       case STARTSWITH:
         long start = (Long) other_v.get(0).accept(this, null);
-
         return first.startsWith(second, (int) start) ? TRUE_VALUE : FALSE_VALUE;
 
       case REGIONMATCHES:
@@ -699,4 +703,134 @@ public class ExpressionEvaluator implements ExpressionVisitor<Object, Void> {
     }
   }
 
+  @Override
+  public Object visit(ArrayStore.IntegerArrayStore r, Void arg) {
+    Object array = r.getSymbolicArray().accept(this, null);
+    Long index = (Long) r.getSymbolicIndex().accept(this, null);
+    Long value = (Long) r.getSymbolicValue().accept(this, null);
+
+    int intIndex = Math.toIntExact(index);
+
+    // We don't work on the returned array to not update the concrete internal array
+    Object newArray = createCopyArray(array);
+    Array.set(
+      newArray,
+      intIndex,
+      convertIntegerValueToArrayComponentType(value, newArray.getClass().getComponentType().getName())
+    );
+
+    return newArray;
+  }
+
+  @Override
+  public Object visit(ArraySelect.IntegerArraySelect r, Void arg) {
+    Object array = r.getSymbolicArray().accept(this, null);
+    Long index = (Long) r.getSymbolicIndex().accept(this, null);
+
+    int intIndex = Math.toIntExact(index);
+
+    return transformArrayElementTo(Array.get(array, intIndex));
+  }
+
+  @Override
+  public Object visit(ArraySelect.RealArraySelect r, Void arg) {
+    Object array = r.getSymbolicArray().accept(this, null);
+    Long index = (Long) r.getSymbolicIndex().accept(this, null);
+
+    int intIndex = Math.toIntExact(index);
+
+    return transformArrayElementTo(Array.get(array, intIndex));
+  }
+
+  @Override
+  public Object visit(ArrayStore.RealArrayStore r, Void arg) {
+    Object array = r.getSymbolicArray().accept(this, null);
+    Long index = (Long) r.getSymbolicIndex().accept(this, null);
+    Double value = (Double) r.getSymbolicValue().accept(this, null);
+
+    int intIndex = Math.toIntExact(index);
+
+    // We don't work on the returned array to not update the concrete internal array
+    Object newArray = createCopyArray(array);
+    Array.set(newArray, intIndex, convertRealValueToArrayComponentType(value, newArray.getClass().getComponentType().getName()));
+
+    return newArray;
+  }
+
+  @Override
+  public Object visit(ArrayConstant.IntegerArrayConstant r, Void arg) {
+    return r.getConcreteValue();
+  }
+
+  @Override
+  public Object visit(ArrayConstant.RealArrayConstant r, Void arg) {
+    return r.getConcreteValue();
+  }
+
+  @Override
+  public Object visit(ArrayVariable.IntegerArrayVariable r, Void arg) {
+    return r.getConcreteValue();
+  }
+
+  @Override
+  public Object visit(ArrayVariable.RealArrayVariable r, Void arg) {
+    return r.getConcreteValue();
+  }
+
+  private Object transformArrayElementTo(Object o) {
+    if (Integer.class.getName().equals(o.getClass().getName())) {
+      return ((Integer) o).longValue();
+    } else if (Short.class.getName().equals(o.getClass().getName())) {
+      return ((Short) o).longValue();
+    } else if (Byte.class.getName().equals(o.getClass().getName())) {
+      return ((Byte) o).longValue();
+    } else if (Boolean.class.getName().equals(o.getClass().getName())) {
+      return ((Boolean) o) ? 1L : 0L;
+    } else if (Long.class.getName().equals(o.getClass().getName())) {
+      return ((Long) o).longValue();
+    } else if (Float.class.getName().equals(o.getClass().getName())) {
+      return  ((Float) o).doubleValue();
+    } else if (Double.class.getName().equals(o.getClass().getName())) {
+      return ((Double) o).doubleValue();
+    }
+
+    throw new IllegalStateException("Unexpected value: " + o.getClass().getName());
+  }
+
+   private Object convertIntegerValueToArrayComponentType(Long value, String componentTypeName) {
+    if (int.class.getName().equals(componentTypeName)) {
+      return value.intValue();
+    } else if (short.class.getName().equals(componentTypeName)) {
+      return value.shortValue();
+    } else if (byte.class.getName().equals(componentTypeName)) {
+      return value.byteValue();
+    } else if (char.class.getName().equals(componentTypeName)) {
+      return (char) value.longValue();
+    } else if (boolean.class.getName().equals(componentTypeName)) {
+      return value > 1;
+    } else if (long.class.getName().equals(componentTypeName)) {
+      return value.longValue();
+    }
+
+    throw new IllegalStateException("Unexpected value: " + componentTypeName);
+  }
+
+  private Object createCopyArray(Object originalArray) {
+    int length = Array.getLength(originalArray);
+    Object copyArr = Array.newInstance(originalArray.getClass().getComponentType(), length);
+
+    System.arraycopy(originalArray, 0, copyArr, 0, length);
+
+    return copyArr;
+  }
+
+  private Object convertRealValueToArrayComponentType(Double value, String componentTypeName) {
+    if (float.class.getName().equals(componentTypeName)) {
+      return value.floatValue();
+    } else if (double.class.getName().equals(componentTypeName)) {
+      return value.doubleValue();
+    }
+
+    throw new IllegalStateException("Unexpected value: " + componentTypeName);
+  }
 }

@@ -67,6 +67,26 @@ public final class SmtOperatorCollector implements SmtExprVisitor<Void, Void> {
 		return null;
 	}
 
+	@Override
+	public Void visit(SmtArrayVariable.SmtIntegerArrayVariable n, Void arg) {
+		return null;
+	}
+
+	@Override
+	public Void visit(SmtArrayVariable.SmtRealArrayVariable n, Void arg) {
+		return null;
+	}
+
+	@Override
+	public Void visit(SmtArrayConstant.SmtIntegerArrayConstant n, Void arg) {
+		return null;
+	}
+
+	@Override
+	public Void visit(SmtArrayConstant.SmtRealArrayConstant n, Void arg) {
+		return null;
+	}
+
 	public Set<Operator> getOperators() {
 		return operators;
 	}

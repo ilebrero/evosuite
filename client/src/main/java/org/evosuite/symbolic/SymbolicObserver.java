@@ -32,10 +32,13 @@ import org.evosuite.runtime.testdata.EvoSuiteLocalAddress;
 import org.evosuite.runtime.testdata.EvoSuiteRemoteAddress;
 import org.evosuite.runtime.testdata.EvoSuiteURL;
 import org.evosuite.symbolic.expr.Expression;
+import org.evosuite.symbolic.expr.array.ArrayValue;
+import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.bv.IntegerValue;
 import org.evosuite.symbolic.expr.bv.IntegerVariable;
 import org.evosuite.symbolic.expr.bv.RealToIntegerCast;
 import org.evosuite.symbolic.expr.fp.IntegerToRealCast;
+import org.evosuite.symbolic.expr.fp.RealConstant;
 import org.evosuite.symbolic.expr.fp.RealValue;
 import org.evosuite.symbolic.expr.fp.RealVariable;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
@@ -81,6 +84,8 @@ import org.evosuite.testcase.variable.ArraySymbolicLengthName;
 import org.evosuite.testcase.variable.FieldReference;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testcase.variable.ArrayLengthSymbolicUtil;
+import org.evosuite.utils.ArrayUtil;
+import org.evosuite.utils.TypeUtil;
 import org.objectweb.asm.Type;
 
 import static org.evosuite.testcase.variable.ArrayLengthSymbolicUtil.UNIDIMENTIONAL_ARRAY_VALUE;
@@ -245,9 +250,11 @@ public class SymbolicObserver extends ExecutionObserver {
 			ArrayReference arrayRef = (ArrayReference) s.getReturnValue();
 			Object conc_array;
 			conc_array = arrayRef.getObject(scope);
+			Class<?> component_class = arrayRef.getComponentClass();
 
 			if (arrayRef.getArrayDimensions() == 1) {
 				int length = arrayRef.getArrayLength();
+
 				ArraySymbolicLengthName arraySymbolicLengthName = new ArraySymbolicLengthName(arrayRef.getName(), UNIDIMENTIONAL_ARRAY_VALUE);
 				IntegerValue lengthExpression = ArrayLengthSymbolicUtil.buildArraySymbolicLengthExpression(length, arraySymbolicLengthName);
 
@@ -255,7 +262,6 @@ public class SymbolicObserver extends ExecutionObserver {
 					symb_expressions.put(arraySymbolicLengthName.getSymbolicName(), lengthExpression);
 				}
 
-				Class<?> component_class = arrayRef.getComponentClass();
 				env.topFrame().operandStack.pushBv32(lengthExpression);
 				if (component_class.equals(int.class)) {
 					VM.NEWARRAY(length, COMPONENT_TYPE_INT, TEST_CLASS, TEST_METHOD);
@@ -298,6 +304,9 @@ public class SymbolicObserver extends ExecutionObserver {
 			ReferenceConstant symb_array = (ReferenceConstant) env.topFrame().operandStack.popRef();
 			env.heap.initializeReference(conc_array, symb_array);
 
+			// Need to do this to create the array variable
+			overrideHeapArrayWithVariable(arrayRef, component_class, symb_array);
+
 			String varRef_name = arrayRef.getName();
 			symb_references.put(varRef_name, symb_array);
 
@@ -306,6 +315,7 @@ public class SymbolicObserver extends ExecutionObserver {
 		}
 
 	}
+
 
 	private void before(EnumPrimitiveStatement<?> s, Scope scope) {
 		/* do nothing */
@@ -366,10 +376,10 @@ public class SymbolicObserver extends ExecutionObserver {
 	/**
 	 * Reads a VariableReference from the stored symbolic references and
 	 * symbolic expressions.
-	 * 
+	 *
 	 * @throws IllegalArgumentException
 	 *             if no value was found
-	 * 
+	 *
 	 * @param rhs
 	 * @param scope
 	 * @return
@@ -386,6 +396,7 @@ public class SymbolicObserver extends ExecutionObserver {
 		ArrayReference arrayReference = rhs.getArray();
 		ReferenceConstant symb_array = (ReferenceConstant) symb_references.get(arrayReference.getName());
 		int conc_index = rhs.getArrayIndex();
+		IntegerConstant symb_index = new IntegerConstant(conc_index);
 		Class<?> componentClass = arrayReference.getComponentClass();
 
 		try {
@@ -393,48 +404,48 @@ public class SymbolicObserver extends ExecutionObserver {
 
 			if (componentClass.equals(int.class)) {
 				int conc_value = Array.getInt(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, conc_index, conc_value);
+				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newIntegerRef = newIntegerReference(conc_value, expr);
 				return new ReferenceExpressionPair(newIntegerRef, expr);
 			} else if (componentClass.equals(char.class)) {
 				char conc_value = Array.getChar(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, conc_index, conc_value);
+				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newCharacterRef = newCharacterReference(conc_value, expr);
 				return new ReferenceExpressionPair(newCharacterRef, expr);
 			} else if (componentClass.equals(boolean.class)) {
 				boolean conc_value = Array.getBoolean(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, conc_index, conc_value ? 1 : 0);
+				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value ? 1 : 0));
 				ReferenceConstant newBooleanRef = newBooleanReference(conc_value, expr);
 				return new ReferenceExpressionPair(newBooleanRef, expr);
 			} else if (componentClass.equals(byte.class)) {
 				byte conc_value = Array.getByte(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, conc_index, conc_value);
+				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newByteRef = newByteReference(conc_value, expr);
 				return new ReferenceExpressionPair(newByteRef, expr);
 			} else if (componentClass.equals(short.class)) {
 				short conc_value = Array.getShort(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, conc_index, conc_value);
+				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newShortRef = newShortReference(conc_value, expr);
 				return new ReferenceExpressionPair(newShortRef, expr);
 			} else if (componentClass.equals(long.class)) {
 				long conc_value = Array.getLong(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, conc_index, conc_value);
+				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newLongRef = newLongReference(conc_value, expr);
 				return new ReferenceExpressionPair(newLongRef, expr);
 			} else if (componentClass.equals(float.class)) {
 				float conc_value = Array.getFloat(conc_array, conc_index);
-				RealValue expr = env.heap.array_load(symb_array, conc_index, conc_value);
+				RealValue expr = env.heap.array_load(symb_array, symb_index, new RealConstant(conc_value));
 				ReferenceConstant newFloatRef = newFloatReference(conc_value, expr);
 				return new ReferenceExpressionPair(newFloatRef, expr);
 			} else if (componentClass.equals(double.class)) {
 				double conc_value = Array.getDouble(conc_array, conc_index);
-				RealValue expr = env.heap.array_load(symb_array, conc_index, conc_value);
+				RealValue expr = env.heap.array_load(symb_array, symb_index, new RealConstant(conc_value));
 				ReferenceConstant newDoubleRef = newDoubleReference(conc_value, expr);
 				return new ReferenceExpressionPair(newDoubleRef, expr);
 			} else {
 				Object conc_value = Array.get(conc_array, conc_index);
 				if (conc_value instanceof String) {
-					StringValue expr = env.heap.array_load(symb_array, conc_index, (String) conc_value);
+					StringValue expr = env.heap.array_load(symb_array, symb_index, (String) conc_value);
 					ReferenceConstant newStringRef = newStringReference((String) conc_value, expr);
 					return new ReferenceExpressionPair(newStringRef, expr);
 				} else {
@@ -659,7 +670,7 @@ public class SymbolicObserver extends ExecutionObserver {
 
 		Type arrayType = Type.getType(conc_array.getClass());
 		Type elementType = arrayType.getElementType();
-		if (isValue(elementType) || elementType.equals(Type.getType(String.class))) {
+		if (TypeUtil.isValue(elementType) || elementType.equals(Type.getType(String.class))) {
 			Expression<?> symb_value = readResult.getExpression();
 			symb_value = castIfNeeded(elementType, symb_value);
 
@@ -671,16 +682,15 @@ public class SymbolicObserver extends ExecutionObserver {
 		} else {
 			/* ignore storing references (we use objects to find them) */
 		}
-
 	}
 
 	private Expression<?> castIfNeeded(Type elementType, Expression<?> symb_value) {
 		// cast integer to real if needed
-		if ((isFp32(elementType) || isFp64(elementType)) && symb_value instanceof IntegerValue) {
+		if ((TypeUtil.isFp32(elementType) || TypeUtil.isFp64(elementType)) && symb_value instanceof IntegerValue) {
 			IntegerValue intExpr = (IntegerValue) symb_value;
 			double concValue = intExpr.getConcreteValue().doubleValue();
 			symb_value = new IntegerToRealCast(intExpr, concValue);
-		} else if ((isBv32(elementType) || isBv64(elementType)) && symb_value instanceof RealValue) {
+		} else if ((TypeUtil.isBv32(elementType) || TypeUtil.isBv64(elementType)) && symb_value instanceof RealValue) {
 			RealValue realExpr = (RealValue) symb_value;
 			long concValue = realExpr.getConcreteValue().longValue();
 			symb_value = new RealToIntegerCast(realExpr, concValue);
@@ -696,7 +706,7 @@ public class SymbolicObserver extends ExecutionObserver {
 		Class<?> fieldClass = field.getType();
 
 		Type fieldType = Type.getType(fieldClass);
-		if (isValue(fieldType) || fieldType.equals(Type.getType(String.class))) {
+		if (TypeUtil.isValue(fieldType) || fieldType.equals(Type.getType(String.class))) {
 			Expression<?> symb_value = readResult.getExpression();
 			symb_value = castIfNeeded(fieldType, symb_value);
 
@@ -1070,19 +1080,19 @@ public class SymbolicObserver extends ExecutionObserver {
 			Expression<?> symb_expr = readResult.getExpression();
 			ReferenceExpression symb_ref = readResult.getReference();
 
-			if (isValue(argType)) {
+			if (TypeUtil.isValue(argType)) {
 
 				if (symb_expr instanceof RealValue) {
 					RealValue realExpr = (RealValue) symb_expr;
-					if (isFp32(argType)) {
+					if (TypeUtil.isFp32(argType)) {
 						env.topFrame().operandStack.pushFp32(realExpr);
-					} else if (isFp64(argType)) {
+					} else if (TypeUtil.isFp64(argType)) {
 						env.topFrame().operandStack.pushFp64(realExpr);
-					} else if (isBv32(argType)) {
+					} else if (TypeUtil.isBv32(argType)) {
 						int concV = realExpr.getConcreteValue().intValue();
 						RealToIntegerCast castExpr = new RealToIntegerCast(realExpr, (long) concV);
 						env.topFrame().operandStack.pushBv32(castExpr);
-					} else if (isBv64(argType)) {
+					} else if (TypeUtil.isBv64(argType)) {
 						long concV = realExpr.getConcreteValue().longValue();
 						RealToIntegerCast castExpr = new RealToIntegerCast(realExpr, concV);
 						env.topFrame().operandStack.pushBv64(castExpr);
@@ -1091,15 +1101,15 @@ public class SymbolicObserver extends ExecutionObserver {
 					}
 				} else if (symb_expr instanceof IntegerValue) {
 					IntegerValue integerExpr = (IntegerValue) symb_expr;
-					if (isBv32(argType)) {
+					if (TypeUtil.isBv32(argType)) {
 						env.topFrame().operandStack.pushBv32(integerExpr);
-					} else if (isBv64(argType)) {
+					} else if (TypeUtil.isBv64(argType)) {
 						env.topFrame().operandStack.pushBv64(integerExpr);
-					} else if (isFp32(argType)) {
+					} else if (TypeUtil.isFp32(argType)) {
 						float concV = integerExpr.getConcreteValue().floatValue();
 						IntegerToRealCast castExpr = new IntegerToRealCast(integerExpr, (double) concV);
 						env.topFrame().operandStack.pushFp32(castExpr);
-					} else if (isFp64(argType)) {
+					} else if (TypeUtil.isFp64(argType)) {
 						double concV = integerExpr.getConcreteValue().doubleValue();
 						IntegerToRealCast castExpr = new IntegerToRealCast(integerExpr, concV);
 						env.topFrame().operandStack.pushFp64(castExpr);
@@ -1185,16 +1195,16 @@ public class SymbolicObserver extends ExecutionObserver {
 
 	private void pushValue(Type argType, Expression<?> symb_expr) {
 
-		if (isBv32(argType)) {
+		if (TypeUtil.isBv32(argType)) {
 			IntegerValue booleanExpr = (IntegerValue) symb_expr;
 			env.topFrame().operandStack.pushBv32(booleanExpr);
-		} else if (isBv64(argType)) {
+		} else if (TypeUtil.isBv64(argType)) {
 			IntegerValue longExpr = (IntegerValue) symb_expr;
 			env.topFrame().operandStack.pushBv64(longExpr);
-		} else if (isFp32(argType)) {
+		} else if (TypeUtil.isFp32(argType)) {
 			RealValue realExpr = (RealValue) symb_expr;
 			env.topFrame().operandStack.pushFp32(realExpr);
-		} else if (isFp64(argType)) {
+		} else if (TypeUtil.isFp64(argType)) {
 			RealValue realExpr = (RealValue) symb_expr;
 			env.topFrame().operandStack.pushFp64(realExpr);
 		} else {
@@ -1204,16 +1214,16 @@ public class SymbolicObserver extends ExecutionObserver {
 	}
 
 	private void pushDummyValue(Type argType) {
-		if (isBv32(argType)) {
+		if (TypeUtil.isBv32(argType)) {
 			IntegerValue integerExpr = ExpressionFactory.buildNewIntegerConstant(0);
 			env.topFrame().operandStack.pushBv32(integerExpr);
-		} else if (isBv64(argType)) {
+		} else if (TypeUtil.isBv64(argType)) {
 			IntegerValue integerExpr = ExpressionFactory.buildNewIntegerConstant(0);
 			env.topFrame().operandStack.pushBv64(integerExpr);
-		} else if (isFp32(argType)) {
+		} else if (TypeUtil.isFp32(argType)) {
 			RealValue realExpr = ExpressionFactory.buildNewRealConstant(0);
 			env.topFrame().operandStack.pushFp32(realExpr);
-		} else if (isFp64(argType)) {
+		} else if (TypeUtil.isFp64(argType)) {
 			RealValue realExpr = ExpressionFactory.buildNewRealConstant(0);
 			env.topFrame().operandStack.pushFp64(realExpr);
 		} else {
@@ -1221,31 +1231,10 @@ public class SymbolicObserver extends ExecutionObserver {
 		}
 	}
 
-	private static boolean isValue(Type t) {
-		return isBv32(t) || isBv64(t) || isFp32(t) || isFp64(t);
-	}
-
-	private static boolean isFp64(Type t) {
-		return t.equals(Type.DOUBLE_TYPE);
-	}
-
-	private static boolean isFp32(Type t) {
-		return t.equals(Type.FLOAT_TYPE);
-	}
-
-	private static boolean isBv64(Type t) {
-		return t.equals(Type.LONG_TYPE);
-	}
-
-	private static boolean isBv32(Type t) {
-		return t.equals(Type.CHAR_TYPE) || t.equals(Type.BOOLEAN_TYPE) || t.equals(Type.SHORT_TYPE)
-				|| t.equals(Type.BYTE_TYPE) || t.equals(Type.INT_TYPE);
-	}
-
 	/**
 	 * This method forbids using the same interning String in two separate
 	 * string primitive statements.
-	 * 
+	 *
 	 * @param statement
 	 * @param scope
 	 */
@@ -1979,5 +1968,27 @@ public class SymbolicObserver extends ExecutionObserver {
 	@Override
 	public void testExecutionFinished(ExecutionResult r, Scope s) {
 		// do nothing
+	}
+
+	private void overrideHeapArrayWithVariable(ArrayReference arrayRef, Class<?> component_class, ReferenceConstant symb_array) {
+		// The constant array is over-writen by a variable one.
+		// TODO: is there a better way of doing this?
+		if (ArrayUtil.isIntegerType(component_class)) {
+			ArrayValue.IntegerArrayValue symbolic_array_value = ExpressionFactory.buildNewIntegerArrayVariableExpression(
+				arrayRef,
+				symb_array
+			);
+
+			env.heap.putIntegerArray(symb_array, symbolic_array_value);
+		} else if (ArrayUtil.isRealType(component_class)) {
+			ArrayValue.RealArrayValue symbolic_array_value = ExpressionFactory.buildNewRealArrayVariableExpression(
+				arrayRef,
+				symb_array
+			);
+
+			env.heap.putRealArray(symb_array, symbolic_array_value);
+		} else {
+			//	TODO: Implement the other types (String + References)
+		}
 	}
 }

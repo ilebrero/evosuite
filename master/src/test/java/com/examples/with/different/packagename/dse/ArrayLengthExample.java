@@ -22,8 +22,10 @@ public class ArrayLengthExample {
 
 		if (array[2] == 2) {
 			return 1;
-		} else {
+		} else if (array[1] + a == 3){
 			return 0;
+		} else {
+			return -1;
 		}
 	}
 

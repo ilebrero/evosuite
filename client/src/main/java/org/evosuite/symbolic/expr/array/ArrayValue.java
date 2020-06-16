@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
+ * Copyright (C) 2010-2020 Gordon Fraser, Andrea Arcuri and EvoSuite
  * contributors
  *
  * This file is part of EvoSuite.
@@ -17,31 +17,17 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.solver.smt;
+package org.evosuite.symbolic.expr.array;
 
-import org.evosuite.symbolic.solver.SmtSort;
+import org.evosuite.symbolic.expr.Expression;
+import org.evosuite.symbolic.expr.SymbolicValue;
 
-public final class SmtConstantDeclaration {
-
-	private final String name;
-	private final SmtSort[] sorts;
-
-	public SmtConstantDeclaration(String constantName, SmtSort... constantSorts) {
-		this.name = constantName;
-		this.sorts = constantSorts;
-	}
-
-	public String getConstantName() {
-		return name;
-	}
-
-	public SmtSort[] getConstantSorts() {
-		return sorts;
-	}
-
-	public String toString() {
-		SmtQueryPrinter printer = new SmtQueryPrinter();
-		String str = printer.print(this);
-		return str;
-	}
+/**
+ * interface for array related expressions
+ *
+ * @author Ignacio Lebrero
+ */
+public interface ArrayValue {
+  interface IntegerArrayValue extends Expression<Object>, SymbolicValue {}
+  interface RealArrayValue extends Expression<Object>, SymbolicValue {}
 }

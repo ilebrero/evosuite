@@ -20,6 +20,11 @@
 package org.evosuite.symbolic.vm;
 
 import org.evosuite.symbolic.expr.Operator;
+import org.evosuite.symbolic.expr.array.ArrayConstant;
+import org.evosuite.symbolic.expr.array.ArrayStore;
+import org.evosuite.symbolic.expr.array.ArrayVariable;
+import org.evosuite.symbolic.expr.array.ArrayValue;
+import org.evosuite.symbolic.expr.array.ArraySelect;
 import org.evosuite.symbolic.expr.bv.IntegerBinaryExpression;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.bv.IntegerValue;
@@ -28,8 +33,8 @@ import org.evosuite.symbolic.expr.fp.RealConstant;
 import org.evosuite.symbolic.expr.fp.RealValue;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
-import org.evosuite.symbolic.expr.ref.ReferenceVariable;
 import org.evosuite.symbolic.expr.str.StringConstant;
+import org.evosuite.testcase.variable.ArrayReference;
 import org.objectweb.asm.Type;
 
 
@@ -330,5 +335,39 @@ public abstract class ExpressionFactory {
 		referenceConstant.initializeReference(null);
 		return referenceConstant;
 	}
-	
+
+	/**************************** Arrays ****************************/
+
+
+	public static ArrayValue.IntegerArrayValue buildNewIntegerArrayConstantExpression(ReferenceExpression symbArrayReference) {
+		return new ArrayConstant.IntegerArrayConstant(symbArrayReference);
+	}
+
+	public static ArrayValue.RealArrayValue buildNewRealArrayConstantExpression(ReferenceExpression symbArrayReference) {
+		return new ArrayConstant.RealArrayConstant(symbArrayReference);
+	}
+
+  public static IntegerValue buildArraySelectExpression(ArrayValue.IntegerArrayValue arrayExpression, IntegerValue symb_index, IntegerValue symb_value) {
+		return new ArraySelect.IntegerArraySelect(arrayExpression, symb_index, symb_value);
+  }
+
+	public static RealValue buildArraySelectExpression(ArrayValue.RealArrayValue arrayExpression, IntegerValue symb_index, RealValue symb_value) {
+		return new ArraySelect.RealArraySelect(arrayExpression, symb_index, symb_value);
+  }
+
+	public static ArrayValue.IntegerArrayValue buildArrayStoreExpression(ArrayValue.IntegerArrayValue symbolic_array_instance, IntegerValue symb_index, IntegerValue symb_value) {
+		return new ArrayStore.IntegerArrayStore(symbolic_array_instance, symb_index, symb_value);
+	}
+
+	public static ArrayValue.RealArrayValue buildArrayStoreExpression(ArrayValue.RealArrayValue symbolic_array_instance, IntegerValue symb_index, RealValue symb_value) {
+		return new ArrayStore.RealArrayStore(symbolic_array_instance, symb_index, symb_value);
+	}
+
+	public static ArrayValue.IntegerArrayValue buildNewIntegerArrayVariableExpression(ArrayReference arrayReference, ReferenceExpression symbArrayReference) {
+		return new ArrayVariable.IntegerArrayVariable(arrayReference, symbArrayReference);
+	}
+
+	public static ArrayValue.RealArrayValue buildNewRealArrayVariableExpression(ArrayReference arrayReference, ReferenceExpression symbArrayReference) {
+		return new ArrayVariable.RealArrayVariable(arrayReference, symbArrayReference);
+	}
 }

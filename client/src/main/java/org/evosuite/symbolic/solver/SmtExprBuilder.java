@@ -19,6 +19,8 @@
  */
 package org.evosuite.symbolic.solver;
 
+import org.evosuite.symbolic.solver.smt.SmtArrayConstant;
+import org.evosuite.symbolic.solver.smt.SmtArrayVariable;
 import org.evosuite.symbolic.solver.smt.SmtBooleanConstant;
 import org.evosuite.symbolic.solver.smt.SmtConstantDeclaration;
 import org.evosuite.symbolic.solver.smt.SmtExpr;
@@ -129,16 +131,30 @@ public abstract class SmtExprBuilder {
 
 	public static SmtExpr mkITE(SmtExpr condExpr, SmtExpr thenExpr, SmtExpr elseExpr) {
 		return new SmtOperation(SmtOperation.Operator.ITE, condExpr, thenExpr, elseExpr);
-
 	}
 
 	public static SmtExpr mkLt(SmtExpr left, SmtExpr right) {
 		return new SmtOperation(SmtOperation.Operator.LT, left, right);
+	}
 
+	public static SmtExpr mkArrayLoad(SmtExpr arrayExpr, SmtExpr indexExpr) {
+		return new SmtOperation(SmtOperation.Operator.SELECT, arrayExpr, indexExpr);
+	}
+
+	public static SmtExpr mkArrayStore(SmtExpr arrayExpr, SmtExpr indexExpr, SmtExpr valueExpression) {
+		return new SmtOperation(SmtOperation.Operator.STORE, arrayExpr, indexExpr, valueExpression);
 	}
 
 	public static SmtIntConstant mkIntConstant(long longValue) {
 		return new SmtIntConstant(longValue);
+	}
+
+	public static SmtExpr mkIntegerArrayConstant(Object arrayValue) {
+		return new SmtArrayConstant.SmtIntegerArrayConstant(arrayValue);
+	}
+
+	public static SmtExpr mkRealArrayConstant(Object arrayValue) {
+		return new SmtArrayConstant.SmtRealArrayConstant(arrayValue);
 	}
 
 	public static SmtRealConstant mkRealConstant(double doubleValue) {
@@ -169,7 +185,14 @@ public abstract class SmtExprBuilder {
 
 	public static SmtIntVariable mkIntVariable(String varName) {
 		return new SmtIntVariable(varName);
+	}
 
+	public static SmtExpr mkIntegerArrayVariable(String varName) {
+		return new SmtArrayVariable.SmtIntegerArrayVariable(varName);
+	}
+
+	public static SmtExpr mkRealArrayVariable(String varName) {
+		return new SmtArrayVariable.SmtRealArrayVariable(varName);
 	}
 
 	public static SmtExpr mkStrSubstr(SmtExpr stringExpr, SmtExpr startIndex, SmtExpr offset) {
@@ -340,31 +363,67 @@ public abstract class SmtExprBuilder {
 	}
 
 	public static SmtConstantDeclaration mkIntConstantDeclaration(String constName) {
-		return new SmtConstantDeclaration(constName, "Int");
+		return new SmtConstantDeclaration(constName, SmtSort.INT);
 	}
 
 	public static SmtConstantDeclaration mkRealConstantDeclaration(String constName) {
-		return new SmtConstantDeclaration(constName, "Real");
+		return new SmtConstantDeclaration(constName, SmtSort.REAL);
 	}
 
 	public static SmtConstantDeclaration mkStringConstantDeclaration(String constName) {
-		return new SmtConstantDeclaration(constName, "String");
+		return new SmtConstantDeclaration(constName, SmtSort.STRING);
+	}
+
+	/** TODO: Eventually expand the sorts of aany declaration to more than one */
+	public static SmtConstantDeclaration mkIntegerArrayConstantDeclaration(String constName) {
+		return new SmtConstantDeclaration(
+			constName,
+			SmtSort.ARRAY,
+				SmtSort.INT,
+				SmtSort.INT
+		);
+	}
+
+	public static SmtConstantDeclaration mkRealArrayConstantDeclaration(String constName) {
+				return new SmtConstantDeclaration(
+			constName,
+			SmtSort.ARRAY,
+				SmtSort.INT,
+				SmtSort.REAL
+		);
 	}
 
 	public static SmtFunctionDeclaration mkIntFunctionDeclaration(String funcName) {
-		return new SmtFunctionDeclaration(funcName, "Int");
+		return new SmtFunctionDeclaration(funcName, SmtSort.INT);
 	}
 
 	public static SmtFunctionDeclaration mkRealFunctionDeclaration(String funcName) {
-		return new SmtFunctionDeclaration(funcName, "Real");
+		return new SmtFunctionDeclaration(funcName, SmtSort.REAL);
 	}
 
 	public static SmtFunctionDeclaration mkStringFunctionDeclaration(String funcName) {
-		return new SmtFunctionDeclaration(funcName, "String");
+		return new SmtFunctionDeclaration(funcName, SmtSort.STRING);
+	}
+
+	public static SmtFunctionDeclaration mkIntegerArrayFunctionDeclaration(String funcName) {
+		return new SmtFunctionDeclaration(
+			funcName,
+			SmtSort.ARRAY,
+				SmtSort.INT,
+				SmtSort.INT
+		);
+	}
+
+	public static SmtFunctionDeclaration mkRealArrayFunctionDeclaration(String funcName) {
+		return new SmtFunctionDeclaration(
+			funcName,
+			SmtSort.ARRAY,
+				SmtSort.INT,
+				SmtSort.REAL
+			);
 	}
 
 	public static SmtExpr mkStrIndexOf(SmtExpr left, SmtExpr right) {
 		return new SmtOperation(SmtOperation.Operator.STR_INDEXOF, left, right);
 	}
-
 }

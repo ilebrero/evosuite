@@ -66,7 +66,7 @@ public abstract class DSEBaseAlgorithm<T extends Chromosome> implements Serializ
 	/** Path Divergence config */
 	public static final int PATH_DIVERGED_BASED_TEST_CASE_PENALTY_SCORE = 0;
 
-	private static final Logger logger = LoggerFactory.getLogger(DSEBaseAlgorithm.class);
+	private static final transient Logger logger = LoggerFactory.getLogger(DSEBaseAlgorithm.class);
 
 	protected final TestSuiteChromosome testSuite = new TestSuiteChromosome();
 

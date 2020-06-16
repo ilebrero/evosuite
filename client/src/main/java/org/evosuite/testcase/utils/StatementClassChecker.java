@@ -20,6 +20,7 @@
 package org.evosuite.testcase.utils;
 
 import org.evosuite.testcase.statements.ArrayStatement;
+import org.evosuite.testcase.statements.AssignmentStatement;
 import org.evosuite.testcase.statements.PrimitiveStatement;
 import org.evosuite.testcase.statements.Statement;
 
@@ -31,8 +32,9 @@ import java.util.function.Function;
  * @author Ignacio Lebrero
  */
 public enum StatementClassChecker {
-    PRIMITIVE_STATEMENT((statement) -> (statement instanceof PrimitiveStatement)),
-    ARRAY_STATEMENT((statement) -> (statement instanceof ArrayStatement));
+    ARRAY_STATEMENT((statement)      -> (statement instanceof ArrayStatement)),
+    PRIMITIVE_STATEMENT((statement)  -> (statement instanceof PrimitiveStatement)),
+    ASSIGNMENT_STATEMENT((statement) -> (statement instanceof AssignmentStatement));
 
     private final Function<Statement, Boolean> statementCheck;
 

@@ -47,7 +47,7 @@ import org.evosuite.symbolic.solver.SolverUtils;
 import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.execution.TestCaseExecutor;
-import org.evosuite.testcase.utils.TestCaseUtils;
+import org.evosuite.testcase.TestCaseUpdater;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.utils.ClassUtil;
 import org.slf4j.Logger;
@@ -75,7 +75,7 @@ import java.util.Set;
    */
 public class DSEAlgorithm extends DSEBaseAlgorithm {
 
-    private static final Logger logger = LoggerFactory.getLogger(DSEAlgorithm.class);
+    private static final transient Logger logger = LoggerFactory.getLogger(DSEAlgorithm.class);
 
     /**
      * Logger Messages
@@ -108,7 +108,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
     /**
      * A cache of previous results from the constraint solver
      **/
-    protected final Map<Set<Constraint<?>>, SolverResult> queryCache
+    protected final transient Map<Set<Constraint<?>>, SolverResult> queryCache
             = new HashMap<Set<Constraint<?>>, SolverResult>();
 
     /**
@@ -287,7 +287,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      * @return
      */
     private DSETestCase generateNewTestCase(DSETestCase currentConcreteTest, DSEPathCondition currentPathCondition, Map<String, Object> smtSolution, boolean hasPathConditionDiverged) {
-        TestCase newTestCase = TestCaseUtils.updateTest(currentConcreteTest.getTestCase(), smtSolution);
+        TestCase newTestCase = TestCaseUpdater.updateTest(currentConcreteTest.getTestCase(), smtSolution);
 
         DSETestCase newDSETestCase = new DSETestCase(
             newTestCase,

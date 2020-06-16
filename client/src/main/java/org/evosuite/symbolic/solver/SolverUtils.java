@@ -23,6 +23,7 @@ import org.evosuite.symbolic.PathConditionNode;
 import org.evosuite.symbolic.PathCondition;
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.expr.Expression;
+import org.evosuite.symbolic.expr.array.ArrayVariable;
 import org.evosuite.symbolic.expr.constraint.IntegerConstraint;
 import org.evosuite.symbolic.expr.Variable;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
@@ -102,8 +103,12 @@ public abstract class SolverUtils {
           } else if (variable instanceof RealVariable) {
             // skip
           } else if (variable instanceof StringVariable) {
-            // skip
-          } else {
+						// skip
+					}else if (variable instanceof ArrayVariable.IntegerArrayVariable) {
+        		// skip
+          } else if (variable instanceof ArrayVariable.RealArrayVariable) {
+        		// skip
+          }else {
             throw new UnsupportedOperationException(
                 "Unknown variable type " + variable.getClass().getName());
           }

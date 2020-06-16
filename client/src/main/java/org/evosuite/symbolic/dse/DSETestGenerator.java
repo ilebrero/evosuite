@@ -32,7 +32,7 @@ import org.evosuite.testcase.DefaultTestCase;
 import org.evosuite.testcase.TestCase;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.execution.ExecutionResult;
-import org.evosuite.testcase.utils.TestCaseUtils;
+import org.evosuite.testcase.TestCaseUpdater;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.slf4j.Logger;
@@ -183,7 +183,7 @@ public class DSETestGenerator {
 				Map<String, Object> model = solverResult.getModel();
 				TestCase oldTest = test.getTestCase();
 				ExecutionResult oldResult = test.getLastExecutionResult().clone();
-				TestCase newTest = TestCaseUtils.updateTest(oldTest, model);
+				TestCase newTest = TestCaseUpdater.updateTest(oldTest, model);
 				logger.info("New test: " + newTest.toCode());
 				test.setTestCase(newTest);
 				// test.clearCachedMutationResults(); // TODO Mutation

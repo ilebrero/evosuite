@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import com.examples.with.different.packagename.dse.ArrayAssignmentExample;
 import com.examples.with.different.packagename.dse.PathDivergeUsingHashExample;
 import org.evosuite.EvoSuite;
 import org.evosuite.Properties;
@@ -524,10 +525,26 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 		TestSuiteChromosome best = dse.getGeneratedTestSuite();
 		System.out.println("EvolvedTestSuite:\n" + best);
 
-		assertEquals(7, best.getNumOfCoveredGoals() );
+		assertEquals(9, best.getNumOfCoveredGoals() );
 		assertEquals(2, best.getNumOfNotCoveredGoals() );
 	}
 
+	@Test
+	public void testArrayAssignment() {
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = ArrayAssignmentExample.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		DSEBaseAlgorithm<?> dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertEquals(6, best.getNumOfCoveredGoals() );
+		assertEquals(13, best.getNumOfNotCoveredGoals() );
+	}
 
 	/**
 	 * Given that the concolic engine makes the un-instrumented functions results concrete, the hashing case gets covered..
