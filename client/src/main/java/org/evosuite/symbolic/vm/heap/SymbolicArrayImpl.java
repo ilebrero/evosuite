@@ -63,19 +63,19 @@ public class SymbolicArrayImpl implements SymbolicArray {
 
   private void matchType(Expression expression) {
     if (ExpressionUtils.isIntegerValue(expression) && !TypeUtil.isIntegerValue(contentType)) {
-      throw new IllegalArgumentException("Symbolic array is contains type "
+      throw new IllegalArgumentException("Symbolic array contains type "
         + IntegerValue.class.getName()
         + "but provided type doesn't match");
     }
 
     if (ExpressionUtils.isRealValue(expression) && !TypeUtil.isRealValue(contentType)) {
-      throw new IllegalArgumentException("Symbolic array is contains type "
+      throw new IllegalArgumentException("Symbolic array contains type "
         + RealValue.class.getName()
         + "but provided type doesn't match");
     }
 
     if (ExpressionUtils.isStringValue(expression) && !TypeUtil.isStringValue(contentType)) {
-      throw new IllegalArgumentException("Symbolic array is contains type "
+      throw new IllegalArgumentException("Symbolic array contains type "
         + StringValue.class.getName()
         + "but provided type doesn't match");
     }

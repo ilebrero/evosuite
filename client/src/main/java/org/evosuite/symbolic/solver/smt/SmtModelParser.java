@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import jdk.internal.org.objectweb.asm.Type;
 import org.evosuite.symbolic.solver.ResultParser;
 import org.evosuite.symbolic.solver.SmtSort;
 import org.evosuite.symbolic.solver.SolverErrorException;

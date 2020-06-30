@@ -35,8 +35,8 @@ public class SymbolicHeapArraySectionFactory {
     }
 
     switch (arraysMemoryModelVersion) {
-//      case LAZY_VARIABLES:
-//        return new LazyArraysImpl();
+      case LAZY_VARIABLES:
+        return new LazyArraysImpl();
       case ARRAYS_THEORY:
         return new ArrayTheoryImpl();
       default:

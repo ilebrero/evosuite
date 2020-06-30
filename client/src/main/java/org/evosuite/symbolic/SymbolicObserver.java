@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.evosuite.Properties;
 import org.evosuite.dse.VM;
 import org.evosuite.runtime.testdata.EvoSuiteFile;
 import org.evosuite.runtime.testdata.EvoSuiteLocalAddress;
@@ -306,6 +307,16 @@ public class SymbolicObserver extends ExecutionObserver {
 			ReferenceConstant old_symb_array = (ReferenceConstant) env.topFrame().operandStack.popRef();
 
 			//The reference should be variable as this is symbolic, so we re create it with the concrete array.
+			upgradeToSymbolicArrayVariable(arrayRef, conc_array);
+
+		} catch (CodeUnderTestException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	private void upgradeToSymbolicArrayVariable(ArrayReference arrayRef, Object conc_array) {
+		if (Properties.IS_DSE_ARRAYS_SUPPORT_ENABLED) {
 			ReferenceVariable new_sym_array = env.heap.buildNewArrayReferenceVariable(conc_array, arrayRef.getName());
 			env.heap.initializeReference(conc_array, new_sym_array);
 			env.heap.putField(
@@ -318,11 +329,7 @@ public class SymbolicObserver extends ExecutionObserver {
 
 			String varRef_name = arrayRef.getName();
 			symb_references.put(varRef_name, new_sym_array);
-
-		} catch (CodeUnderTestException e) {
-			throw new RuntimeException(e);
 		}
-
 	}
 
 
