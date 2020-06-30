@@ -30,7 +30,8 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
-import org.evosuite.symbolic.instrument.SymbolicInstrumentingClassLoader;
+import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
+import org.evosuite.symbolic.vm.heap.SymbolicHeap;
 import org.evosuite.testcase.execution.EvosuiteError;
 import org.objectweb.asm.Type;
 
@@ -58,9 +59,9 @@ public final class SymbolicEnvironment {
 	 */
 	private final Set<Class<?>> preparedClasses = new HashSet<Class<?>>();
 
-	private final SymbolicInstrumentingClassLoader instrumentingClassLoader;
+	private final ConcolicInstrumentingClassLoader instrumentingClassLoader;
 
-	public SymbolicEnvironment(SymbolicInstrumentingClassLoader instrumentingClassLoader) {
+	public SymbolicEnvironment(ConcolicInstrumentingClassLoader instrumentingClassLoader) {
 		this.instrumentingClassLoader = instrumentingClassLoader;
 	}
 

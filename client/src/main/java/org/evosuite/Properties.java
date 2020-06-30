@@ -56,6 +56,7 @@ public class Properties {
 
     private final static Logger logger = LoggerFactory.getLogger(Properties.class);
 
+
 	/**
 	 * Parameters are fields of the Properties class, annotated with this
 	 * annotation. The key parameter is used to identify values in property
@@ -387,10 +388,20 @@ public class Properties {
 
 	//----------- DSE, which is a special case of LS ---------------
 
-		/** ilebrero: Mostly for benchmarks for new module, I dont think the legacy strategy is gonna be used anymore **/
+	/** ilebrero: Mostly for benchmarks for new module, I dont think the legacy strategy is gonna be used anymore **/
 	public enum DSE_MODULE_VERSION {
 		LEGACY,
 		NEW
+	}
+
+	/**
+	 * ilebrero: Hope it doesn't make a lot of confusion that there are two versions of arrays suported.
+	 *           - ARRAYS_THEORY: Supports both Integers and Reals.
+	 *           - LAZY_VARIABLES: Supports Integers, Reals, Strings and References.
+	 * **/
+	public enum DSE_ARRAYS_MEMORY_MODEL_VERSION {
+		ARRAYS_THEORY,
+		LAZY_VARIABLES
 	}
 
 	@Parameter(key = "dse_module_version", group = "DSE", description = "Module version of DSE, mostly used for benchmarking between modules. For other things the new one is recomended.")
@@ -398,6 +409,9 @@ public class Properties {
 
 	@Parameter(key = "dse_enable_arrays_support", group = "DSE", description = "If arrays should be supported by the concolic engine")
 	public static boolean IS_DSE_ARRAYS_SUPPORT_ENABLED = true;
+
+	@Parameter(key = "selected_dse_module_arrays_support_version", group = "DSE", description = "Which implementation of arrays is used on the concolic engine.")
+	public static DSE_ARRAYS_MEMORY_MODEL_VERSION SELECTED_DSE_ARRAYS_MEMORY_MODEL_VERSION = DSE_ARRAYS_MEMORY_MODEL_VERSION.ARRAYS_THEORY;
 
 	@Parameter(key = "dse_probability", group = "DSE", description = "Probability used to specify when to use DSE instead of regular LS when LS is applied")
     @DoubleValue(min = 0.0, max = 1.0)
@@ -2561,4 +2575,11 @@ public class Properties {
 			&& LOCAL_SEARCH_PROBABILITY > 0.0;
 	}
 
+  public static boolean isArraysTheoryImplementationSelected() {
+		return SELECTED_DSE_ARRAYS_MEMORY_MODEL_VERSION.equals(DSE_ARRAYS_MEMORY_MODEL_VERSION.ARRAYS_THEORY);
+  }
+
+	public static boolean isLazyArraysImplementationSelected() {
+		return SELECTED_DSE_ARRAYS_MEMORY_MODEL_VERSION.equals(DSE_ARRAYS_MEMORY_MODEL_VERSION.LAZY_VARIABLES);
+	}
 }

@@ -17,13 +17,14 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.expr.array;
+package org.evosuite.symbolic.expr.ref.array;
 
 import org.evosuite.symbolic.expr.AbstractExpression;
 import org.evosuite.symbolic.expr.ExpressionVisitor;
 import org.evosuite.symbolic.expr.Variable;
 import org.evosuite.symbolic.expr.bv.IntegerValue;
 import org.evosuite.symbolic.expr.fp.RealValue;
+import org.evosuite.symbolic.expr.str.StringValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,13 +46,11 @@ public final class ArrayStore {
      * @param arrayExpr
      * @param indexExpr
      */
-    public IntegerArrayStore(ArrayValue.IntegerArrayValue arrayExpr, IntegerValue indexExpr, IntegerValue valueExpression) {
+    public IntegerArrayStore(ArrayValue.IntegerArrayValue arrayExpr, IntegerValue indexExpr, IntegerValue valueExpression, Object resultArray) {
       super(
-        arrayExpr.getConcreteValue(),
+        resultArray,
         1 + arrayExpr.getSize() + indexExpr.getSize() + valueExpression.getSize(),
-        arrayExpr.containsSymbolicVariable()
-          || indexExpr.containsSymbolicVariable()
-          || valueExpression.containsSymbolicVariable()
+        arrayExpr.containsSymbolicVariable() || valueExpression.containsSymbolicVariable()
       );
 
       this.symbolicArray = arrayExpr;
@@ -110,13 +109,11 @@ public final class ArrayStore {
      * @param indexExpr
      * @param valueExpression
      */
-    public RealArrayStore(ArrayValue.RealArrayValue arrayExpr, IntegerValue indexExpr, RealValue valueExpression) {
+    public RealArrayStore(ArrayValue.RealArrayValue arrayExpr, IntegerValue indexExpr, RealValue valueExpression, Object concreteResultArray) {
       super(
-        arrayExpr.getConcreteValue(),
+        concreteResultArray,
         1 + arrayExpr.getSize() + indexExpr.getSize() + valueExpression.getSize(),
-        arrayExpr.containsSymbolicVariable()
-          || indexExpr.containsSymbolicVariable()
-          || valueExpression.containsSymbolicVariable()
+        arrayExpr.containsSymbolicVariable() || valueExpression.containsSymbolicVariable()
       );
 
       this.symbolicArray = arrayExpr;
@@ -159,6 +156,67 @@ public final class ArrayStore {
       return symbolicIndex;
     }
     public RealValue getSymbolicValue() {
+      return symbolicValue;
+    }
+  }
+
+  public static final class StringArrayStore extends AbstractExpression<Object> implements ArrayValue.StringArrayValue {
+    private final StringValue symbolicValue;
+    private final IntegerValue symbolicIndex;
+    private final ArrayValue.StringArrayValue symbolicArray;
+
+    /**
+     * @param arrayExpr
+     * @param indexExpr
+     * @param valueExpression
+     */
+    public StringArrayStore(ArrayValue.StringArrayValue arrayExpr, IntegerValue indexExpr, StringValue valueExpression, Object concreteResultArray) {
+      super(
+        concreteResultArray,
+        1 + arrayExpr.getSize() + indexExpr.getSize() + valueExpression.getSize(),
+        arrayExpr.containsSymbolicVariable() || valueExpression.containsSymbolicVariable()
+      );
+
+      this.symbolicArray = arrayExpr;
+      this.symbolicIndex = indexExpr;
+      this.symbolicValue = valueExpression;
+    }
+
+    @Override
+    public String toString() {
+      return  symbolicArray + "[" + symbolicIndex + "] = " + symbolicValue;
+    }
+
+    @Override
+    public Set<Variable<?>> getVariables() {
+      Set<Variable<?>> variables = new HashSet<Variable<?>>();
+      variables.addAll(this.symbolicArray.getVariables());
+      variables.addAll(this.symbolicIndex.getVariables());
+      variables.addAll(this.symbolicValue.getVariables());
+      return variables;
+    }
+
+    @Override
+    public Set<Object> getConstants() {
+      Set<Object> result = new HashSet();
+      result.addAll(this.symbolicArray.getConstants());
+      result.addAll(this.symbolicIndex.getConstants());
+      result.addAll(this.symbolicValue.getConstants());
+      return result;
+    }
+
+    @Override
+    public <K, V> K accept(ExpressionVisitor<K, V> v, V arg) {
+      return v.visit(this, arg);
+    }
+
+    public ArrayValue.StringArrayValue getSymbolicArray() {
+      return symbolicArray;
+    }
+    public IntegerValue getSymbolicIndex() {
+      return symbolicIndex;
+    }
+    public StringValue getSymbolicValue() {
       return symbolicValue;
     }
   }

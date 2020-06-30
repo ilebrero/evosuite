@@ -104,7 +104,7 @@ public class DSELegacyAlgorithm extends GeneticAlgorithm<TestSuiteChromosome> {
       TestCase clonedTestCase = currentTestCase.clone();
 
       final PathCondition pathCondition =
-          new ConcolicEngine().execute((DefaultTestCase) clonedTestCase);
+          new ConcolicExecutor().execute((DefaultTestCase) clonedTestCase);
       logger
           .debug("Path condition collected with : " + pathCondition.size() + " branches");
 

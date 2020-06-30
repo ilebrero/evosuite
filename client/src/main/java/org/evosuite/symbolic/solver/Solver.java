@@ -21,7 +21,7 @@ package org.evosuite.symbolic.solver;
 
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.expr.Variable;
-import org.evosuite.symbolic.expr.array.ArrayVariable;
+import org.evosuite.symbolic.expr.ref.array.ArrayVariable;
 import org.evosuite.symbolic.expr.bv.IntegerVariable;
 import org.evosuite.symbolic.expr.constraint.ConstraintEvaluator;
 import org.evosuite.symbolic.expr.fp.RealVariable;
@@ -178,14 +178,8 @@ public abstract class Solver {
 				RealVariable ir = (RealVariable) v;
 				Double concreteReal = (Double) concreteValue;
 				ir.setConcreteValue(concreteReal);
-			} else if (v instanceof ArrayVariable.IntegerArrayVariable) {
-				ArrayVariable.IntegerArrayVariable arr = (ArrayVariable.IntegerArrayVariable) v;
-				arr.setConcreteValue(
-					getResizedArray(
-						arr.getConcreteValue(),
-						concreteValue));
-			} else if (v instanceof ArrayVariable.RealArrayVariable) {
-				ArrayVariable.RealArrayVariable arr = (ArrayVariable.RealArrayVariable) v;
+			} else if (v instanceof ArrayVariable) {
+				ArrayVariable arr = (ArrayVariable) v;
 				arr.setConcreteValue(
 					getResizedArray(
 						arr.getConcreteValue(),

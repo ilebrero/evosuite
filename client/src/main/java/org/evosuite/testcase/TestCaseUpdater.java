@@ -19,6 +19,7 @@
  */
 package org.evosuite.testcase;
 
+import org.evosuite.Properties;
 import org.evosuite.symbolic.TestCaseBuilder;
 import org.evosuite.testcase.statements.ArrayStatement;
 import org.evosuite.testcase.statements.AssignmentStatement;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -63,18 +65,19 @@ public class TestCaseUpdater {
 		for (String symbolicVariableName : updatedValues.keySet()) {
 			Object updateValue = updatedValues.get(symbolicVariableName);
 			if (updateValue != null) {
-				logger.info("New value: " + symbolicVariableName + ": " + updateValue);
+        logger.info("New value: " + symbolicVariableName + ": " + updateValue);
 
-				// It's a dimension of the array's length
-				if (ArraySymbolicLengthName.isArraySymbolicLengthVariableName(symbolicVariableName)) {
+        if (ArraySymbolicLengthName.isArraySymbolicLengthVariableName(symbolicVariableName)) {
           processArrayLengthValue(newTest, symbolicVariableName, (Long) updateValue);
+        } else if (Properties.isLazyArraysImplementationSelected() && symbolicVariableName.contains("content")) {
+          processArrayElement(test, newTest, symbolicVariableName, updateValue);
         } else if (updateValue instanceof Long) {
           processLongValue(newTest, symbolicVariableName, updateValue);
         } else if (updateValue instanceof String) {
           processStringValue(test, newTest, symbolicVariableName, updateValue);
         } else if (updateValue instanceof Double) {
           processRealValue(test, newTest, symbolicVariableName, updateValue);
-        } else if (updateValue.getClass().isArray()) {
+        } else if (Properties.isArraysTheoryImplementationSelected() && updateValue.getClass().isArray()) {
           processArray(test, newTest, symbolicVariableName, updateValue);
 				} else {
 					logger.debug("New value is of an unsupported type: " + updateValue);
@@ -88,6 +91,28 @@ public class TestCaseUpdater {
 		return newTest;
 
 	}
+
+  private static void processArrayElement(TestCase test, TestCase newTest, String symbolicArrayVariableName, Object updateValue) {
+    String[] names = symbolicArrayVariableName.split("\\_");
+    String arrayVariableName = names[0].replace("__SYM", "");
+    ArrayStatement arrayStatement = (ArrayStatement) getStatement(newTest, arrayVariableName, StatementClassChecker.ARRAY_STATEMENT);
+
+    assert (arrayStatement != null) : "Could not find array " + arrayVariableName + " in test: " + newTest.toCode()
+        + " / Orig test: " + test.toCode() + ", seed: " + Randomness.getSeed();
+
+    AssignmentStatement s = (AssignmentStatement) getStatement(
+      newTest,
+      ArrayUtil.buildArrayIndexName(arrayVariableName, Collections.singletonList(Integer.parseInt(names[2]))),
+      StatementClassChecker.ASSIGNMENT_STATEMENT);
+
+    processArrayElement(
+        newTest,
+        arrayStatement.getArrayReference(),
+        arrayVariableName,
+        new int[]{Integer.parseInt(names[2])},
+        updateValue
+      );
+  }
 
   /**
    * Updates the test case values that are stored on the array.
@@ -165,6 +190,8 @@ public class TestCaseUpdater {
       updateIntegerValueStatement((Long) newValue, valueStatement);
     } else if (Double.class.getName().equals(newValue.getClass().getName())) {
       updateRealValueStatement((Double) newValue, valueStatement);
+    } else if (String.class.getName().equals(newValue.getClass().getName())) {
+      updateStringValueStatement((String) newValue, valueStatement);
     } else {
       throw new UnsupportedOperationException(
         "Update array statemnt for type: "
@@ -487,6 +514,10 @@ public class TestCaseUpdater {
     else
       logger.warn("New value is of an unsupported type: " + value);
   }
+
+  private static void updateStringValueStatement(String newValue, PrimitiveStatement p) {
+	  p.setValue(newValue);
+	}
 
   private static VariableReference buildArrayVariableElementReference(TestCaseBuilder testCaseBuilder, String componentName, Object newValue) {
     if (int.class.getName().equals(componentName)) {

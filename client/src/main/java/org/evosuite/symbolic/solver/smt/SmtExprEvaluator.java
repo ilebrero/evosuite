@@ -65,6 +65,67 @@ public final class SmtExprEvaluator implements SmtExprVisitor<Object, Void> {
 	}
 
 	@Override
+	public Object visit(SmtArrayVariable.SmtStringArrayVariable n, Void arg) {
+		String varName = n.getName();
+		if (!solution.containsKey(varName)) {
+			throw new IllegalStateException("The variable " + varName
+					+ " is not defined in the given solution");
+		}
+
+		Object value = solution.get(varName);
+		if (value == null) {
+			throw new NullPointerException("The value of variable " + varName
+					+ " cannot be null");
+
+		}
+
+		if (!(value.getClass().isArray())) {
+			throw new ClassCastException("The value of variable " + varName
+					+ " should be an array but found type is "
+					+ value.getClass().getName());
+		}
+
+		if (!(value.getClass().getComponentType().getName().equals(String.class.getName()))) {
+			throw new ClassCastException("The component class of the array " + varName
+					+ " should be Double but found type is "
+					+ value.getClass().getComponentType().getName());
+		}
+
+		return value;
+	}
+
+	@Override
+	public Object visit(SmtArrayVariable.SmtReferenceArrayVariable n, Void arg) {
+		String varName = n.getName();
+		if (!solution.containsKey(varName)) {
+			throw new IllegalStateException("The variable " + varName
+					+ " is not defined in the given solution");
+		}
+
+		Object value = solution.get(varName);
+		if (value == null) {
+			throw new NullPointerException("The value of variable " + varName
+					+ " cannot be null");
+
+		}
+
+		if (!(value.getClass().isArray())) {
+			throw new ClassCastException("The value of variable " + varName
+					+ " should be an array but found type is "
+					+ value.getClass().getName());
+		}
+
+		// ??: Makes sense to add this check? any generic object is going to be here
+//		if (!(value.getClass().getComponentType().getName().equals(Object.class.getName()))) {
+//			throw new ClassCastException("The component class of the array " + varName
+//					+ " should be Double but found type is "
+//					+ value.getClass().getComponentType().getName());
+//		}
+
+		return value;
+	}
+
+	@Override
 	public Object visit(SmtArrayVariable.SmtIntegerArrayVariable n, Void arg) {
 		String varName = n.getName();
 		if (!solution.containsKey(varName)) {
@@ -95,6 +156,16 @@ public final class SmtExprEvaluator implements SmtExprVisitor<Object, Void> {
 
 	@Override
 	public Object visit(SmtArrayConstant.SmtRealArrayConstant n, Void arg) {
+		return n.getConstantValue();
+	}
+
+	@Override
+	public Object visit(SmtArrayConstant.SmtStringArrayConstant n, Void arg) {
+		return n.getConstantValue();
+	}
+
+	@Override
+	public Object visit(SmtArrayConstant.SmtReferenceArrayConstant n, Void arg) {
 		return n.getConstantValue();
 	}
 

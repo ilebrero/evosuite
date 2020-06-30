@@ -24,8 +24,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-import com.examples.with.different.packagename.dse.ArrayAssignmentExample;
+import com.examples.with.different.packagename.dse.array.IntegerArrayAssignmentExample;
 import com.examples.with.different.packagename.dse.PathDivergeUsingHashExample;
+import com.examples.with.different.packagename.dse.array.IntegerArrayAssignmentExample2;
+import com.examples.with.different.packagename.dse.array.RealArrayAssignmentExample;
+import com.examples.with.different.packagename.dse.array.RealArrayAssignmentExample2;
+import com.examples.with.different.packagename.dse.array.StringArrayAssignmentExample;
 import org.evosuite.EvoSuite;
 import org.evosuite.Properties;
 import org.evosuite.Properties.Criterion;
@@ -40,7 +44,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.examples.with.different.packagename.dse.Add;
-import com.examples.with.different.packagename.dse.ArrayLengthExample;
+import com.examples.with.different.packagename.dse.array.ArrayLengthExample;
 import com.examples.with.different.packagename.dse.BooleanExample;
 import com.examples.with.different.packagename.dse.ByteExample;
 import com.examples.with.different.packagename.dse.CharExample;
@@ -83,6 +87,7 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 		// Properties.TIMEOUT = Integer.MAX_VALUE;
 
 		Properties.STRATEGY = Strategy.DSE;
+		Properties.SELECTED_DSE_ARRAYS_MEMORY_MODEL_VERSION = Properties.DSE_ARRAYS_MEMORY_MODEL_VERSION.ARRAYS_THEORY;
 
 		Properties.CRITERION = new Criterion[] { Criterion.BRANCH };
 
@@ -530,9 +535,9 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 	}
 
 	@Test
-	public void testArrayAssignment() {
+	public void testIntegerArrayAssignment() {
 		EvoSuite evosuite = new EvoSuite();
-		String targetClass = ArrayAssignmentExample.class.getCanonicalName();
+		String targetClass = IntegerArrayAssignmentExample.class.getCanonicalName();
 		Properties.TARGET_CLASS = targetClass;
 
 		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
@@ -542,8 +547,76 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 		TestSuiteChromosome best = dse.getGeneratedTestSuite();
 		System.out.println("EvolvedTestSuite:\n" + best);
 
-		assertEquals(6, best.getNumOfCoveredGoals() );
-		assertEquals(13, best.getNumOfNotCoveredGoals() );
+		assertEquals(2, best.getNumOfCoveredGoals() );
+		assertEquals(1, best.getNumOfNotCoveredGoals() );
+	}
+
+	@Test
+	public void testIntegerArrayAssignment2() {
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = IntegerArrayAssignmentExample2.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		DSEBaseAlgorithm<?> dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertEquals(4, best.getNumOfCoveredGoals() );
+		assertEquals(1, best.getNumOfNotCoveredGoals() );
+	}
+
+	@Test
+	public void testRealArrayAssignment() {
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = RealArrayAssignmentExample.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		DSEBaseAlgorithm<?> dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertEquals(4, best.getNumOfCoveredGoals() );
+		assertEquals(1, best.getNumOfNotCoveredGoals() );
+	}
+
+	@Test
+	public void testRealArrayAssignment2() {
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = RealArrayAssignmentExample2.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		DSEBaseAlgorithm<?> dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertEquals(8, best.getNumOfCoveredGoals() );
+		assertEquals(1, best.getNumOfNotCoveredGoals() );
+	}
+
+	@Test
+	public void testStringArrayAssignment() {
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = StringArrayAssignmentExample.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		DSEBaseAlgorithm<?> dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertEquals(4, best.getNumOfCoveredGoals() );
+		assertEquals(1, best.getNumOfNotCoveredGoals() );
 	}
 
 	/**

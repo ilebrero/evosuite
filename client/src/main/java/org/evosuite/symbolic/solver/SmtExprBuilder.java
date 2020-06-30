@@ -157,6 +157,14 @@ public abstract class SmtExprBuilder {
 		return new SmtArrayConstant.SmtRealArrayConstant(arrayValue);
 	}
 
+  public static SmtExpr mkStringArrayConstant(Object arrayValue) {
+  	return new SmtArrayConstant.SmtStringArrayConstant(arrayValue);
+	}
+
+  public static SmtExpr mkReferenceArrayConstant(Object arrayValue) {
+		return new SmtArrayConstant.SmtReferenceArrayConstant(arrayValue);
+	}
+
 	public static SmtRealConstant mkRealConstant(double doubleValue) {
 		return new SmtRealConstant(doubleValue);
 	}
@@ -193,6 +201,14 @@ public abstract class SmtExprBuilder {
 
 	public static SmtExpr mkRealArrayVariable(String varName) {
 		return new SmtArrayVariable.SmtRealArrayVariable(varName);
+	}
+
+	public static SmtExpr mkStringArrayVariable(String varName) {
+		return new SmtArrayVariable.SmtStringArrayVariable(varName);
+	}
+
+	public static SmtExpr mkReferenceArrayVariable(String varName) {
+		return new SmtArrayVariable.SmtReferenceArrayVariable(varName);
 	}
 
 	public static SmtExpr mkStrSubstr(SmtExpr stringExpr, SmtExpr startIndex, SmtExpr offset) {
@@ -426,4 +442,5 @@ public abstract class SmtExprBuilder {
 	public static SmtExpr mkStrIndexOf(SmtExpr left, SmtExpr right) {
 		return new SmtOperation(SmtOperation.Operator.STR_INDEXOF, left, right);
 	}
+
 }

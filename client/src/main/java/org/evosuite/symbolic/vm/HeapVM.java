@@ -32,8 +32,7 @@ import org.evosuite.symbolic.expr.fp.RealConstant;
 import org.evosuite.symbolic.expr.fp.RealValue;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
-import org.evosuite.symbolic.instrument.SymbolicInstrumentingClassLoader;
-import org.evosuite.utils.TypeUtil;
+import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,16 +49,16 @@ public final class HeapVM extends AbstractVM {
 
 	private static Logger logger = LoggerFactory.getLogger(HeapVM.class);
 
-	private static final String ARRAY_LENGTH = "length";
+	public static final String ARRAY_LENGTH = "length";
 
 	private final SymbolicEnvironment env;
 
-	private final SymbolicInstrumentingClassLoader classLoader;
+	private final ConcolicInstrumentingClassLoader classLoader;
 
 	private final PathConditionCollector pc;
 
 	public HeapVM(SymbolicEnvironment env, PathConditionCollector pc,
-			SymbolicInstrumentingClassLoader classLoader) {
+			ConcolicInstrumentingClassLoader classLoader) {
 		this.env = env;
 		this.pc = pc;
 		this.classLoader = classLoader;
@@ -483,7 +482,7 @@ public final class HeapVM extends AbstractVM {
 	/* Arrays */
 
 	/**
-	 * Create a (one-dimensional) array of primitive componenet type, e.g., new
+	 * Create a (one-dimensional) array of primitive component type, e.g., new
 	 * int[3]
 	 * 
 	 * Allocate space on the heap and push a reference ref to it onto the stack.
@@ -496,7 +495,7 @@ public final class HeapVM extends AbstractVM {
 		/**
 		 * Since this callback is invoked before the actual array creation, we
 		 * can only add negative index constraints.
-		 * 
+		 * newarray
 		 * PRE: int (length)
 		 * 
 		 * POST: arrayref (delayed)
@@ -514,7 +513,8 @@ public final class HeapVM extends AbstractVM {
 				.getClass();
 
 		Type arrayType = Type.getType(array_class);
-		ReferenceConstant symb_array_ref = buildArrayRef(arrayType);
+
+		ReferenceConstant symb_array_ref = env.heap.buildNewArrayReferenceConstant(arrayType);
 
 		env.heap.putField("", ARRAY_LENGTH, null, symb_array_ref,
 				symb_array_length);
@@ -552,7 +552,7 @@ public final class HeapVM extends AbstractVM {
 				.getClass();
 
 		Type arrayType = Type.getType(array_class);
-		ReferenceConstant symb_array_ref = buildArrayRef(arrayType);
+		ReferenceConstant symb_array_ref = env.heap.buildNewArrayReferenceConstant(arrayType);
 
 		env.heap.putField("", ARRAY_LENGTH, null, symb_array_ref,
 				symb_array_length);
@@ -594,7 +594,7 @@ public final class HeapVM extends AbstractVM {
 		Type multiArrayType = Type.getType(arrayTypeDesc);
 		// push delayed object
 		// @FIXME
-		ReferenceConstant newMultiArray = buildArrayRef(multiArrayType);
+		ReferenceConstant newMultiArray = env.heap.buildNewArrayReferenceConstant(multiArrayType);
 		env.topFrame().operandStack.pushRef(newMultiArray);
 	}
 
@@ -657,8 +657,7 @@ public final class HeapVM extends AbstractVM {
 			return;
 
 		int bv32 = Array.getInt(conc_array, conc_index);
-		IntegerValue c = env.heap.array_load(symb_array_reference, symb_index, new IntegerConstant(bv32));
-
+		IntegerValue c = env.heap.arrayLoad(symb_array_reference, symb_index, new IntegerConstant(bv32));
 		env.topFrame().operandStack.pushBv32(c);
 	}
 
@@ -692,7 +691,7 @@ public final class HeapVM extends AbstractVM {
 			return;
 
 		long bv64 = Array.getLong(conc_array, conc_index);
-		IntegerValue c = env.heap.array_load(symb_array_reference, symb_index,
+		IntegerValue c = env.heap.arrayLoad(symb_array_reference, symb_index,
 				new IntegerConstant(bv64));
 		env.topFrame().operandStack.pushBv64(c);
 
@@ -729,7 +728,7 @@ public final class HeapVM extends AbstractVM {
 
 		float fp32 = Array.getFloat(conc_array, conc_index);
 		RealValue c = env.heap
-				.array_load(symb_array_reference, symb_index, new RealConstant(fp32));
+				.arrayLoad(symb_array_reference, symb_index, new RealConstant(fp32));
 		env.topFrame().operandStack.pushFp32(c);
 
 	}
@@ -772,7 +771,7 @@ public final class HeapVM extends AbstractVM {
 
 		double fp64 = Array.getDouble(conc_array, conc_index);
 		RealValue c = env.heap
-				.array_load(symb_array_reference, symb_index, new RealConstant(fp64));
+				.arrayLoad(symb_array_reference, symb_index, new RealConstant(fp64));
 		env.topFrame().operandStack.pushFp64(c);
 	}
 
@@ -812,6 +811,7 @@ public final class HeapVM extends AbstractVM {
 			symb_value = ExpressionFactory.buildNewNullExpression();
 		} else {
 			symb_value = env.heap.getReference(conc_value);
+//			env.heap.arrayLoad(symb_array_reference, symb_index, "");
 		}
 		env.topFrame().operandStack.pushRef(symb_value);
 	}
@@ -940,8 +940,9 @@ public final class HeapVM extends AbstractVM {
 			intValue = ((Byte) object).shortValue();
 		}
 
-		IntegerValue c = env.heap.array_load(symb_array_reference, symb_index,
+		IntegerValue c = env.heap.arrayLoad(symb_array_reference, symb_index,
 				new IntegerConstant(intValue));
+
 		env.topFrame().operandStack.pushBv32(c);
 
 	}
@@ -976,7 +977,7 @@ public final class HeapVM extends AbstractVM {
 			return;
 
 		char bv32 = Array.getChar(conc_array, conc_index);
-		IntegerValue c = env.heap.array_load(symb_array_reference, symb_index,
+		IntegerValue c = env.heap.arrayLoad(symb_array_reference, symb_index,
 				new IntegerConstant(bv32));
 		env.topFrame().operandStack.pushBv32(c);
 
@@ -1012,7 +1013,7 @@ public final class HeapVM extends AbstractVM {
 			return;
 
 		short conc_value = Array.getShort(conc_array, conc_index);
-		IntegerValue e = env.heap.array_load(symb_array_reference, symb_index,
+		IntegerValue e = env.heap.arrayLoad(symb_array_reference, symb_index,
 				new IntegerConstant(conc_value));
 		env.topFrame().operandStack.pushBv32(e);
 
@@ -1054,8 +1055,7 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		env.heap.array_store(conc_array, symb_array_reference, conc_index, symb_value);
-		env.heap.array_store(symb_array_reference, symb_index, symb_value);
+		env.heap.arrayStore(conc_array, symb_array_reference, symb_index, symb_value);
 	}
 
 	@Override
@@ -1088,8 +1088,7 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		env.heap.array_store(conc_array, symb_array_reference, conc_index, symb_value);
-		env.heap.array_store(symb_array_reference, symb_index, symb_value);
+		env.heap.arrayStore(conc_array, symb_array_reference, symb_index, symb_value);
 	}
 
 	@Override
@@ -1122,8 +1121,7 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		env.heap.array_store(conc_array, symb_array_reference, conc_index, symb_value);
-		env.heap.array_store(symb_array_reference, symb_index, symb_value);
+		env.heap.arrayStore(conc_array, symb_array_reference, symb_index, symb_value);
 	}
 
 	@Override
@@ -1156,8 +1154,7 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		env.heap.array_store(conc_array, symb_array_reference, conc_index, symb_value);
-		env.heap.array_store(symb_array_reference, symb_index, symb_value);
+		env.heap.arrayStore(conc_array, symb_array_reference, symb_index, symb_value);
 	}
 
 	/**
@@ -1199,8 +1196,10 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		/* symbolically store the reference value */
-		env.heap.array_store(conc_array, symb_array_reference, conc_index, symb_value);
+		if (symb_value.getObjectType().getClass().equals(String.class.getName())) {
+//			env.heap.array_store(conc_array, symb_array_reference, conc_index, new StringConstant((String) conc_value));
+		}
+
 		// NonNullReference are not stored in the symbolic heap fields
 		return;
 
@@ -1236,8 +1235,7 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		env.heap.array_store(conc_array, symb_array_reference, conc_index, symb_value);
-		env.heap.array_store(symb_array_reference, symb_index, symb_value);
+		env.heap.arrayStore(conc_array, symb_array_reference, symb_index, symb_value);
 	}
 
 	@Override
@@ -1270,8 +1268,7 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		env.heap.array_store(conc_array, symb_array_reference, conc_index, symb_value);
-		env.heap.array_store(symb_array_reference, symb_index, symb_value);
+		env.heap.arrayStore(conc_array, symb_array_reference, symb_index, symb_value);
 	}
 
 	@Override
@@ -1304,8 +1301,7 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		env.heap.array_store(conc_array, symb_array_reference, conc_index, symb_value);
-		env.heap.array_store(symb_array_reference, symb_index, symb_value);
+		env.heap.arrayStore(conc_array, symb_array_reference, symb_index, symb_value);
 	}
 
 	/**
@@ -1368,18 +1364,4 @@ public final class HeapVM extends AbstractVM {
 		/* push symbolic arguments */
 		env.topFrame().operandStack.pushBv32(ret);
 	}
-
-	private ReferenceConstant buildArrayRef(Type arrayType) {
-		ReferenceConstant symb_array_ref;
-		if (TypeUtil.isIntegerValue(arrayType)) {
-			symb_array_ref = env.heap.buildNewIntegerArrayReferenceConstant(arrayType);
-		} else if (TypeUtil.isRealValue(arrayType)){
-			symb_array_ref = env.heap.buildNewRealArrayReferenceConstant(arrayType);
-		} else {
-			// TODO: implement the other types, this ones are not tracked on the heap as arrays
-			symb_array_ref = env.heap.buildNewReferenceConstant(arrayType);
-		}
-		return symb_array_ref;
-	}
-
 }

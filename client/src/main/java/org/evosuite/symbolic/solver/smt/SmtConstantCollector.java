@@ -73,6 +73,16 @@ public final class SmtConstantCollector implements SmtExprVisitor<Void, Void> {
 	}
 
 	@Override
+	public Void visit(SmtArrayVariable.SmtStringArrayVariable n, Void arg) {
+		return null;
+	}
+
+	@Override
+	public Void visit(SmtArrayVariable.SmtReferenceArrayVariable n, Void arg) {
+		return null;
+	}
+
+	@Override
 	public Void visit(SmtArrayVariable.SmtIntegerArrayVariable n, Void arg) {
 		return null;
 	}
@@ -85,6 +95,18 @@ public final class SmtConstantCollector implements SmtExprVisitor<Void, Void> {
 
 	@Override
 	public Void visit(SmtArrayConstant.SmtRealArrayConstant n, Void arg) {
+		smtConstants.add(n);
+		return null;
+	}
+
+	@Override
+	public Void visit(SmtArrayConstant.SmtStringArrayConstant n, Void arg) {
+		smtConstants.add(n);
+		return null;
+	}
+
+	@Override
+	public Void visit(SmtArrayConstant.SmtReferenceArrayConstant n, Void arg) {
 		smtConstants.add(n);
 		return null;
 	}

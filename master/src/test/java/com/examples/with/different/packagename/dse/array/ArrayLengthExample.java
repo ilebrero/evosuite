@@ -1,4 +1,4 @@
-package com.examples.with.different.packagename.dse;
+package com.examples.with.different.packagename.dse.array;
 
 public class ArrayLengthExample {
 

@@ -19,10 +19,10 @@
  */
 package org.evosuite.symbolic.expr;
 
-import org.evosuite.symbolic.expr.array.ArrayConstant;
-import org.evosuite.symbolic.expr.array.ArraySelect;
-import org.evosuite.symbolic.expr.array.ArrayStore;
-import org.evosuite.symbolic.expr.array.ArrayVariable;
+import org.evosuite.symbolic.expr.ref.array.ArrayConstant;
+import org.evosuite.symbolic.expr.ref.array.ArraySelect;
+import org.evosuite.symbolic.expr.ref.array.ArrayStore;
+import org.evosuite.symbolic.expr.ref.array.ArrayVariable;
 import org.evosuite.symbolic.expr.bv.IntegerBinaryExpression;
 import org.evosuite.symbolic.expr.bv.IntegerComparison;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
@@ -134,15 +134,27 @@ public interface ExpressionVisitor<K, V> {
 
 	public K visit(ArrayStore.RealArrayStore r, V arg);
 
+	public K visit(ArrayStore.StringArrayStore r, V arg);
+
 	public K visit(ArraySelect.IntegerArraySelect r, V arg);
 
 	public K visit(ArraySelect.RealArraySelect r, V arg);
+
+	public K visit(ArraySelect.StringArraySelect r, V arg);
 
   public K visit(ArrayConstant.IntegerArrayConstant r, V arg);
 
   public K visit(ArrayConstant.RealArrayConstant r, V arg);
 
+  public K visit(ArrayConstant.StringArrayConstant r, V arg);
+
+  public K visit(ArrayConstant.ReferenceArrayConstant r, V arg);
+
 	public K visit(ArrayVariable.IntegerArrayVariable r, V arg);
 
 	public K visit(ArrayVariable.RealArrayVariable r, V arg);
+
+	public K visit(ArrayVariable.StringArrayVariable r, V arg);
+
+	public K visit(ArrayVariable.ReferenceArrayVariable r, V arg);
 }

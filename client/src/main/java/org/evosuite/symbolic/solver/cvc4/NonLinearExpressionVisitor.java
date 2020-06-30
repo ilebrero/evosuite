@@ -21,10 +21,10 @@ package org.evosuite.symbolic.solver.cvc4;
 
 import org.evosuite.symbolic.expr.Expression;
 import org.evosuite.symbolic.expr.ExpressionVisitor;
-import org.evosuite.symbolic.expr.array.ArrayConstant;
-import org.evosuite.symbolic.expr.array.ArraySelect;
-import org.evosuite.symbolic.expr.array.ArrayStore;
-import org.evosuite.symbolic.expr.array.ArrayVariable;
+import org.evosuite.symbolic.expr.ref.array.ArrayConstant;
+import org.evosuite.symbolic.expr.ref.array.ArraySelect;
+import org.evosuite.symbolic.expr.ref.array.ArrayStore;
+import org.evosuite.symbolic.expr.ref.array.ArrayVariable;
 import org.evosuite.symbolic.expr.bv.IntegerBinaryExpression;
 import org.evosuite.symbolic.expr.bv.IntegerComparison;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
@@ -397,7 +397,35 @@ final class NonLinearExpressionVisitor implements ExpressionVisitor<Boolean, Voi
 	}
 
 	@Override
+	public Boolean visit(ArraySelect.StringArraySelect r, Void arg) {
+		Boolean array = r.getSymbolicArray().accept(this, null);
+		if (array) return true;
+
+		Boolean index = r.getSymbolicIndex().accept(this, null);
+		if (index) return true;
+
+		Boolean value = r.getSymbolicSelectedValue().accept(this, null);
+		if (value) return true;
+
+		return false;
+	}
+
+	@Override
 	public Boolean visit(ArrayStore.RealArrayStore r, Void arg) {
+		Boolean array = r.getSymbolicArray().accept(this, null);
+		if (array) return true;
+
+		Boolean index = r.getSymbolicIndex().accept(this, null);
+		if (index) return true;
+
+		Boolean value = r.getSymbolicValue().accept(this, null);
+		if (value) return true;
+
+		return false;
+	}
+
+	@Override
+	public Boolean visit(ArrayStore.StringArrayStore r, Void arg) {
 		Boolean array = r.getSymbolicArray().accept(this, null);
 		if (array) return true;
 
@@ -435,12 +463,32 @@ final class NonLinearExpressionVisitor implements ExpressionVisitor<Boolean, Voi
 	}
 
 	@Override
+	public Boolean visit(ArrayConstant.StringArrayConstant r, Void arg) {
+		return false;
+	}
+
+	@Override
+	public Boolean visit(ArrayConstant.ReferenceArrayConstant r, Void arg) {
+		return false;
+	}
+
+	@Override
 	public Boolean visit(ArrayVariable.IntegerArrayVariable r, Void arg) {
 		return false;
 	}
 
 	@Override
 	public Boolean visit(ArrayVariable.RealArrayVariable r, Void arg) {
+		return false;
+	}
+
+	@Override
+	public Boolean visit(ArrayVariable.StringArrayVariable r, Void arg) {
+		return false;
+	}
+
+	@Override
+	public Boolean visit(ArrayVariable.ReferenceArrayVariable r, Void arg) {
 		return false;
 	}
 

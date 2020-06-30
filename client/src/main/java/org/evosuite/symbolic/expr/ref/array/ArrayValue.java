@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.expr.array;
+package org.evosuite.symbolic.expr.ref.array;
 
 import org.evosuite.symbolic.expr.Expression;
 import org.evosuite.symbolic.expr.SymbolicValue;
@@ -28,6 +28,8 @@ import org.evosuite.symbolic.expr.SymbolicValue;
  * @author Ignacio Lebrero
  */
 public interface ArrayValue {
-  interface IntegerArrayValue extends Expression<Object>, SymbolicValue {}
   interface RealArrayValue extends Expression<Object>, SymbolicValue {}
+  interface StringArrayValue extends Expression<Object>, SymbolicValue {}
+  interface IntegerArrayValue extends Expression<Object>, SymbolicValue {}
+  interface ReferenceArrayValue extends Expression<Object>, SymbolicValue {}
 }

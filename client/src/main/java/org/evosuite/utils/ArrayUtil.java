@@ -281,18 +281,15 @@ public abstract class ArrayUtil {
     return lengths;
   }
 
-  public static boolean isIntegerType(Class componentType) {
-			return componentType.getName() == int.class.getName()
-				|| componentType.getName() == boolean.class.getName()
-				|| componentType.getName() == char.class.getName()
-				|| componentType.getName() == short.class.getName()
-				|| componentType.getName() == long.class.getName();
-		}
 
-		public static boolean isRealType(Class componentType) {
-			return componentType.getName() == float.class.getName()
-				|| componentType.getName() == double.class.getName();
-		}
+  public static Object createArrayCopy(Object originalArray) {
+    int length = Array.getLength(originalArray);
+    Object copyArr = Array.newInstance(originalArray.getClass().getComponentType(), length);
+
+    System.arraycopy(originalArray, 0, copyArr, 0, length);
+
+    return copyArr;
+  }
 
   public static class MultiDimensionalArrayIterator {
 		private Object array;
@@ -307,7 +304,6 @@ public abstract class ArrayUtil {
 			this.currentPositions = new int[lengths.length];
 			this.array = array;
 		}
-
 
 		/**
 		 * Obtains the next element and iterates over the array updating the internal state of the indexes.
@@ -363,8 +359,10 @@ public abstract class ArrayUtil {
 
 			int index = 0;
 			while (!changeableIndexFound) {
+
 				// Last this dimension is in the last position
 				if (currentPositions[index] == lengths[index]-1) {
+
 					// We are in the last dimension
 					if (index == lengths.length - 1) {
 						currentPositions[index] = currentPositions[index] + 1;
@@ -373,9 +371,11 @@ public abstract class ArrayUtil {
 						currentPositions[index] = 0;
 						index++;
 					}
+
 				// We are in an overflow
 				} else if (currentPositions[index] == lengths[index]) {
 					throw new IndexOutOfBoundsException();
+
 				// We are in an updateable position
 				} else {
 					currentPositions[index] = currentPositions[index] + 1;

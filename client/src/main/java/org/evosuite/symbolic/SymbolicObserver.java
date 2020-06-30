@@ -32,7 +32,6 @@ import org.evosuite.runtime.testdata.EvoSuiteLocalAddress;
 import org.evosuite.runtime.testdata.EvoSuiteRemoteAddress;
 import org.evosuite.runtime.testdata.EvoSuiteURL;
 import org.evosuite.symbolic.expr.Expression;
-import org.evosuite.symbolic.expr.array.ArrayValue;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.bv.IntegerValue;
 import org.evosuite.symbolic.expr.bv.IntegerVariable;
@@ -43,11 +42,13 @@ import org.evosuite.symbolic.expr.fp.RealValue;
 import org.evosuite.symbolic.expr.fp.RealVariable;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
+import org.evosuite.symbolic.expr.ref.ReferenceVariable;
+import org.evosuite.symbolic.expr.str.StringConstant;
 import org.evosuite.symbolic.expr.str.StringValue;
 import org.evosuite.symbolic.expr.str.StringVariable;
 import org.evosuite.symbolic.vm.ExpressionFactory;
 import org.evosuite.symbolic.vm.SymbolicEnvironment;
-import org.evosuite.symbolic.vm.SymbolicHeap;
+import org.evosuite.symbolic.vm.heap.SymbolicHeap;
 import org.evosuite.symbolic.vm.wrappers.Types;
 import org.evosuite.testcase.execution.CodeUnderTestException;
 import org.evosuite.testcase.execution.EvosuiteError;
@@ -84,10 +85,10 @@ import org.evosuite.testcase.variable.ArraySymbolicLengthName;
 import org.evosuite.testcase.variable.FieldReference;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testcase.variable.ArrayLengthSymbolicUtil;
-import org.evosuite.utils.ArrayUtil;
 import org.evosuite.utils.TypeUtil;
 import org.objectweb.asm.Type;
 
+import static org.evosuite.symbolic.vm.HeapVM.ARRAY_LENGTH;
 import static org.evosuite.testcase.variable.ArrayLengthSymbolicUtil.UNIDIMENTIONAL_ARRAY_VALUE;
 
 public class SymbolicObserver extends ExecutionObserver {
@@ -254,9 +255,10 @@ public class SymbolicObserver extends ExecutionObserver {
 
 			if (arrayRef.getArrayDimensions() == 1) {
 				int length = arrayRef.getArrayLength();
+				IntegerValue lengthExpression;
 
 				ArraySymbolicLengthName arraySymbolicLengthName = new ArraySymbolicLengthName(arrayRef.getName(), UNIDIMENTIONAL_ARRAY_VALUE);
-				IntegerValue lengthExpression = ArrayLengthSymbolicUtil.buildArraySymbolicLengthExpression(length, arraySymbolicLengthName);
+				lengthExpression = ArrayLengthSymbolicUtil.buildArraySymbolicLengthExpression(length, arraySymbolicLengthName);
 
 				if (lengthExpression.containsSymbolicVariable()) {
 					symb_expressions.put(arraySymbolicLengthName.getSymbolicName(), lengthExpression);
@@ -301,14 +303,21 @@ public class SymbolicObserver extends ExecutionObserver {
 				String arrayTypeDesc = Type.getDescriptor(conc_array.getClass());
 				VM.MULTIANEWARRAY(arrayTypeDesc, arrayRef.getArrayDimensions(), TEST_CLASS, TEST_METHOD);
 			}
-			ReferenceConstant symb_array = (ReferenceConstant) env.topFrame().operandStack.popRef();
-			env.heap.initializeReference(conc_array, symb_array);
+			ReferenceConstant old_symb_array = (ReferenceConstant) env.topFrame().operandStack.popRef();
 
-			// Need to do this to create the array variable
-			overrideHeapArrayWithVariable(arrayRef, component_class, symb_array);
+			//The reference should be variable as this is symbolic, so we re create it with the concrete array.
+			ReferenceVariable new_sym_array = env.heap.buildNewArrayReferenceVariable(conc_array, arrayRef.getName());
+			env.heap.initializeReference(conc_array, new_sym_array);
+			env.heap.putField(
+				"",
+				ARRAY_LENGTH,
+				conc_array,
+				new_sym_array,
+				symb_expressions.get(new ArraySymbolicLengthName(arrayRef.getName(), UNIDIMENTIONAL_ARRAY_VALUE).getSymbolicName())
+			);
 
 			String varRef_name = arrayRef.getName();
-			symb_references.put(varRef_name, symb_array);
+			symb_references.put(varRef_name, new_sym_array);
 
 		} catch (CodeUnderTestException e) {
 			throw new RuntimeException(e);
@@ -404,48 +413,48 @@ public class SymbolicObserver extends ExecutionObserver {
 
 			if (componentClass.equals(int.class)) {
 				int conc_value = Array.getInt(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
+				IntegerValue expr = env.heap.arrayLoad(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newIntegerRef = newIntegerReference(conc_value, expr);
 				return new ReferenceExpressionPair(newIntegerRef, expr);
 			} else if (componentClass.equals(char.class)) {
 				char conc_value = Array.getChar(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
+				IntegerValue expr = env.heap.arrayLoad(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newCharacterRef = newCharacterReference(conc_value, expr);
 				return new ReferenceExpressionPair(newCharacterRef, expr);
 			} else if (componentClass.equals(boolean.class)) {
 				boolean conc_value = Array.getBoolean(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value ? 1 : 0));
+				IntegerValue expr = env.heap.arrayLoad(symb_array, symb_index, new IntegerConstant(conc_value ? 1 : 0));
 				ReferenceConstant newBooleanRef = newBooleanReference(conc_value, expr);
 				return new ReferenceExpressionPair(newBooleanRef, expr);
 			} else if (componentClass.equals(byte.class)) {
 				byte conc_value = Array.getByte(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
+				IntegerValue expr = env.heap.arrayLoad(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newByteRef = newByteReference(conc_value, expr);
 				return new ReferenceExpressionPair(newByteRef, expr);
 			} else if (componentClass.equals(short.class)) {
 				short conc_value = Array.getShort(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
+				IntegerValue expr = env.heap.arrayLoad(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newShortRef = newShortReference(conc_value, expr);
 				return new ReferenceExpressionPair(newShortRef, expr);
 			} else if (componentClass.equals(long.class)) {
 				long conc_value = Array.getLong(conc_array, conc_index);
-				IntegerValue expr = env.heap.array_load(symb_array, symb_index, new IntegerConstant(conc_value));
+				IntegerValue expr = env.heap.arrayLoad(symb_array, symb_index, new IntegerConstant(conc_value));
 				ReferenceConstant newLongRef = newLongReference(conc_value, expr);
 				return new ReferenceExpressionPair(newLongRef, expr);
 			} else if (componentClass.equals(float.class)) {
 				float conc_value = Array.getFloat(conc_array, conc_index);
-				RealValue expr = env.heap.array_load(symb_array, symb_index, new RealConstant(conc_value));
+				RealValue expr = env.heap.arrayLoad(symb_array, symb_index, new RealConstant(conc_value));
 				ReferenceConstant newFloatRef = newFloatReference(conc_value, expr);
 				return new ReferenceExpressionPair(newFloatRef, expr);
 			} else if (componentClass.equals(double.class)) {
 				double conc_value = Array.getDouble(conc_array, conc_index);
-				RealValue expr = env.heap.array_load(symb_array, symb_index, new RealConstant(conc_value));
+				RealValue expr = env.heap.arrayLoad(symb_array, symb_index, new RealConstant(conc_value));
 				ReferenceConstant newDoubleRef = newDoubleReference(conc_value, expr);
 				return new ReferenceExpressionPair(newDoubleRef, expr);
 			} else {
 				Object conc_value = Array.get(conc_array, conc_index);
 				if (conc_value instanceof String) {
-					StringValue expr = env.heap.array_load(symb_array, symb_index, (String) conc_value);
+					StringValue expr = env.heap.arrayLoad(symb_array, symb_index, new StringConstant((String) conc_value));
 					ReferenceConstant newStringRef = newStringReference((String) conc_value, expr);
 					return new ReferenceExpressionPair(newStringRef, expr);
 				} else {
@@ -659,7 +668,7 @@ public class SymbolicObserver extends ExecutionObserver {
 	private void writeArray(ArrayIndex lhs, ReferenceExpressionPair readResult, Scope scope) {
 
 		ArrayReference arrayReference = lhs.getArray();
-		int conc_index = lhs.getArrayIndex();
+		IntegerValue symb_index = new IntegerConstant(lhs.getArrayIndex());
 
 		Object conc_array;
 		try {
@@ -672,13 +681,17 @@ public class SymbolicObserver extends ExecutionObserver {
 		Type elementType = arrayType.getElementType();
 		if (TypeUtil.isValue(elementType) || elementType.equals(Type.getType(String.class))) {
 			Expression<?> symb_value = readResult.getExpression();
-			symb_value = castIfNeeded(elementType, symb_value);
 
 			String array_name = arrayReference.getName();
-			ReferenceExpression symb_ref = symb_references.get(array_name);
-			ReferenceConstant symb_array = (ReferenceConstant) symb_ref;
-			env.heap.array_store(conc_array, symb_array, conc_index, symb_value);
+			ReferenceExpression symb_array = symb_references.get(array_name);
 
+//			if (symb_value instanceof IntegerValue) {
+//				env.heap.arrayStore(conc_array, symb_array, symb_index, new IntegerConstant(((IntegerValue) symb_value).getConcreteValue()));
+//			} else if (symb_value instanceof RealValue) {
+//				env.heap.arrayStore(conc_array, symb_array, symb_index, new RealConstant(((RealValue) symb_value).getConcreteValue()));
+//			} else if (symb_value instanceof StringValue) {
+//				env.heap.array_store(conc_array, symb_array, conc_index, (StringValue) symb_value);
+//			}
 		} else {
 			/* ignore storing references (we use objects to find them) */
 		}
@@ -1970,25 +1983,4 @@ public class SymbolicObserver extends ExecutionObserver {
 		// do nothing
 	}
 
-	private void overrideHeapArrayWithVariable(ArrayReference arrayRef, Class<?> component_class, ReferenceConstant symb_array) {
-		// The constant array is over-writen by a variable one.
-		// TODO: is there a better way of doing this?
-		if (ArrayUtil.isIntegerType(component_class)) {
-			ArrayValue.IntegerArrayValue symbolic_array_value = ExpressionFactory.buildNewIntegerArrayVariableExpression(
-				arrayRef,
-				symb_array
-			);
-
-			env.heap.putIntegerArray(symb_array, symbolic_array_value);
-		} else if (ArrayUtil.isRealType(component_class)) {
-			ArrayValue.RealArrayValue symbolic_array_value = ExpressionFactory.buildNewRealArrayVariableExpression(
-				arrayRef,
-				symb_array
-			);
-
-			env.heap.putRealArray(symb_array, symbolic_array_value);
-		} else {
-			//	TODO: Implement the other types (String + References)
-		}
-	}
 }

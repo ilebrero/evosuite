@@ -24,13 +24,12 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.fp.RealConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
-import org.evosuite.symbolic.instrument.SymbolicInstrumentingClassLoader;
+import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
 import org.evosuite.symbolic.instrument.ConcolicMethodAdapter;
 import org.objectweb.asm.Type;
 import org.evosuite.dse.AbstractVM;
@@ -52,7 +51,7 @@ public final class CallVM extends AbstractVM {
 	/**
 	 * Constructor
 	 */
-	public CallVM(SymbolicEnvironment env, SymbolicInstrumentingClassLoader classLoader) {
+	public CallVM(SymbolicEnvironment env, ConcolicInstrumentingClassLoader classLoader) {
 		this.env = env;
 		this.classLoader = classLoader;
 	}
@@ -160,7 +159,7 @@ public final class CallVM extends AbstractVM {
 	}
 
 	private final HashMap<Member, MemberInfo> memberInfos = new HashMap<Member, MemberInfo>();
-	private final SymbolicInstrumentingClassLoader classLoader;
+	private final ConcolicInstrumentingClassLoader classLoader;
 
 	/**
 	 * Cache max values for this method, except for static initializers.

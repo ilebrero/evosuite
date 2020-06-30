@@ -20,7 +20,7 @@
 package org.evosuite.symbolic.dse.algorithm;
 
 import org.evosuite.Properties;
-import org.evosuite.symbolic.dse.ConcolicEngine;
+import org.evosuite.symbolic.dse.ConcolicExecutor;
 import org.evosuite.symbolic.dse.DSEStatistics;
 import org.evosuite.symbolic.dse.DSETestCase;
 import org.evosuite.symbolic.dse.algorithm.strategies.KeepSearchingCriteriaStrategy;
@@ -121,16 +121,16 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
     private final transient KeepSearchingCriteriaStrategy keepSearchingCriteriaStrategy;
 
     /**
-     * Internal concolic engine and Solver
+     * Internal executor and solver
      **/
-    private final transient ConcolicEngine engine;
+    private final transient ConcolicExecutor engine;
     private final transient Solver solver;
 
     public DSEAlgorithm() {
         this(
             SHOW_PROGRESS_DEFAULT_VALUE,
             DSEStatistics.getInstance(), //TODO: move this to a dependency injection schema
-            new ConcolicEngine(),
+            new ConcolicExecutor(),
             SolverFactory.getInstance().buildNewSolver(),
 
             // Default Strategies
@@ -154,7 +154,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         this(
             showProgress,
             statisticsLogger,
-            new ConcolicEngine(),
+            new ConcolicExecutor(),
             SolverFactory.getInstance().buildNewSolver(),
             pathPruningStrategy,
             keepSearchingCriteriaStrategy,
@@ -167,7 +167,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
     public DSEAlgorithm(
             boolean showProgress,
             DSEStatistics dseStatistics,
-            ConcolicEngine engine,
+            ConcolicExecutor engine,
             Solver solver,
             PathPruningStrategy pathPruningStrategy,
             KeepSearchingCriteriaStrategy keepSearchingCriteriaStrategy,

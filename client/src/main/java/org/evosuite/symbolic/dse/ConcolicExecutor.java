@@ -27,12 +27,11 @@ import org.evosuite.Properties;
 import org.evosuite.ga.stoppingconditions.MaxStatementsStoppingCondition;
 import org.evosuite.symbolic.PathConditionNode;
 import org.evosuite.symbolic.PathCondition;
-import org.evosuite.symbolic.SymbolicEngine;
 import org.evosuite.symbolic.SymbolicObserver;
 import org.evosuite.symbolic.expr.Constraint;
 import org.evosuite.symbolic.expr.ExpressionEvaluator;
 import org.evosuite.symbolic.instrument.ConcolicBytecodeInstrumentation;
-import org.evosuite.symbolic.instrument.SymbolicInstrumentingClassLoader;
+import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
 import org.evosuite.symbolic.vm.ArithmeticVM;
 import org.evosuite.symbolic.vm.CallVM;
 import org.evosuite.symbolic.vm.HeapVM;
@@ -60,16 +59,15 @@ import org.evosuite.dse.VM;
  *
  * @author Gordon Fraser
  */
-public class ConcolicEngine extends SymbolicEngine {
+public class ConcolicExecutor {
 
-	private static Logger logger = LoggerFactory.getLogger(ConcolicEngine.class);
+	private static Logger logger = LoggerFactory.getLogger(ConcolicExecutor.class);
 
-	public ConcolicEngine() {
-		super(
-				new SymbolicInstrumentingClassLoader(
-						new ConcolicBytecodeInstrumentation()
-				)
-		);
+	/** Instrumenting class loader */
+	private final ConcolicInstrumentingClassLoader instrumentingClassLoader;
+
+	public ConcolicExecutor() {
+		this.instrumentingClassLoader = new ConcolicInstrumentingClassLoader(new ConcolicBytecodeInstrumentation());
 
 		/**
 		 * Prepare DSC configuration
