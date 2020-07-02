@@ -530,8 +530,6 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 			         // http://java.sun.com/docs/books/jvms/second_edition/html/Instructions2.doc13.html#sipush
 			super.visitIntInsn(opcode, operand); // user ByteCode instruction
 			mv.visitInsn(DUP);
-			mv.visitLdcInsn(className);
-			mv.visitLdcInsn(methName);
 			insertCallback(BYTECODE_NAME[opcode], I_V, false);
 			return;
 

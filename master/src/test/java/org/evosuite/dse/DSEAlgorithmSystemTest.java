@@ -598,7 +598,7 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 		TestSuiteChromosome best = dse.getGeneratedTestSuite();
 		System.out.println("EvolvedTestSuite:\n" + best);
 
-		assertEquals(8, best.getNumOfCoveredGoals() );
+		assertEquals(10, best.getNumOfCoveredGoals() );
 		assertEquals(1, best.getNumOfNotCoveredGoals() );
 	}
 
