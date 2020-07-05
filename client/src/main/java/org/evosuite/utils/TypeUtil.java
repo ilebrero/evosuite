@@ -19,6 +19,7 @@
  */
 package org.evosuite.utils;
 
+import org.evosuite.testcase.execution.EvosuiteError;
 import org.objectweb.asm.Type;
 
 /**
@@ -64,7 +65,7 @@ public class TypeUtil {
 		return t.equals(stringType);
   }
 
-  /** Class related hepers */
+  /** Class related helpers */
 
   public static boolean isPrimitiveFp64(Class clazz) {
     return double.class.equals(clazz);
@@ -102,42 +103,27 @@ public class TypeUtil {
     return isPrimitiveBv32(clazz) || isPrimitiveBv64(clazz) || isPrimitiveFp32(clazz) || isPrimitiveFp64(clazz);
   }
 
-  //TODO: test This!
-  public static Class getClassFromClassName(String className) {
-    if (Integer.class.getName().equals(className)) {
-      return Integer.class;
-    } else if (Boolean.class.getName().equals(className)) {
-      return Boolean.class;
-    } else if (Character.class.getName().equals(className)) {
-      return Character.class;
-    } else if (Short.class.getName().equals(className)) {
-      return Short.class;
-    } else if (Long.class.getName().equals(className)) {
-      return Long.class;
-    } else if (Double.class.getName().equals(className)) {
-      return Double.class;
-    } else if (Float.class.getName().equals(className)) {
-      return Float.class;
-    } else if (Object.class.getName().equals(className)) {
-      return Object.class;
-    } else if (Object.class.getName().equals(className)) {
-      return Object.class;
-    } else if (int.class.getName().equals(className)) {
-      return int.class;
-    } else if (char.class.getName().equals(className)) {
-      return char.class;
-    } else if (short.class.getName().equals(className)) {
-      return short.class;
-    } else if (long.class.getName().equals(className)) {
-      return long.class;
-    } else if (double.class.getName().equals(className)) {
-      return double.class;
-    } else if (float.class.getName().equals(className)) {
-      return float.class;
-    }else {
-      throw new IllegalStateException("Unexpected value: " + className);
-    }
-  }
+  public static Class<?> getPrimitiveArrayClassFromElementType(Type t) {
+		if (t.equals(Type.BOOLEAN_TYPE))
+			return boolean[].class;
+		if (t.equals(Type.CHAR_TYPE))
+			return char[].class;
+		if (t.equals(Type.SHORT_TYPE))
+			return short[].class;
+		if (t.equals(Type.BYTE_TYPE))
+			return byte[].class;
+		if (t.equals(Type.INT_TYPE))
+			return int[].class;
+		if (t.equals(Type.LONG_TYPE))
+			return long[].class;
+		if (t.equals(Type.FLOAT_TYPE))
+			return float[].class;
+		if (t.equals(Type.DOUBLE_TYPE))
+			return double[].class;
+
+		throw new EvosuiteError(t.toString()
+				+ " is not a primitive value class!");
+	}
 
   public static Object unboxIntegerPrimitiveValue(Object o) {
     if (Integer.class.getName().equals(o.getClass().getName())) {
