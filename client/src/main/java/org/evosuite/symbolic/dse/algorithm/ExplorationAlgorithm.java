@@ -64,18 +64,18 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
   /**
-   * Structure of a DSE Algorithm,
+   * Structure of a DSE Exploration algorithm,
    *
-   * Current implementation represents an abstracted version of SAGE's genetic algorithm.
+   * Current implementation represents an abstracted version of SAGE's generational algorithm.
    *
    * For more details, please take a look at:
    *     Godefroid P., Levin Y. M. & Molnar D. (2008) Automated Whitebox Fuzz Testing
    *
    * @author Ignacio Lebrero
    */
-public class DSEAlgorithm extends DSEBaseAlgorithm {
+public class ExplorationAlgorithm extends ExplorationAlgorithmBase {
 
-    private static final transient Logger logger = LoggerFactory.getLogger(DSEAlgorithm.class);
+    private static final transient Logger logger = LoggerFactory.getLogger(ExplorationAlgorithm.class);
 
     /**
      * Logger Messages
@@ -112,7 +112,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             = new HashMap<Set<Constraint<?>>, SolverResult>();
 
     /**
-     * DSE Algorithm strategies
+     * Exploration strategies
      **/
     private final transient PathPruningStrategy pathPruningStrategy;
     private final transient PathSelectionStrategy pathSelectionStrategy;
@@ -126,7 +126,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
     private final transient ConcolicExecutor engine;
     private final transient Solver solver;
 
-    public DSEAlgorithm() {
+    public ExplorationAlgorithm() {
         this(
             SHOW_PROGRESS_DEFAULT_VALUE,
             DSEStatistics.getInstance(), //TODO: move this to a dependency injection schema
@@ -142,7 +142,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         );
     }
 
-    public DSEAlgorithm(
+    public ExplorationAlgorithm(
         DSEStatistics statisticsLogger,
         boolean showProgress,
         PathPruningStrategy pathPruningStrategy,
@@ -164,7 +164,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
         );
     }
 
-    public DSEAlgorithm(
+    public ExplorationAlgorithm(
             boolean showProgress,
             DSEStatistics dseStatistics,
             ConcolicExecutor engine,
@@ -222,7 +222,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
             if (isFinished()) return;
 
             // Runs the current test case
-            DSEPathCondition currentExecutedPathCondition = executeConcolicEngine(currentTestCase);
+            DSEPathCondition currentExecutedPathCondition = executeTestCaseConcolically(currentTestCase);
             seenChildren.add(
                  normalize(
                      currentExecutedPathCondition.getPathCondition().getConstraints()));
@@ -341,7 +341,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      *
      * @return
      */
-     public TestSuiteChromosome generateSolution() {
+     public TestSuiteChromosome explore() {
          notifyGenerationStarted();
          final Class<?> targetClass = Properties.getTargetClassAndDontInitialise();
 
@@ -424,7 +424,7 @@ public class DSEAlgorithm extends DSEBaseAlgorithm {
      * @param currentTestCase
      * @return
      */
-    private DSEPathCondition executeConcolicEngine(DSETestCase currentTestCase) {
+    private DSEPathCondition executeTestCaseConcolically(DSETestCase currentTestCase) {
         logger.debug(EXECUTING_CONCOLICALLY_THE_CURRENT_TEST_CASE_DEBUG_MESSAGE);
 
         TestCase clonedCurrentTestCase = currentTestCase.getTestCase().clone();

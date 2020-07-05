@@ -390,22 +390,13 @@ public abstract class SmtExprBuilder {
 		return new SmtConstantDeclaration(constName, SmtSort.STRING);
 	}
 
-	/** TODO: Eventually expand the sorts of aany declaration to more than one */
-	public static SmtConstantDeclaration mkIntegerArrayConstantDeclaration(String constName) {
+	/** TODO: Eventually expand the sorts of any declaration to more than one */
+	public static SmtConstantDeclaration mkArrayConstantDeclaration(String constName, SmtSort indexSort, SmtSort valueSort) {
 		return new SmtConstantDeclaration(
 			constName,
 			SmtSort.ARRAY,
-				SmtSort.INT,
-				SmtSort.INT
-		);
-	}
-
-	public static SmtConstantDeclaration mkRealArrayConstantDeclaration(String constName) {
-				return new SmtConstantDeclaration(
-			constName,
-			SmtSort.ARRAY,
-				SmtSort.INT,
-				SmtSort.REAL
+				indexSort,
+				valueSort
 		);
 	}
 
@@ -422,21 +413,19 @@ public abstract class SmtExprBuilder {
 	}
 
 	public static SmtFunctionDeclaration mkIntegerArrayFunctionDeclaration(String funcName) {
-		return new SmtFunctionDeclaration(
-			funcName,
-			SmtSort.ARRAY,
-				SmtSort.INT,
-				SmtSort.INT
-		);
+		return mkArrayFunctionDeclaration(funcName, SmtSort.INT, SmtSort.INT);
+	}
+
+	public static SmtFunctionDeclaration mkStringArrayFunctionDeclaration(String funcName) {
+		return mkArrayFunctionDeclaration(funcName,	SmtSort.INT, SmtSort.STRING);
 	}
 
 	public static SmtFunctionDeclaration mkRealArrayFunctionDeclaration(String funcName) {
-		return new SmtFunctionDeclaration(
-			funcName,
-			SmtSort.ARRAY,
-				SmtSort.INT,
-				SmtSort.REAL
-			);
+		return mkArrayFunctionDeclaration(funcName, SmtSort.INT, SmtSort.REAL);
+	}
+
+	private static SmtFunctionDeclaration mkArrayFunctionDeclaration(String funcName, SmtSort indexSort, SmtSort valueSort) {
+		return new SmtFunctionDeclaration(funcName,	SmtSort.ARRAY, indexSort, valueSort);
 	}
 
 	public static SmtExpr mkStrIndexOf(SmtExpr left, SmtExpr right) {

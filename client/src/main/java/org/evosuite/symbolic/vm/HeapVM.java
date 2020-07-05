@@ -32,7 +32,11 @@ import org.evosuite.symbolic.expr.fp.RealConstant;
 import org.evosuite.symbolic.expr.fp.RealValue;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
+import org.evosuite.symbolic.expr.str.StringConstant;
+import org.evosuite.symbolic.expr.str.StringValue;
 import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
+import org.evosuite.symbolic.vm.string.Types;
+import org.evosuite.utils.TypeUtil;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -810,8 +814,23 @@ public final class HeapVM extends AbstractVM {
 		if (conc_value == null) {
 			symb_value = ExpressionFactory.buildNewNullExpression();
 		} else {
+
+			/* Array load expression */
 			symb_value = env.heap.getReference(conc_value);
-//			env.heap.arrayLoad(symb_array_reference, symb_index, "");
+			Type arrayType = Type.getObjectType(conc_array.getClass().getName());
+			if (TypeUtil.isStringValue(arrayType.getElementType())) {
+			  StringValue stringValue = env.heap.arrayLoad(symb_array_reference, symb_index, new StringConstant((String) conc_value));
+
+			  // We add the loaded value to the reference string that we were suppose to be using
+			  env.heap.putField(Types.JAVA_LANG_STRING,
+					env.heap.$STRING_VALUE,
+					conc_value,
+					symb_value,
+					stringValue);
+			} else {
+				// TODO: implement general objects
+			}
+
 		}
 		env.topFrame().operandStack.pushRef(symb_value);
 	}
@@ -1196,8 +1215,18 @@ public final class HeapVM extends AbstractVM {
 				symb_array_length, className, methodName))
 			return;
 
-		if (symb_value.getObjectType().getClass().equals(String.class.getName())) {
-//			env.heap.array_store(conc_array, symb_array_reference, conc_index, new StringConstant((String) conc_value));
+		Type arrayType = Type.getObjectType(conc_array.getClass().getName());
+		if (TypeUtil.isStringValue(arrayType.getElementType())) {
+			StringValue stringValue = env.heap.getField(
+				Types.JAVA_LANG_STRING,
+				env.heap.$STRING_VALUE,
+				(String) conc_value,
+				env.heap.getReference(conc_value),
+				(String) conc_value
+			);
+			env.heap.arrayStore(conc_array, symb_array_reference, symb_index, stringValue);
+		} else {
+			//TODO: implement general objects
 		}
 
 		// NonNullReference are not stored in the symbolic heap fields

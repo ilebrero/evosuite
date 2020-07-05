@@ -31,7 +31,7 @@ import org.evosuite.Properties.SolverType;
 import org.evosuite.Properties.StoppingCondition;
 import org.evosuite.Properties.Strategy;
 import org.evosuite.SystemTestBase;
-import org.evosuite.symbolic.dse.algorithm.DSEBaseAlgorithm;
+import org.evosuite.symbolic.dse.algorithm.ExplorationAlgorithmBase;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,7 +80,7 @@ public class DSEMazeSystemTest extends SystemTestBase {
 		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
 
 		Object result = evosuite.parseCommandLine(command);
-		DSEBaseAlgorithm<?> dse = getDSEAFromResult(result);
+		ExplorationAlgorithmBase<?> dse = getDSEAFromResult(result);
 		TestSuiteChromosome best = dse.getGeneratedTestSuite();
 
 		System.out.println("EvolvedTestSuite:\n" + best);

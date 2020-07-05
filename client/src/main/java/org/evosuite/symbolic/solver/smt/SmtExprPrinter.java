@@ -171,8 +171,31 @@ public final class SmtExprPrinter implements SmtExprVisitor<String, Void> {
 
 	@Override
 	public String visit(SmtArrayConstant.SmtStringArrayConstant n, Void arg) {
-		throw new UnsupportedOperationException(
-			"We shouldn't be using constant arrays as this point, they must be reduced to concrete values during execution.");
+		StringBuilder back  = new StringBuilder();
+		StringBuilder front = new StringBuilder();
+
+		// TODO: Ver que esta parte este bien
+		back.append("((as const (Array Int String)) \"\")");
+
+		Object arr = n.getConstantValue();
+		int length = Array.getLength(arr);
+
+		for (int index=0; index < length; index++) {
+			Object element = Array.get(arr, index);
+
+			if (!DefaultValueChecker.isDefaultValue(element)) {
+				front.append("(store");
+				back
+					.append(" ")
+					.append(index)
+					.append(" ")
+					.append(buildRealArrayValue(element))
+					.append(")");
+			}
+		}
+
+		back.append(")");
+		return front.toString() + back.toString();
 	}
 
 	@Override

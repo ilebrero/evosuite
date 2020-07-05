@@ -6,12 +6,23 @@ public class StringExample {
 		
 	}
 
-	public static int foo(String str) {
-		new StringExample();
+//	public static int foo(String str) {
+//		new StringExample();
+//		if (str == null) {
+//			return 1;
+//		} else {
+//			if (str.length() == 1)
+//				return 2;
+//			else
+//				return 3;
+//		}
+//	}
+
+	public static int foo(String[] str) {
 		if (str == null) {
 			return 1;
 		} else {
-			if (str.length() == 1)
+			if (str[0].length() == 1)
 				return 2;
 			else
 				return 3;

@@ -254,6 +254,10 @@ public final class CVC4Solver extends SmtSolver {
 				SmtFunctionDeclaration arrayVar = SmtExprBuilder.mkIntegerArrayFunctionDeclaration(varName);
 				query.addFunctionDeclaration(arrayVar);
 
+			} else if (var instanceof SmtArrayVariable.SmtStringArrayVariable) {
+				SmtFunctionDeclaration arrayVar = SmtExprBuilder.mkStringArrayFunctionDeclaration(varName);
+				query.addFunctionDeclaration(arrayVar);
+
 			} else {
 				throw new RuntimeException("Unknown variable type " + var.getClass().getCanonicalName());
 			}
