@@ -2,8 +2,7 @@ package com.examples.with.different.packagename.dse.array;
 
 public class IntegerArrayAssignmentExample2 {
 
-    public static int test1(int b, int[] array) {
-    int a = array[0];
+  public static int test1(int b, int[] array, int c) {
     int[] arr = new int[3];
     arr[2] = array[3];
 
@@ -12,8 +11,10 @@ public class IntegerArrayAssignmentExample2 {
 
       if (array[2] == 0) {
         return -1;
-      } else {
+      } else if (array[c] > 6) {
         return 0;
+      } else {
+        return -2;
       }
     } else {
       return 2;

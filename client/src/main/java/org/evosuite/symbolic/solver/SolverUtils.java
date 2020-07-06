@@ -103,9 +103,7 @@ public abstract class SolverUtils {
             // skip
           } else if (variable instanceof StringVariable) {
 						// skip
-					}else if (variable instanceof ArrayVariable.IntegerArrayVariable) {
-        		// skip
-          } else if (variable instanceof ArrayVariable.RealArrayVariable) {
+					}else if (variable instanceof ArrayVariable) {
         		// skip
           }else {
             throw new UnsupportedOperationException(
