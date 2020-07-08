@@ -395,12 +395,12 @@ public class Properties {
 	}
 
 	/**
-	 * ilebrero: Hope it doesn't make a lot of confusion that there are two versions of arrays suported.
-	 *           - ARRAYS_THEORY: Supports both Integers and Reals.
-	 *           - LAZY_VARIABLES: Supports Integers, Reals, Strings and References.
-	 * **/
+	 * ilebrero: Hope it doesn't make a lot of confusion that there are two versions of arrays supported.
+	 *           - ARRAYS_THEORY: Supports Integers and Reals.
+	 *           - LAZY_VARIABLES: Supports Integers and Reals.
+	 **/
 	public enum DSE_ARRAYS_MEMORY_MODEL_VERSION {
-		ARRAYS_THEORY,
+		SELECT_STORE_EXPRESSIONS,
 		LAZY_VARIABLES
 	}
 
@@ -411,7 +411,7 @@ public class Properties {
 	public static boolean IS_DSE_ARRAYS_SUPPORT_ENABLED = true;
 
 	@Parameter(key = "selected_dse_module_arrays_support_version", group = "DSE", description = "Which implementation of arrays is used on the concolic engine.")
-	public static DSE_ARRAYS_MEMORY_MODEL_VERSION SELECTED_DSE_ARRAYS_MEMORY_MODEL_VERSION = DSE_ARRAYS_MEMORY_MODEL_VERSION.ARRAYS_THEORY;
+	public static DSE_ARRAYS_MEMORY_MODEL_VERSION SELECTED_DSE_ARRAYS_MEMORY_MODEL_VERSION = DSE_ARRAYS_MEMORY_MODEL_VERSION.LAZY_VARIABLES;
 
 	@Parameter(key = "dse_probability", group = "DSE", description = "Probability used to specify when to use DSE instead of regular LS when LS is applied")
     @DoubleValue(min = 0.0, max = 1.0)
@@ -2576,7 +2576,7 @@ public class Properties {
 	}
 
   public static boolean isArraysTheoryImplementationSelected() {
-		return SELECTED_DSE_ARRAYS_MEMORY_MODEL_VERSION.equals(DSE_ARRAYS_MEMORY_MODEL_VERSION.ARRAYS_THEORY);
+		return SELECTED_DSE_ARRAYS_MEMORY_MODEL_VERSION.equals(DSE_ARRAYS_MEMORY_MODEL_VERSION.SELECT_STORE_EXPRESSIONS);
   }
 
 	public static boolean isLazyArraysImplementationSelected() {

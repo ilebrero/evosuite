@@ -2,24 +2,11 @@ package com.examples.with.different.packagename.solver;
 
 import java.util.Arrays;
 
-public class MazeClient {
+public class MazeClientArrays {
 
-  private MazeClient() {};
+  private MazeClientArrays() {};
 
-  public static int walk(char move0, char move1, char move2, char move3, char move4, char move5,
-      char move6, char move7, char move8, char move9, char move10, char move11, char move12,
-      char move13, char move14, char move15, char move16, char move17, char move18, char move19,
-      char move20, char move21, char move22, char move23, char move24, char move25, char move26,
-      char move27, char move28, char move29, int moveLength) {
-
-    char[] moves = new char[] {move0, move1, move2, move3, move4, move5, move6, move7, move8, move9,
-        move10, move11, move12, move13, move14, move15, move16, move17, move18, move19, move20,
-        move21, move22, move23, move24, move25, move26, move27, move28, move29};
-
-    return walk(moves, moveLength);
-  }
-
-  private static int walk(char[] moves, int moveLength) throws IllegalArgumentException {
+  public static int walk(char[] moves, int moveLength) throws IllegalArgumentException {
     if (moveLength < 0) {
       throw new IllegalArgumentException("length cannot be negative");
     }

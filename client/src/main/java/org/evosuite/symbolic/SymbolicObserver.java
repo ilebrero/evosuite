@@ -410,7 +410,7 @@ public class SymbolicObserver extends ExecutionObserver {
 
 	private ReferenceExpressionPair readArray(ArrayIndex rhs, Scope scope) {
 		ArrayReference arrayReference = rhs.getArray();
-		ReferenceConstant symb_array = (ReferenceConstant) symb_references.get(arrayReference.getName());
+		ReferenceExpression symb_array = symb_references.get(arrayReference.getName());
 		int conc_index = rhs.getArrayIndex();
 		IntegerConstant symb_index = new IntegerConstant(conc_index);
 		Class<?> componentClass = arrayReference.getComponentClass();

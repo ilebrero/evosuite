@@ -332,8 +332,15 @@ public final class SymbolicHeap {
 			} else {
 				// unknown object
 				final Type type = Type.getType(conc_ref.getClass());
-				ReferenceConstant ref_constant = new ReferenceConstant(type, newInstanceCount++);
-				ref_constant.initializeReference(conc_ref);
+				ReferenceConstant ref_constant;
+				if (conc_ref.getClass().isArray()) {
+					ref_constant = buildNewArrayReferenceConstant(type);
+				} else {
+					ref_constant = buildNewReferenceConstant(type);
+				}
+
+				initializeReference(conc_ref, ref_constant);
+//				ref_constant.initializeReference(conc_ref);
 				nonNullRefs.put(identityHashCode, ref_constant);
 				return ref_constant;
 			}

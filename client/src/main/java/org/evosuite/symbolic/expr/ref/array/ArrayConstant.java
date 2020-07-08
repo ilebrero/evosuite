@@ -23,6 +23,11 @@ import org.evosuite.symbolic.expr.ExpressionVisitor;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
 import org.objectweb.asm.Type;
 
+/**
+ * Represents an instant of an array.
+ *
+ * @author Ignacio Lebrero
+ */
 public abstract class ArrayConstant extends ReferenceConstant implements ArrayValue {
 
 	public ArrayConstant(Type arrayType, int instanceId) {

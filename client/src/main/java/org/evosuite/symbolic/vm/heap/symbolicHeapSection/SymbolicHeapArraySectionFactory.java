@@ -37,8 +37,8 @@ public class SymbolicHeapArraySectionFactory {
     switch (arraysMemoryModelVersion) {
       case LAZY_VARIABLES:
         return new LazyArraysImpl();
-      case ARRAYS_THEORY:
-        return new ArrayTheoryImpl();
+      case SELECT_STORE_EXPRESSIONS:
+        return new selectStoreImpl();
       default:
         throw new IllegalStateException("Arrays memory model not yet implemented: " + arraysMemoryModelVersion.name());
     }

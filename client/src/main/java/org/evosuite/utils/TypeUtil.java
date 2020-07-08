@@ -160,6 +160,8 @@ public class TypeUtil {
       return ((Byte) o).longValue();
     } else if (Boolean.class.getName().equals(o.getClass().getName())) {
       return ((Boolean) o) ? 1L : 0L;
+    } else if (Character.class.getName().equals(o.getClass().getName())) {
+      return (long) (((Character) o).charValue());
     } else if (Long.class.getName().equals(o.getClass().getName())) {
       return ((Long) o).longValue();
     } else if (Float.class.getName().equals(o.getClass().getName())) {

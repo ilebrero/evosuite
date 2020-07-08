@@ -34,12 +34,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Arrays implementation using theory of arrays as a background. We create array expressions that will
- * later be used on the SMT query.
+ * Arrays implementation using a composition of select / store operations.
  *
  * @author Ignacio Lebrero
  */
-public class ArrayTheoryImpl implements SymbolicHeapArraySection {
+public class selectStoreImpl implements SymbolicHeapArraySection {
 
   /**
    * Symbolic Arrays Memory model

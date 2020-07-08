@@ -24,7 +24,7 @@ import org.evosuite.symbolic.expr.ref.ReferenceVariable;
 import org.objectweb.asm.Type;
 
  /**
-   * Represents an instance of an array.
+   * Represents an instance of a symbolic array.
    *
    * @author Ignacio Lebrero
    */
