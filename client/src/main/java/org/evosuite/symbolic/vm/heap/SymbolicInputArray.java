@@ -24,6 +24,7 @@ import org.evosuite.symbolic.expr.bv.IntegerVariable;
 import org.evosuite.symbolic.expr.fp.RealVariable;
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
 import org.evosuite.symbolic.expr.ref.ReferenceVariable;
+import org.evosuite.symbolic.expr.ref.array.SymbolicArrayUtil;
 import org.evosuite.symbolic.expr.str.StringVariable;
 import org.evosuite.utils.TypeUtil;
 import org.objectweb.asm.Type;
@@ -31,7 +32,7 @@ import org.objectweb.asm.Type;
 import java.util.BitSet;
 
 /**
- * Symbolic Array that initialize lazily the symbolic fields on demand as well as it's length.
+ * Symbolic Array that lazily initialize symbolic fields on demand as well as it's length.
  * It's mainly used for representing arrays that are inputs to the SUT.
  *
  * @author Ignacio Lebrero
@@ -88,7 +89,7 @@ public final class SymbolicInputArray extends SymbolicArrayImpl {
   }
 
   private Expression initDefaultArrayVariable(Integer index, Type componentType) {
-    String symbolicArrayVariableName = arrayVariableName + "_content_" + index;
+    String symbolicArrayVariableName = SymbolicArrayUtil.buildArrayContentVariableName(arrayVariableName, index);
 
     if (TypeUtil.isIntegerValue(componentType)) {
       return new IntegerVariable(symbolicArrayVariableName, 0, Long.MIN_VALUE, Long.MAX_VALUE);

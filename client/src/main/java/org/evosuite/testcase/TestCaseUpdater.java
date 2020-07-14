@@ -21,6 +21,7 @@ package org.evosuite.testcase;
 
 import org.evosuite.Properties;
 import org.evosuite.symbolic.TestCaseBuilder;
+import org.evosuite.symbolic.expr.ref.array.SymbolicArrayUtil;
 import org.evosuite.testcase.statements.ArrayStatement;
 import org.evosuite.testcase.statements.AssignmentStatement;
 import org.evosuite.testcase.statements.PrimitiveStatement;
@@ -69,7 +70,7 @@ public class TestCaseUpdater {
 
         if (ArraySymbolicLengthName.isArraySymbolicLengthVariableName(symbolicVariableName)) {
           processArrayLengthValue(newTest, symbolicVariableName, (Long) updateValue);
-        } else if (Properties.isLazyArraysImplementationSelected() && symbolicVariableName.contains("content")) {
+        } else if (Properties.isLazyArraysImplementationSelected() && SymbolicArrayUtil.isArrayContentVariableName(symbolicVariableName)) {
           processArrayElement(test, newTest, symbolicVariableName, updateValue);
         } else if (updateValue instanceof Long) {
           processLongValue(newTest, symbolicVariableName, updateValue);
