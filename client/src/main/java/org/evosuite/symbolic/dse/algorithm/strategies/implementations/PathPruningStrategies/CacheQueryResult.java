@@ -27,16 +27,16 @@ import java.util.Map;
  *
  * @author Ignacio Lebrero.
  */
-public class CacheCheckResult {
+public class CacheQueryResult {
 
   private Map<String, Object> smtSolution;
   private CacheQueryStatus cacheQueryStatus;
 
-  public CacheCheckResult(CacheQueryStatus cacheQueryState) {
+  public CacheQueryResult(CacheQueryStatus cacheQueryState) {
     this.cacheQueryStatus = cacheQueryState;
   }
 
-  public CacheCheckResult(Map<String, Object> smtSolution, CacheQueryStatus cacheQueryState) {
+  public CacheQueryResult(Map<String, Object> smtSolution, CacheQueryStatus cacheQueryState) {
     this.smtSolution = smtSolution;
     this.cacheQueryStatus = cacheQueryState;
   }
@@ -47,15 +47,15 @@ public class CacheCheckResult {
     return smtSolution;
   }
 
-  public boolean isSat() {
+  public boolean hitSat() {
     return this.cacheQueryStatus.equals(CacheQueryStatus.HIT_SAT);
   }
 
-  public boolean isUnSat() {
+  public boolean hitUnSat() {
     return this.cacheQueryStatus.equals(CacheQueryStatus.HIT_UNSAT);
   }
 
-  public boolean isMissed() {
+  public boolean missed() {
     return this.cacheQueryStatus.equals(CacheQueryStatus.MISS);
   }
 }
