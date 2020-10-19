@@ -320,7 +320,7 @@ public final class ConcolicConfig {
     "INVOKESPECIAL", //$NON-NLS-1$
     "INVOKESTATIC", //$NON-NLS-1$
     "INVOKEINTERFACE", //$NON-NLS-1$
-    "UNUSED", //$NON-NLS-1$
+    "INVOKEDYNAMIC", //$NON-NLS-1$
     "NEW", //$NON-NLS-1$
     "NEWARRAY", //$NON-NLS-1$
     "ANEWARRAY", //$NON-NLS-1$

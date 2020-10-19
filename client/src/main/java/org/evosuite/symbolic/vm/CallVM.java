@@ -19,12 +19,11 @@
  */
 package org.evosuite.symbolic.vm;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 
+import org.evosuite.dse.MainConfig;
+import org.evosuite.symbolic.expr.Expression;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.fp.RealConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
@@ -525,6 +524,7 @@ public final class CallVM extends AbstractVM {
 		/* private method may be native */
 		boolean instrumented = isIgnored(method);
 		env.topFrame().invokeInstrumentedCode(instrumented);
+		env.topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(false);
 		return method;
 	}
 
@@ -537,6 +537,38 @@ public final class CallVM extends AbstractVM {
 		stackParamCount = 0;
 		env.topFrame().invokeNeedsThis = false;
 		methodCall(className, methName, methDesc);
+	}
+
+	/**
+	 * TODO: Test Me!!!
+	 *
+	 * We get this callback immediately after the user's invokedynamic
+	 * instruction. See:
+	 * {@link ConcolicMethodAdapter#visitInvokeDynamicInsn}
+	 */
+	@Override
+	public void INVOKEDYNAMIC(Object magicInstance, String owner) {
+		final Class<?> magicClass =	magicInstance.getClass();
+
+		if (!SymbolicEnvironment.isLambda(magicClass)) throw new IllegalArgumentException("InvokeDynamic for things other than lambdas are not implemneted yet!, class found: " + magicClass.getName());
+
+		Type magicClassType = Type.getType(magicClass);
+		env.ensurePrepared(magicClass); // prepare symbolic fields
+		final ReferenceConstant symbolicRef = env.heap.buildNewReferenceConstant(magicClassType);
+
+		/* emulate JVM's magic Lambda class instantiation: This
+		 * class seems to have the right kind of fields for all
+		 * scenarios (generated static lambda method or simple
+		 * reference to an existing static or instance method. */
+		final Field[] fields = magicClass.getDeclaredFields();
+		for (int i = fields.length - 1; i >= 0; i--) {
+			// TODO: test me!!!
+			Operand symbolicOperand = env.topFrame().operandStack.popOperand();
+			Expression<?> symbolicValue =  OperandUtils.retrieveOperandExpression(symbolicOperand);
+			env.heap.putField(magicClass.getName(), fields[i].getName(), magicClass, symbolicRef, symbolicValue);
+		}
+
+		env.topFrame().operandStack.pushRef(symbolicRef); // produced by invokedynamic
 	}
 
 	/**
@@ -565,6 +597,7 @@ public final class CallVM extends AbstractVM {
 		if (conf.INIT.equals(methName)) {
 			boolean instrumented = !conf.isIgnored(className);
 			env.topFrame().invokeInstrumentedCode(instrumented);
+			env.topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(false);
 		} else {
 			methodCall(className, methName, methDesc);
 		}
@@ -640,6 +673,8 @@ public final class CallVM extends AbstractVM {
 		Method method = methodCall(concreteClassName, methName, methDesc);
 		chooseReceiverType(className, conc_receiver, methDesc, method);
 
+		// TODO: Implement lambdas!!
+		// Lambda cases missing -> When does this actually needs to be checked?
 	}
 
 	/**

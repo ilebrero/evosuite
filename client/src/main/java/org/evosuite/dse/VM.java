@@ -3504,6 +3504,20 @@ public final class VM {
 		ignoreCallback = false;
 	}
 
+	public void INVOKEDYNAMIC(Object clazz, String owner) {
+		if (ignoreCallback)
+			return;
+		ignoreCallback = true;
+		vm.countCallback();
+		try {
+			for (IVM listener : vm.listeners)
+				listener.INVOKEDYNAMIC(clazz, owner);
+		} catch (Throwable t) {
+			handleException(t);
+		}
+		ignoreCallback = false;
+	}
+
 	public static void UNUSED() {
 		if (ignoreCallback)
 			return;

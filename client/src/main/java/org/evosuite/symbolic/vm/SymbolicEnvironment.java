@@ -35,6 +35,8 @@ import org.evosuite.symbolic.vm.heap.SymbolicHeap;
 import org.evosuite.utils.TypeUtil;
 import org.objectweb.asm.Type;
 
+import static org.evosuite.dse.MainConfig.LAMBDA_CLASS_NAME_FRAGMENT;
+
 /**
  * 
  * @author galeotti
@@ -163,6 +165,16 @@ public final class SymbolicEnvironment {
 			fakeMainCallerFrame.operandStack.pushRef(emptyStringRef);
 		}
 		this.pushFrame(fakeMainCallerFrame);
+	}
+
+	/**
+	 * Checks if the current class is a magic lambda instance.
+	 *
+	 * @param claz
+	 * @return
+	 */
+	public static boolean isLambda(Class<?> claz) {
+		return claz.isSynthetic() && claz.getSimpleName().contains(LAMBDA_CLASS_NAME_FRAGMENT);
 	}
 
 	/**

@@ -30,6 +30,7 @@ import com.examples.with.different.packagename.dse.array.IntegerArrayAssignmentE
 import com.examples.with.different.packagename.dse.array.RealArrayAssignmentExample;
 import com.examples.with.different.packagename.dse.array.RealArrayAssignmentExample2;
 import com.examples.with.different.packagename.dse.array.StringArrayAssignmentExample;
+import com.examples.with.different.packagename.dse.lambda.LambdaExample;
 import org.evosuite.EvoSuite;
 import org.evosuite.Properties;
 import org.evosuite.Properties.Criterion;
@@ -677,5 +678,25 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 
 		assertFalse(best.getTests().isEmpty());
 		assertTrue(best.getNumOfCoveredGoals() >= 3);
+	}
+
+	@Test
+	public void testLambda() {
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = LambdaExample.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+		Properties.SHOW_PROGRESS = true;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertFalse(best.getTests().isEmpty());
+
+		assertEquals(7, best.getNumOfCoveredGoals());
+		assertEquals(0, best.getNumOfNotCoveredGoals());
 	}
 }

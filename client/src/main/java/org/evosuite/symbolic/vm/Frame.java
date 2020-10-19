@@ -37,11 +37,21 @@ public abstract class Frame {
 	private boolean weInvokedInstrumentedCode = true;
 
 	/**
+   	 * The last method we invoked was the code of a jvm-generated
+     * magic lambda class.
+     */
+    private boolean weInvokedMagicLambdaCodeThatInvokesNonInstrCode = false;
+
+	/**
 	 * @return the last method invoked is instrumented, because it is neither
 	 *         native nor defined by an uninstrumented JDK class, etc.
 	 */
 	boolean weInvokedInstrumentedCode() {
 		return weInvokedInstrumentedCode;
+	}
+
+	boolean weInvokedMagicLambdaCodeThatInvokesNonInstrCode() {
+		return weInvokedMagicLambdaCodeThatInvokesNonInstrCode;
 	}
 
 	/**
@@ -55,6 +65,12 @@ public abstract class Frame {
 	public void invokeInstrumentedCode(boolean b) {
 		weInvokedInstrumentedCode = b;
 	}
+
+
+	public void invokeMagicLambdaCodeThatInvokesNonInstrCode(boolean b) {
+    	weInvokedMagicLambdaCodeThatInvokesNonInstrCode = b;
+	}
+
 
 	/**
 	 * The last method invoked by this frame needs a "this" receiver reference,
