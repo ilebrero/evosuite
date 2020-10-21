@@ -21,6 +21,7 @@ package org.evosuite.dse;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 
 /*
@@ -31,11 +32,11 @@ import java.util.List;
 
 /**
  * Entry-point
- * 
+ *
  * The instrumentation inserted into user code is hard-coded to call static
  * methods of this class. Here we just multiplex these incoming calls to a list
  * of registered listeners.
- * 
+ *
  * @author csallner@uta.edu (Christoph Csallner)
  */
 public final class VM {
@@ -47,7 +48,7 @@ public final class VM {
 
 	/**
 	 * Is this a recursive callback?
-	 * 
+	 *
 	 * <pre>
 	 * VM.meth()   // true
 	 * user.meth()
@@ -55,6 +56,7 @@ public final class VM {
 	 * </pre>
 	 */
 	private static boolean ignoreCallback = false;
+
 
 	public static void disableCallBacks() {
 		ignoreCallback = true;
@@ -3504,32 +3506,14 @@ public final class VM {
 		ignoreCallback = false;
 	}
 
-	public void INVOKEDYNAMIC(Object clazz, String owner) {
-		if (ignoreCallback)
-			return;
-		ignoreCallback = true;
-		vm.countCallback();
-		try {
-			for (IVM listener : vm.listeners)
-				listener.INVOKEDYNAMIC(clazz, owner);
-		} catch (Throwable t) {
-			handleException(t);
-		}
-		ignoreCallback = false;
-	}
+	public void INVOKEDYNAMIC(Object instance, String ownerClass) {
+        if (!ignoreCallback)
+            interpret((IVM ivm) -> ivm.INVOKEDYNAMIC(instance, ownerClass));
+    }
 
 	public static void UNUSED() {
-		if (ignoreCallback)
-			return;
-		ignoreCallback = true;
-		vm.countCallback();
-		try {
-			for (IVM listener : vm.listeners)
-				listener.UNUSED();
-		} catch (Throwable t) {
-			handleException(t);
-		}
-		ignoreCallback = false;
+		if (!ignoreCallback)
+            interpret((IVM ivm) -> ivm.UNUSED());
 	}
 
 	protected static Class<?> getArrayComponentType(int componentTypeInt) {
@@ -3760,8 +3744,29 @@ public final class VM {
 	public static VM getInstance() {
 		return vm;
 	}
-	
+
 	public static void clearInstance() {
 		vm = new VM();
+	}
+
+    /**
+     * External callbacks.
+     * Comes directly from instrumented user program.
+     *
+     * TODO: Refactor all calls to use this function in the same way as INVOKEDYNAMIC
+     *
+     * @param lambda
+     */
+    private static void interpret(Consumer<IVM> lambda) {
+  	    disableCallBacks();
+	    vm.countCallback();
+
+	    try {
+	      for (IVM ivm : vm.listeners) lambda.accept(ivm);
+	    } catch (Throwable t) {
+	      t.printStackTrace();
+	    } finally {
+	  	  enableCallBacks();
+	    }
 	}
 }
