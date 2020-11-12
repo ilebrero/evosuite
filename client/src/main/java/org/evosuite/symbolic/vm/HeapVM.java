@@ -838,7 +838,7 @@ public final class HeapVM extends AbstractVM {
 					.containsSymbolicVariable()
 					|| indexTooBigConstraint.getRightOperand()
 							.containsSymbolicVariable())
-				this.pc.appendSupportingCondition(indexTooBigConstraint, className, methodName);
+				this.pc.appendArrayAccessCondition(indexTooBigConstraint, className, methodName, true);
 			return true;
 		} else {
 			indexTooBigConstraint = ConstraintFactory.lt(symb_index,
@@ -847,7 +847,7 @@ public final class HeapVM extends AbstractVM {
 					.containsSymbolicVariable()
 					|| indexTooBigConstraint.getRightOperand()
 							.containsSymbolicVariable())
-				this.pc.appendSupportingCondition(indexTooBigConstraint, className, methodName);
+				this.pc.appendArrayAccessCondition(indexTooBigConstraint, className, methodName, false);
 			return false;
 		}
 	}
@@ -870,7 +870,7 @@ public final class HeapVM extends AbstractVM {
 					.containsSymbolicVariable()
 					|| negative_index_constraint.getRightOperand()
 							.containsSymbolicVariable())
-				pc.appendSupportingCondition(negative_index_constraint, className, methodName);
+				pc.appendArrayAccessCondition(negative_index_constraint, className, methodName, true);
 			return true;
 		} else {
 			negative_index_constraint = ConstraintFactory.gte(symb_index,
@@ -879,7 +879,7 @@ public final class HeapVM extends AbstractVM {
 					.containsSymbolicVariable()
 					|| negative_index_constraint.getRightOperand()
 							.containsSymbolicVariable())
-				pc.appendSupportingCondition(negative_index_constraint, className, methodName);
+				pc.appendArrayAccessCondition(negative_index_constraint, className, methodName, false);
 			return false;
 		}
 	}
@@ -894,7 +894,7 @@ public final class HeapVM extends AbstractVM {
 					.containsSymbolicVariable()
 					|| negative_array_length_constraint.getRightOperand()
 							.containsSymbolicVariable())
-				pc.appendSupportingCondition(negative_array_length_constraint, className, methodName);
+				pc.appendArrayAccessCondition(negative_array_length_constraint, className, methodName, true);
 			return true;
 		} else {
 			negative_array_length_constraint = ConstraintFactory.gte(
@@ -903,7 +903,7 @@ public final class HeapVM extends AbstractVM {
 					.containsSymbolicVariable()
 					|| negative_array_length_constraint.getRightOperand()
 							.containsSymbolicVariable())
-				pc.appendSupportingCondition(negative_array_length_constraint, className, methodName);
+				pc.appendArrayAccessCondition(negative_array_length_constraint, className, methodName, false);
 			return false;
 		}
 	}
