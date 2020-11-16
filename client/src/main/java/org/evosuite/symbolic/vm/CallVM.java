@@ -547,8 +547,6 @@ public final class CallVM extends AbstractVM {
 	}
 
 	/**
-	 * TODO: Test Me!!!
-	 *
 	 * We get this callback immediately after the user's invokedynamic
 	 * instruction. See:
 	 * {@link ConcolicMethodAdapter#visitInvokeDynamicInsn}
@@ -569,7 +567,6 @@ public final class CallVM extends AbstractVM {
 		 * reference to an existing static or instance method. */
 		final Field[] fields = magicClass.getDeclaredFields();
 		for (int i = fields.length - 1; i >= 0; i--) {
-			// TODO: test me!!!
 			Operand symbolicOperand = env.topFrame().operandStack.popOperand();
 			Expression<?> symbolicValue =  OperandUtils.retrieveOperandExpression(symbolicOperand);
 			env.heap.putField(magicClass.getName(), fields[i].getName(), magicClass, symbolicRef, symbolicValue);
@@ -673,15 +670,73 @@ public final class CallVM extends AbstractVM {
 	public void INVOKEINTERFACE(Object conc_receiver, String className, String methName, String methDesc) {
 		stackParamCount = 0;
 		env.topFrame().invokeNeedsThis = true;
+
 		if (nullReferenceViolation(conc_receiver, null))
 			return;
+
+		if (SymbolicEnvironment.isLambda(conc_receiver.getClass()))
+			return; // Lambdas not supported yet! As we currently instrument based on the classfile of the class, we cannot do that to anonymous classes.
 
 		String concreteClassName = conc_receiver.getClass().getName();
 		Method method = methodCall(concreteClassName, methName, methDesc);
 		chooseReceiverType(className, conc_receiver, methDesc, method);
+		chooseReceiverType(className, conc_receiver, methDesc, method);
 
-		// TODO: Implement lambdas!!
-		// Lambda cases missing -> When does this actually needs to be checked?
+		/* lambda receiver: prepare for jump to possibly static (!) lambda method
+		 * - pop original operands
+		 * - pop receiver
+		 * - push captured (as receiver fields) operands
+		 * - push original operands
+		 */
+//		final int ifaceParams = getArgumentClasses(methDesc).length;
+//		final JvmExpression[] argsSymbolic = new JvmExpression[ifaceParams];
+//		for (int i=ifaceParams-1; i>=0; i--)
+//			argsSymbolic[i] = popOperand();
+//
+//		final Field[] fields = claz.getDeclaredFields();
+//		final JvmExpression[] fieldVals = new JvmExpression[fields.length];
+//		final Reference receiverSymbolic = ref(popOperand());
+//
+//		final LiteralClassType classSymbolic = state.types.getClass(claz);
+//		final boolean callsNonInstrumented =
+//				classSymbolic.isMagicLambdaClassThatCallsNonInstrumented();
+//		topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(callsNonInstrumented);
+//		if (callsNonInstrumented)
+//			return;	// no callback from method body can discard actual params
+//
+//		for (Field field: fields)
+//		{
+//			final Z3Array fieldMap = notNull(state.getInstanceField(field));
+//			final Class<?> fieldType = field.getType();
+//			JvmExpression select = null;
+//
+//			if (! fieldType.isPrimitive())
+//			{
+//			  if (fieldType.isArray())
+//				select = state.map.getFieldSelectArrayRef(field, fieldMap, receiverSymbolic);
+//			  else if (Map.class.isAssignableFrom(fieldType))
+//				select = state.map.getFieldSelectMapRef(field, fieldMap, receiverSymbolic, receiver);
+//			  else
+//				select = state.map.getRefFieldSelect(field, fieldMap, receiverSymbolic);
+//			}
+//			else if (fieldType.equals(long.class))
+//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.BV64);
+//			else if (fieldType.equals(float.class))
+//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.FP32);
+//			else if (fieldType.equals(double.class))
+//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.FP64);
+//			else
+//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.BV32);
+//
+//			int fieldLoc = Integer.parseInt(field.getName().substring(4)) - 1;
+//			fieldVals[fieldLoc] = select;
+//		}
+//
+//		for (JvmExpression val: fieldVals)
+//			pushOperand(val);
+//
+//		for (int i=0; i<ifaceParams; i++)
+//			pushOperand(argsSymbolic[i]);
 	}
 
 	/**

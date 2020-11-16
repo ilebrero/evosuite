@@ -3506,7 +3506,7 @@ public final class VM {
 		ignoreCallback = false;
 	}
 
-	public void INVOKEDYNAMIC(Object instance, String ownerClass) {
+	public static void INVOKEDYNAMIC(Object instance, String ownerClass) {
         if (!ignoreCallback)
             interpret((IVM ivm) -> ivm.INVOKEDYNAMIC(instance, ownerClass));
     }
