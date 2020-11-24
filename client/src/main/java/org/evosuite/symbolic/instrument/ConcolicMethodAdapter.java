@@ -174,13 +174,17 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	private static final String METHOD_BEGIN_RECEIVER = "METHOD_BEGIN_RECEIVER"; //$NON-NLS-1$
 
 	private static final String CALL_RESULT = "CALL_RESULT"; //$NON-NLS-1$
+	private static final String METHOD_MAXS = "METHOD_MAXS"; //$NON-NLS-1$
 
 	private final int access;
 	private final String className;
 	private final String methName;
 	private final String methDescription;
 
+	private int branchCounter = 1;
+
 	private final OperandStack stack;
+	private final Set<Label> exceptionHandlers = new HashSet<>();
 
 	/**
 	 * Constructor
@@ -406,8 +410,6 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 		super.visitInsn(opcode); // user code ByteCode instruction
 	}
 
-	private int branchCounter = 1;
-
 	@Override
 	public void visitJumpInsn(int opcode, Label label) {
 		
@@ -583,6 +585,8 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 		} else if (constant instanceof Type) {
 			mv.visitInsn(DUP);
 			insertCallback(BYTECODE_NAME[LDC], CLASS_V, false); //$NON-NLS-1$
+		// } else if (constant instanceof Handle) { // TODO: how are we supposed to handle this?
+		// } else if (constant instanceof ConstantDynamic) { // TODO: complete if intended JDK11 support.
 		} else { /* LDC2_W */
 			mv.visitInsn(DUP2);
 
@@ -670,11 +674,21 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 		                                                 // instruction
 	}
 
+	/**
+	 * INVOKEDYNAMIC
+	 *
+	 * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-6.html#jvms-6.5.invokedynamic</a>
+	 *
+	 * @param name
+	 * @param methodDesc
+	 * @param bsm
+	 * @param bsmArgs
+	 */
 	@Override
 	public void visitInvokeDynamicInsn(String name, String methodDesc, Handle bsm, Object... bsmArgs) {
 		super.visitInvokeDynamicInsn(name, methodDesc, bsm, bsmArgs); // user ByteCode instruction
 
-		mv.visitInsn(DUP); // newly created magic instance <- TODO: What is this magic instance????
+		mv.visitInsn(DUP); // newly created anonymous class instance
 		push(((Handle) bsmArgs[1]).getOwner());	// target method's owner class
 		insertCallback(BYTECODE_NAME[INVOKEDYNAMIC], LG_V, false);
 	}
@@ -813,49 +827,6 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String desc) {
 		this.visitMethodInsn(opcode, owner, name, desc, opcode == INVOKEINTERFACE);
-	}
-
-	private Map<Integer, Integer> popArguments(Type[] argTypes){
-		Map<Integer, Integer> to = new HashMap<>();
-		for (int i = argTypes.length - 1; i >= 0; i--) {
-			int loc = newLocal(argTypes[i]);
-			storeLocal(loc);
-			to.put(i, loc);
-		}
-		return to;
-	}
-
-	private void passCallerStackParams(Type[] argTypes, boolean needThis) {
-
-		if (argTypes == null || argTypes.length == 0)
-			return;
-
-		Map<Integer, Integer> to = popArguments(argTypes);
-
-		// restore all arguments for user invocation
-		for(int i = 0; i < to.size(); i++)
-			loadLocal(to.get(i));
-
-		// push arguments copy and paramNr and calleLocalsIndex
-		int calleeLocalsIndex = calculateCalleeLocalsIndex(argTypes, needThis);
-
-		for (int i = argTypes.length - 1; i >= 0; i--) {
-			int localVarIndex = to.get(i);
-			loadLocal(localVarIndex);
-			Type argType = argTypes[i];
-			stack.passCallerStackParam(argType, i, calleeLocalsIndex);
-			calleeLocalsIndex -= argType.getSize();
-		}
-
-	}
-
-	private int calculateCalleeLocalsIndex(Type[] argTypes, boolean needThis) {
-		int calleeLocalsIndex = 0;
-		for (Type type : argTypes)
-			calleeLocalsIndex += type.getSize();
-		if (needThis)
-			calleeLocalsIndex += 1;
-		return calleeLocalsIndex;
 	}
 
 	/**
@@ -998,8 +969,6 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 		super.visitTypeInsn(opcode, type); // user ByteCode instruction
 	}
 
-	private final Set<Label> exceptionHandlers = new HashSet<>();
-
 	@Override
 	public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
 		exceptionHandlers.add(handler);
@@ -1011,7 +980,7 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 		stack.pushStrings(className, methName, methDescription);
 		stack.pushInt(maxStack);
 		stack.pushInt(maxLocals);
-		insertCallback("METHOD_MAXS", GGGII_V, false); //$NON-NLS-1$
+		insertCallback(METHOD_MAXS, GGGII_V, false); //$NON-NLS-1$
 		super.visitMaxs(maxStack, maxLocals);
 	}
 
@@ -1022,4 +991,46 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 		mv.visitMethodInsn(INVOKESTATIC, VM_FQ, methodName, methodDesc, isInterface);
 	}
 
+	private void passCallerStackParams(Type[] argTypes, boolean needThis) {
+
+		if (argTypes == null || argTypes.length == 0)
+			return;
+
+		Map<Integer, Integer> to = popArguments(argTypes);
+
+		// restore all arguments for user invocation
+		for(int i = 0; i < to.size(); i++)
+			loadLocal(to.get(i));
+
+		// push arguments copy and paramNr and calleLocalsIndex
+		int calleeLocalsIndex = calculateCalleeLocalsIndex(argTypes, needThis);
+
+		for (int i = argTypes.length - 1; i >= 0; i--) {
+			int localVarIndex = to.get(i);
+			loadLocal(localVarIndex);
+			Type argType = argTypes[i];
+			stack.passCallerStackParam(argType, i, calleeLocalsIndex);
+			calleeLocalsIndex -= argType.getSize();
+		}
+
+	}
+
+	private Map<Integer, Integer> popArguments(Type[] argTypes){
+		Map<Integer, Integer> to = new HashMap<>();
+		for (int i = argTypes.length - 1; i >= 0; i--) {
+			int loc = newLocal(argTypes[i]);
+			storeLocal(loc);
+			to.put(i, loc);
+		}
+		return to;
+	}
+
+	private int calculateCalleeLocalsIndex(Type[] argTypes, boolean needThis) {
+		int calleeLocalsIndex = 0;
+		for (Type type : argTypes)
+			calleeLocalsIndex += type.getSize();
+		if (needThis)
+			calleeLocalsIndex += 1;
+		return calleeLocalsIndex;
+	}
 }

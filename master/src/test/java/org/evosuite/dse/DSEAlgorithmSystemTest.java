@@ -30,6 +30,7 @@ import com.examples.with.different.packagename.dse.array.IntegerArrayAssignmentE
 import com.examples.with.different.packagename.dse.array.RealArrayAssignmentExample;
 import com.examples.with.different.packagename.dse.array.RealArrayAssignmentExample2;
 import com.examples.with.different.packagename.dse.array.StringArrayAssignmentExample;
+import com.examples.with.different.packagename.dse.invokedynamicdsc.instrument.SingleMethodReference;
 import com.examples.with.different.packagename.dse.lambda.LambdaExample;
 import org.evosuite.EvoSuite;
 import org.evosuite.Properties;
@@ -684,6 +685,26 @@ public class DSEAlgorithmSystemTest extends SystemTestBase {
 	public void testLambda() {
 		EvoSuite evosuite = new EvoSuite();
 		String targetClass = LambdaExample.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+		Properties.SHOW_PROGRESS = true;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertFalse(best.getTests().isEmpty());
+
+		assertEquals(7, best.getNumOfCoveredGoals());
+		assertEquals(0, best.getNumOfNotCoveredGoals());
+	}
+
+	@Test
+	public void testSingleMethodReference() {
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = SingleMethodReference.class.getCanonicalName();
 		Properties.TARGET_CLASS = targetClass;
 		Properties.SHOW_PROGRESS = true;
 

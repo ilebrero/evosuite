@@ -52,7 +52,14 @@ import java.util.LinkedList;
  */
 public final class CallVM extends AbstractVM {
 
+	/** Environment */
 	private final SymbolicEnvironment env;
+
+	/** Instrumentation */
+	private final ConcolicInstrumentingClassLoader classLoader;
+
+	private int stackParamCount = 0;
+	private final HashMap<Member, MemberInfo> memberInfos = new HashMap<>();
 
 	/**
 	 * Constructor
@@ -60,46 +67,6 @@ public final class CallVM extends AbstractVM {
 	public CallVM(SymbolicEnvironment env, ConcolicInstrumentingClassLoader classLoader) {
 		this.env = env;
 		this.classLoader = classLoader;
-	}
-
-	/**
-	 * Start executing a static (class) initializer -- <clinit>()
-	 */
-	private void CLINIT_BEGIN(String className) {
-		/*
-		 * <clinit>() method can read textually earlier fields
-		 */
-		env.ensurePrepared(className);
-		Frame frame = new StaticInitializerFrame(className);
-		env.pushFrame(frame); // <clinit>() has no parameters
-	}
-
-	/**
-	 * @param function
-	 *            the method we are looking for in the frame stack
-	 * @return constructor matches with the current frame, after discarding some
-	 *         frames when necessary to match
-	 */
-	private boolean discardFrames(String className, String methName, Member function) {
-		if (function == null)
-			throw new IllegalArgumentException("function should be non null");
-
-		if (env.topFrame() instanceof FakeBottomFrame)
-			return false;
-
-		Frame topFrame = env.topFrame();
-		if (topFrame instanceof StaticInitializerFrame) {
-			StaticInitializerFrame clinitFrame = (StaticInitializerFrame) topFrame;
-			if (methName.equals(conf.INIT) && clinitFrame.getClassName().equals(className)) {
-				return true;
-			}
-		}
-
-		if (function != null && function.equals(topFrame.getMember()))
-			return true;
-
-		env.popFrame();
-		return discardFrames(className, methName, function);
 	}
 
 	/**
@@ -144,28 +111,6 @@ public final class CallVM extends AbstractVM {
 		ReferenceConstant exception_reference = new ReferenceConstant(Type.getType(Exception.class), -1);
 		env.topFrame().operandStack.pushRef(exception_reference);
 	}
-
-	private boolean discardFramesClassInitializer(String className, String methName) {
-		if (!conf.CLINIT.equals(methName))
-			throw new IllegalArgumentException("methName should be <clinit>");
-
-		if (env.topFrame() instanceof FakeBottomFrame)
-			return false;
-
-		Frame topFrame = env.topFrame();
-		if (topFrame instanceof StaticInitializerFrame) {
-			StaticInitializerFrame clinitFrame = (StaticInitializerFrame) topFrame;
-			if (methName.equals(conf.CLINIT) && clinitFrame.getClassName().equals(className)) {
-				return true;
-			}
-		}
-
-		env.popFrame();
-		return discardFramesClassInitializer(className, methName);
-	}
-
-	private final HashMap<Member, MemberInfo> memberInfos = new HashMap<>();
-	private final ConcolicInstrumentingClassLoader classLoader;
 
 	/**
 	 * Cache max values for this method, except for static initializers.
@@ -313,31 +258,6 @@ public final class CallVM extends AbstractVM {
 		env.pushFrame(frame);
 	}
 
-	private void prepareStackIfNeeded(String className, String methName, String methDesc) {
-
-		Method method = null;
-		if (env.isEmpty()) {
-			Class<?> claz = classLoader.getClassForName(className);
-
-			Method[] declMeths = claz.getDeclaredMethods();
-			for (Method declMeth : declMeths) {
-				if (!Modifier.isPublic(declMeth.getModifiers()))
-					continue;
-				if (declMeth.getName().equals(methName))
-					method = declMeth;
-			}
-
-			if (method != null) {
-				env.prepareStack(method);
-			}
-		}
-
-		if (env.isEmpty()) {
-			throw new IllegalStateException();
-		}
-
-	}
-
 	@Override
 	public void METHOD_BEGIN_RECEIVER(Object value) {
 		if (!env.callerFrame().weInvokedInstrumentedCode()) {
@@ -415,127 +335,6 @@ public final class CallVM extends AbstractVM {
 	}
 
 	/**
-	 * Asm method descriptor --> Method parameters as Java Reflection classes.
-	 *
-	 * Does not include the receiver for
-	 */
-	private Class<?>[] getArgumentClasses(String methDesc) {
-		Class<?>[] classes;
-
-		Type[] asmTypes = Type.getArgumentTypes(methDesc);
-		classes = new Class<?>[asmTypes.length];
-		for (int i = 0; i < classes.length; i++)
-			classes[i] = classLoader.getClassForType(asmTypes[i]);
-
-		return classes;
-	}
-
-	private static Method findMethodFromClass(Class<?> clazz, String methodName, Class<?>[] argTypes){
-        Method method = null;
-	    try {
-            method = clazz.getDeclaredMethod(methodName, argTypes);
-        } catch (NoSuchMethodException ignored) {
-        }
-        return method;
-	}
-
-	/**
-	 * Resolves (static) method overloading.
-	 *
-	 * Ensures that owner class is prepared.
-	 *
-	 * FIXME: user code calling java.util.Deque.isEmpty() crashes this method
-	 *
-	 * @return method named name, declared by owner or one of its super-classes,
-	 *         which has the parameters encoded in methDesc.
-	 */
-	private Method resolveMethodOverloading(String owner, String name, String methDesc) {
-		if(owner.equals("com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl")){
-			int y=0;
-		}
-		Method method = null;
-		final Deque<Class<?>> interfaces = new LinkedList<>();
-
-		Class<?> claz = env.ensurePrepared(owner);
-		/* Resolve method overloading -- need method parameter types */
-		Class<?>[] argTypes = getArgumentClasses(methDesc);
-		while ((method == null) && (claz != null)) {
-			interfaces.addAll(Arrays.asList(claz.getInterfaces()));
-
-			method = findMethodFromClass(claz,name,argTypes);
-
-			if(method == null)
-			    claz = claz.getSuperclass();
-
-			if (claz == null && !interfaces.isEmpty())
-				claz = interfaces.pop();
-		}
-
-		if (method == null)
-			throw new IllegalArgumentException("Failed to resolve " + owner + "." + name);
-
-		return method;
-	}
-
-	private Constructor<?> resolveConstructorOverloading(String owner, String desc) {
-		Constructor<?> constructor = null;
-
-		Class<?> claz = env.ensurePrepared(owner);
-
-		/* Resolve overloading -- need parameter types */
-		Class<?>[] argTypes = getArgumentClasses(desc);
-
-		try {
-			constructor = claz.getDeclaredConstructor(argTypes);
-		} catch (NoSuchMethodException nsme) {
-			throw new IllegalArgumentException("Failed to resolve constructor of " + owner);
-		}
-
-		return constructor;
-	}
-
-	/**
-	 * @return method is instrumented. It is neither native nor declared by an
-	 *         ignored JDK class, etc.
-	 */
-	private boolean isIgnored(Method method) {
-		if (Modifier.isNative(method.getModifiers()))
-			return false;
-
-		/* virtual method */
-
-		if (method.getDeclaringClass().isAnonymousClass()) {
-			// anonymous class
-			String name = method.getDeclaringClass().getName();
-			int indexOf = name.indexOf("$");
-			String fullyQualifiedTopLevelClassName = name.substring(0, indexOf);
-			return !conf.isIgnored(fullyQualifiedTopLevelClassName);
-		} else {
-			String declClass = method.getDeclaringClass().getCanonicalName();
-			return !conf.isIgnored(declClass);
-
-		}
-	}
-
-	/**
-	 * Method call
-	 * <ul>
-	 * <li>not a constructor <init></li>
-	 * <li>not a class initializer <clinit></li>
-	 * </ul>
-	 *
-	 * @return static method descriptor
-	 */
-	private Method methodCall(String className, String methName, String methDesc) {
-		final Method method = resolveMethodOverloading(className, methName, methDesc);
-		/* private method may be native */
-		boolean instrumented = isIgnored(method);
-		env.topFrame().invokeInstrumentedCode(instrumented);
-		env.topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(false);
-		return method;
-	}
-
-	/**
 	 * http://java.sun.com/docs/books/jvms/second_edition/html/Instructions2.
 	 * doc6.html#invokestatic
 	 */
@@ -552,27 +351,29 @@ public final class CallVM extends AbstractVM {
 	 * {@link ConcolicMethodAdapter#visitInvokeDynamicInsn}
 	 */
 	@Override
-	public void INVOKEDYNAMIC(Object magicInstance, String owner) {
-		final Class<?> magicClass =	magicInstance.getClass();
+	public void INVOKEDYNAMIC(Object anonymousInstance, String owner) {
+		final Class<?> anonymousClass =	anonymousInstance.getClass();
 
-		if (!SymbolicEnvironment.isLambda(magicClass)) throw new IllegalArgumentException("InvokeDynamic for things other than lambdas are not implemneted yet!, class found: " + magicClass.getName());
+		if (!SymbolicEnvironment.isLambda(anonymousClass)) throw new IllegalArgumentException("InvokeDynamic for things other than lambdas are not implemented yet!, class found: " + anonymousClass.getName());
 
-		Type magicClassType = Type.getType(magicClass);
-		env.ensurePrepared(magicClass); // prepare symbolic fields
-		final ReferenceConstant symbolicRef = env.heap.buildNewReferenceConstant(magicClassType);
+		Type anonymousClassType = Type.getType(anonymousClass);
+		env.ensurePrepared(anonymousClass); // prepare symbolic fields
+		final ReferenceConstant symbolicRef = env.heap.buildNewReferenceConstant(anonymousClassType);
 
-		/* emulate JVM's magic Lambda class instantiation: This
+		/**
+		 * emulate JVM's anonymous Lambda class instantiation: This
 		 * class seems to have the right kind of fields for all
 		 * scenarios (generated static lambda method or simple
-		 * reference to an existing static or instance method. */
-		final Field[] fields = magicClass.getDeclaredFields();
+		 * reference to an existing static or instance method.
+		 * */
+		final Field[] fields = anonymousClass.getDeclaredFields();
 		for (int i = fields.length - 1; i >= 0; i--) {
 			Operand symbolicOperand = env.topFrame().operandStack.popOperand();
 			Expression<?> symbolicValue =  OperandUtils.retrieveOperandExpression(symbolicOperand);
-			env.heap.putField(magicClass.getName(), fields[i].getName(), magicClass, symbolicRef, symbolicValue);
+			env.heap.putField(anonymousClass.getName(), fields[i].getName(), anonymousClass, symbolicRef, symbolicValue);
 		}
 
-		env.topFrame().operandStack.pushRef(symbolicRef); // produced by invokedynamic
+		env.topFrame().operandStack.pushRef(symbolicRef); // Symbolic instance produced by invokedynamic
 	}
 
 	/**
@@ -653,10 +454,6 @@ public final class CallVM extends AbstractVM {
 		chooseReceiverType(className, conc_receiver, methDesc, virtualMethod);
 	}
 
-	private boolean nullReferenceViolation(Object conc_receiver, ReferenceExpression symb_receiver) {
-		return conc_receiver == null;
-	}
-
 	/**
 	 * We get this callback right before the user code makes the corresponding
 	 * call to interface method className.methName(methDesc). See:
@@ -667,59 +464,78 @@ public final class CallVM extends AbstractVM {
 	 * doc6.html#invokeinterface
 	 */
 	@Override
-	public void INVOKEINTERFACE(Object conc_receiver, String className, String methName, String methDesc) {
+	public void INVOKEINTERFACE(Object concreteReceiver, String className, String methName, String methDesc) {
 		stackParamCount = 0;
 		env.topFrame().invokeNeedsThis = true;
 
-		if (nullReferenceViolation(conc_receiver, null))
+		if (nullReferenceViolation(concreteReceiver, null))
 			return;
 
-		if (SymbolicEnvironment.isLambda(conc_receiver.getClass()))
-			return; // Lambdas not supported yet! As we currently instrument based on the classfile of the class, we cannot do that to anonymous classes.
+		// Non-anonymous classes calls
+		if (SymbolicEnvironment.isLambda(concreteReceiver.getClass()))
+    		return;
 
-		String concreteClassName = conc_receiver.getClass().getName();
+		String concreteClassName = concreteReceiver.getClass().getName();
 		Method method = methodCall(concreteClassName, methName, methDesc);
-		chooseReceiverType(className, conc_receiver, methDesc, method);
-		chooseReceiverType(className, conc_receiver, methDesc, method);
-	}
+		chooseReceiverType(className, concreteReceiver, methDesc, method);
 
-	/**
-	 * Add dynamic type of receiver to path condition.
-	 */
-	private void chooseReceiverType(String className, Object receiver, String methDesc, Method staticMethod) {
 
-		if (nullReferenceViolation(receiver, null)) {
-			throw new IllegalArgumentException("we are post null-deref check");
-		}
-
-		/*
-		 * Only encode the receiver type in a constraint if dynamic dispatach
-		 * can happen: not(isFinal(static receiver type))
-		 */
-		final Class<?> staticReceiver = env.ensurePrepared(className);
-		if (Modifier.isFinal(staticReceiver.getModifiers()))
-			return;
-
-		/*
-		 * Heuristic: Do not encode the receiver type if a method is
-		 * "final native", e.g., Object.getClass().
-		 *
-		 * not( isNative(static method descriptor) && isFinal(static method
-		 * descriptor))
-		 */
-		final int methodModifiers = staticMethod.getModifiers();
-		if (Modifier.isNative(methodModifiers) && Modifier.isFinal(methodModifiers))
-			return;
-
-	}
-
-	private Frame popFrameAndDisposeCallerParams() {
-		Frame frame = env.popFrame();
-
-		if (!env.isEmpty() && env.topFrame().weInvokedInstrumentedCode())
-			env.topFrame().disposeMethInvokeArgs(frame);
-
-		return frame;
+//		/* lambda receiver: prepare for jump to possibly static (!) lambda method
+//		 * - pop original operands
+//		 * - pop receiver
+//		 * - push captured (as receiver fields) operands
+//		 * - push original operands
+//		 */
+//		final int interfaceParams = getArgumentClasses(methDesc).length;
+//		final Operand[] argsSymbolic = new Operand[interfaceParams];
+//		for (int i=interfaceParams-1; i>=0; i--)
+//			argsSymbolic[i] = env.topFrame().operandStack.popOperand();
+//
+//		final Field[] fields = concreteReceiver.getClass().getDeclaredFields();
+//		final Expression[] fieldVals = new Expression[fields.length];
+//		final ReferenceOperand receiverSymbolic = (ReferenceOperand) env.topFrame().operandStack.popOperand();
+//
+//
+//		final LiteralClassType classSymbolic = state.types.getClass(claz);
+//		final boolean callsNonInstrumented =
+//				classSymbolic.isMagicLambdaClassThatCallsNonInstrumented();
+//		topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(callsNonInstrumented);
+//		if (callsNonInstrumented)
+//			return;	// no callback from method body can discard actual params
+//
+//		for (Field field: fields)
+//		{
+//			final Z3Array fieldMap = notNull(state.getInstanceField(field));
+//			final Class<?> fieldType = field.getType();
+//			JvmExpression select = null;
+//
+//			if (! fieldType.isPrimitive())
+//			{
+//			  if (fieldType.isArray())
+//				select = state.map.getFieldSelectArrayRef(field, fieldMap, receiverSymbolic);
+//			  else if (Map.class.isAssignableFrom(fieldType))
+//				select = state.map.getFieldSelectMapRef(field, fieldMap, receiverSymbolic, receiver);
+//			  else
+//				select = state.map.getRefFieldSelect(field, fieldMap, receiverSymbolic);
+//			}
+//			else if (fieldType.equals(long.class))
+//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.BV64);
+//			else if (fieldType.equals(float.class))
+//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.FP32);
+//			else if (fieldType.equals(double.class))
+//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.FP64);
+//			else
+//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.BV32);
+//
+//			int fieldLoc = Integer.parseInt(field.getName().substring(4)) - 1;
+//			fieldVals[fieldLoc] = select;
+//		}
+//
+//		for (JvmExpression val: fieldVals)
+//			pushOperand(val);
+//
+//		for (int i=0; i<interfaceParams; i++)
+//			pushOperand(argsSymbolic[i]);
 	}
 
 	/**
@@ -889,22 +705,6 @@ public final class CallVM extends AbstractVM {
 
 	}
 
-	/**
-	 * Nested class: Container for maximum size of operand stack and maximum
-	 * number of local variables.
-	 */
-	private final static class MemberInfo {
-		@SuppressWarnings("unused")
-		final int maxStack, maxLocals;
-
-		MemberInfo(int maxStack, int maxLocals) {
-			this.maxStack = maxStack;
-			this.maxLocals = maxLocals;
-		}
-	}
-
-	int stackParamCount = 0;
-
 	@Override
 	public void CALLER_STACK_PARAM(int nr, int calleeLocalsIndex, int value) {
 		stackParamCount++;
@@ -969,4 +769,265 @@ public final class CallVM extends AbstractVM {
 		return null;
 	}
 
+	/**
+	 * Start executing a static (class) initializer -- <clinit>()
+	 */
+	private void CLINIT_BEGIN(String className) {
+		/*
+		 * <clinit>() method can read textually earlier fields
+		 */
+//		env.ensurePrepared(className);
+		Frame frame = new StaticInitializerFrame(className);
+		env.pushFrame(frame); // <clinit>() has no parameters
+	}
+
+	/**
+	 * @param function
+	 *            the method we are looking for in the frame stack
+	 * @return constructor matches with the current frame, after discarding some
+	 *         frames when necessary to match
+	 */
+	private boolean discardFrames(String className, String methName, Member function) {
+		if (function == null)
+			throw new IllegalArgumentException("function should be non null");
+
+		if (env.topFrame() instanceof FakeBottomFrame)
+			return false;
+
+		Frame topFrame = env.topFrame();
+		if (topFrame instanceof StaticInitializerFrame) {
+			StaticInitializerFrame clinitFrame = (StaticInitializerFrame) topFrame;
+			if (methName.equals(conf.INIT) && clinitFrame.getClassName().equals(className)) {
+				return true;
+			}
+		}
+
+		if (function != null && function.equals(topFrame.getMember()))
+			return true;
+
+		env.popFrame();
+		return discardFrames(className, methName, function);
+	}
+
+	private boolean discardFramesClassInitializer(String className, String methName) {
+		if (!conf.CLINIT.equals(methName))
+			throw new IllegalArgumentException("methName should be <clinit>");
+
+		if (env.topFrame() instanceof FakeBottomFrame)
+			return false;
+
+		Frame topFrame = env.topFrame();
+		if (topFrame instanceof StaticInitializerFrame) {
+			StaticInitializerFrame clinitFrame = (StaticInitializerFrame) topFrame;
+			if (methName.equals(conf.CLINIT) && clinitFrame.getClassName().equals(className)) {
+				return true;
+			}
+		}
+
+		env.popFrame();
+		return discardFramesClassInitializer(className, methName);
+	}
+
+	private void prepareStackIfNeeded(String className, String methName, String methDesc) {
+
+		Method method = null;
+		if (env.isEmpty()) {
+			Class<?> claz = classLoader.getClassForName(className);
+
+			Method[] declMeths = claz.getDeclaredMethods();
+			for (Method declMeth : declMeths) {
+				if (!Modifier.isPublic(declMeth.getModifiers()))
+					continue;
+				if (declMeth.getName().equals(methName))
+					method = declMeth;
+			}
+
+			if (method != null) {
+				env.prepareStack(method);
+			}
+		}
+
+		if (env.isEmpty()) {
+			throw new IllegalStateException();
+		}
+
+	}
+
+	/**
+	 * Asm method descriptor --> Method parameters as Java Reflection classes.
+	 *
+	 * Does not include the receiver for
+	 */
+	private Class<?>[] getArgumentClasses(String methDesc) {
+		Class<?>[] classes;
+
+		Type[] asmTypes = Type.getArgumentTypes(methDesc);
+		classes = new Class<?>[asmTypes.length];
+		for (int i = 0; i < classes.length; i++)
+			classes[i] = classLoader.getClassForType(asmTypes[i]);
+
+		return classes;
+	}
+
+	private static Method findMethodFromClass(Class<?> clazz, String methodName, Class<?>[] argTypes){
+        Method method = null;
+	    try {
+            method = clazz.getDeclaredMethod(methodName, argTypes);
+        } catch (NoSuchMethodException ignored) {
+        }
+        return method;
+	}
+
+	/**
+	 * Resolves (static) method overloading.
+	 *
+	 * Ensures that owner class is prepared.
+	 *
+	 * FIXME: user code calling java.util.Deque.isEmpty() crashes this method
+	 *
+	 * @return method named name, declared by owner or one of its super-classes,
+	 *         which has the parameters encoded in methDesc.
+	 */
+	private Method resolveMethodOverloading(String owner, String name, String methDesc) {
+		if(owner.equals("com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl")){
+			int y=0;
+		}
+		Method method = null;
+		final Deque<Class<?>> interfaces = new LinkedList<>();
+
+		Class<?> claz = env.ensurePrepared(owner);
+		/* Resolve method overloading -- need method parameter types */
+		Class<?>[] argTypes = getArgumentClasses(methDesc);
+		while ((method == null) && (claz != null)) {
+			interfaces.addAll(Arrays.asList(claz.getInterfaces()));
+
+			method = findMethodFromClass(claz,name,argTypes);
+
+			if(method == null)
+			    claz = claz.getSuperclass();
+
+			if (claz == null && !interfaces.isEmpty())
+				claz = interfaces.pop();
+		}
+
+		if (method == null)
+			throw new IllegalArgumentException("Failed to resolve " + owner + "." + name);
+
+		return method;
+	}
+
+	private Constructor<?> resolveConstructorOverloading(String owner, String desc) {
+		Constructor<?> constructor = null;
+
+		Class<?> claz = env.ensurePrepared(owner);
+
+		/* Resolve overloading -- need parameter types */
+		Class<?>[] argTypes = getArgumentClasses(desc);
+
+		try {
+			constructor = claz.getDeclaredConstructor(argTypes);
+		} catch (NoSuchMethodException nsme) {
+			throw new IllegalArgumentException("Failed to resolve constructor of " + owner);
+		}
+
+		return constructor;
+	}
+
+	/**
+	 * @return method is instrumented. It is neither native nor declared by an
+	 *         ignored JDK class, etc.
+	 */
+	private boolean isIgnored(Method method) {
+		if (Modifier.isNative(method.getModifiers()))
+			return false;
+
+		/* virtual method */
+
+		if (method.getDeclaringClass().isAnonymousClass()) {
+			// anonymous class
+			String name = method.getDeclaringClass().getName();
+			int indexOf = name.indexOf("$");
+			String fullyQualifiedTopLevelClassName = name.substring(0, indexOf);
+			return !conf.isIgnored(fullyQualifiedTopLevelClassName);
+		} else {
+			String declClass = method.getDeclaringClass().getCanonicalName();
+			return !conf.isIgnored(declClass);
+
+		}
+	}
+
+	/**
+	 * Method call
+	 * <ul>
+	 * <li>not a constructor <init></li>
+	 * <li>not a class initializer <clinit></li>
+	 * </ul>
+	 *
+	 * @return static method descriptor
+	 */
+	private Method methodCall(String className, String methName, String methDesc) {
+		final Method method = resolveMethodOverloading(className, methName, methDesc);
+		/* private method may be native */
+		boolean instrumented = isIgnored(method);
+		env.topFrame().invokeInstrumentedCode(instrumented);
+		env.topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(false);
+		return method;
+	}
+
+	private boolean nullReferenceViolation(Object conc_receiver, ReferenceExpression symb_receiver) {
+		return conc_receiver == null;
+	}
+
+	/**
+	 * Add dynamic type of receiver to path condition.
+	 */
+	private void chooseReceiverType(String className, Object receiver, String methDesc, Method staticMethod) {
+
+		if (nullReferenceViolation(receiver, null)) {
+			throw new IllegalArgumentException("we are post null-deref check");
+		}
+
+		/*
+		 * Only encode the receiver type in a constraint if dynamic dispatach
+		 * can happen: not(isFinal(static receiver type))
+		 */
+		final Class<?> staticReceiver = env.ensurePrepared(className);
+		if (Modifier.isFinal(staticReceiver.getModifiers()))
+			return;
+
+		/*
+		 * Heuristic: Do not encode the receiver type if a method is
+		 * "final native", e.g., Object.getClass().
+		 *
+		 * not( isNative(static method descriptor) && isFinal(static method
+		 * descriptor))
+		 */
+		final int methodModifiers = staticMethod.getModifiers();
+		if (Modifier.isNative(methodModifiers) && Modifier.isFinal(methodModifiers))
+			return;
+
+	}
+
+	private Frame popFrameAndDisposeCallerParams() {
+		Frame frame = env.popFrame();
+
+		if (!env.isEmpty() && env.topFrame().weInvokedInstrumentedCode())
+			env.topFrame().disposeMethInvokeArgs(frame);
+
+		return frame;
+	}
+
+	/**
+	 * Nested class: Container for maximum size of operand stack and maximum
+	 * number of local variables.
+	 */
+	private final static class MemberInfo {
+		@SuppressWarnings("unused")
+		final int maxStack, maxLocals;
+
+		MemberInfo(int maxStack, int maxLocals) {
+			this.maxStack = maxStack;
+			this.maxLocals = maxLocals;
+		}
+	}
 }

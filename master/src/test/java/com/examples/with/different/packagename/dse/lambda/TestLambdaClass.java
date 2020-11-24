@@ -11,10 +11,14 @@ public class TestLambdaClass {
         if (in > 3) list.add(1);
 
         Function<Integer, Integer> test = (a) -> {
-            if (list.size() > 0 && a > 6) return 0;
+            if (check(list, a)) return 0;
             return 1;
         };
 
         return test.apply(in);
+    }
+
+    public boolean check(List<Integer> vals, int val) {
+        return vals.size() > 0 && val > 6;
     }
 }

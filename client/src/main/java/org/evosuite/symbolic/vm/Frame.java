@@ -50,10 +50,6 @@ public abstract class Frame {
 		return weInvokedInstrumentedCode;
 	}
 
-	boolean weInvokedMagicLambdaCodeThatInvokesNonInstrCode() {
-		return weInvokedMagicLambdaCodeThatInvokesNonInstrCode;
-	}
-
 	/**
 	 * The next call is to an instrumented method. The called method is neither
 	 * native, nor defined by an uninstrumented JDK class, etc.
@@ -66,11 +62,13 @@ public abstract class Frame {
 		weInvokedInstrumentedCode = b;
 	}
 
+	boolean weInvokedMagicLambdaCodeThatInvokesNonInstrCode() {
+		return weInvokedMagicLambdaCodeThatInvokesNonInstrCode;
+	}
 
 	public void invokeMagicLambdaCodeThatInvokesNonInstrCode(boolean b) {
     	weInvokedMagicLambdaCodeThatInvokesNonInstrCode = b;
 	}
-
 
 	/**
 	 * The last method invoked by this frame needs a "this" receiver reference,
