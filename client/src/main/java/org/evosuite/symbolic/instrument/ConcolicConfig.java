@@ -132,8 +132,8 @@ public final class ConcolicConfig {
 
   public static final String CLASS_V = "(" + CLASS + ")" + VOID;
 
-
-  static final String[] BYTECODE_NAME = new String[]{
+  //TODO: Move this to a better place eventually
+  public static final String[] BYTECODE_NAME = new String[]{
     "NOP", //$NON-NLS-1$
     "ACONST_NULL", //$NON-NLS-1$
     "ICONST_M1", //$NON-NLS-1$
