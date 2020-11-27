@@ -22,8 +22,17 @@ package org.evosuite.symbolic.vm;
 import org.evosuite.dse.AbstractVM;
 import org.evosuite.symbolic.instrument.ConcolicConfig;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.evosuite.symbolic.vm.util.Log.log;
 import static org.evosuite.symbolic.vm.util.Log.logln;
+
+/*
+    This class is taken and adapted from the DSC tool developed by Christoph Csallner.
+    Link at :
+    http://ranger.uta.edu/~csallner/dsc/index.html
+ */
 
 /**
  * Log the name of a ByteCode instruction and any of its parameters
@@ -33,6 +42,8 @@ import static org.evosuite.symbolic.vm.util.Log.logln;
 public class InstructionLoggerVM extends AbstractVM {
 
     private final SymbolicEnvironment environment;
+    static List<String> instructionsExecuted = new ArrayList();
+
 
     /**
      * Constructor
@@ -92,8 +103,11 @@ public class InstructionLoggerVM extends AbstractVM {
         log("callerStackParam ");
         log(nr);
         // TODO: why theres a null value coming here? should that happend?
-//        logln(" ", value.toString());
-//        logln(" ", value);
+        if (value != null) {
+            logln(" ", value.toString());
+        } else {
+            logln(" ", "null");
+        }
     }
 
 
@@ -153,13 +167,21 @@ public class InstructionLoggerVM extends AbstractVM {
         log(nr);
         log(" ");
         log(calleeLocalsIndex);
-//        logln(" ", value.toString());
+        if (value != null) {
+            logln(" ", value.toString());
+        } else {
+            logln(" ", "null");
+        }
     }
 
     @Override
     public void METHOD_BEGIN_RECEIVER(Object value) {
         log("methodBeginReceiver ");
-//        logln(value.toString());
+        if (value != null) {
+            logln(" ", value.toString());
+        } else {
+            logln(" ", "null");
+        }
     }
 
 
@@ -1076,6 +1098,11 @@ public class InstructionLoggerVM extends AbstractVM {
 
     protected void logInsn(int opcode, Object p) {
         log(ConcolicConfig.BYTECODE_NAME[opcode], " ");
+        if (p != null) {
+            logln(" ", p.toString());
+        } else {
+            logln(" ", "null");
+        }
 //        log(p.toString());
         logln();
 //        logLoopIterations();
@@ -1083,6 +1110,18 @@ public class InstructionLoggerVM extends AbstractVM {
 
     protected void logInsn(int opcode, Object p1, Object p2) {
         log(ConcolicConfig.BYTECODE_NAME[opcode], " ");
+        if (p1 != null) {
+            logln(p1.toString(), " ");
+        } else {
+            logln("null", " ");
+        }
+
+        if (p2 != null) {
+            logln(p2.toString());
+        } else {
+            logln("null");
+        }
+
 //        log(p1.toString(), " ");
 //        log(p2.toString());
         logln();
@@ -1091,19 +1130,47 @@ public class InstructionLoggerVM extends AbstractVM {
 
     protected void logInsn(int opcode, Object p1, Object p2, Object p3) {
         log(ConcolicConfig.BYTECODE_NAME[opcode], " ");
-//        log(p1.toString(), " ");
-//        log(p2.toString(), " ");
-//        log(p3.toString());
+        if (p1 != null) {
+            logln(p1.toString(), " ");
+        } else {
+            logln("null", " ");
+        }
+        if (p2 != null) {
+            logln(p2.toString(), " ");
+        } else {
+            logln("null", " ");
+        }
+        if (p3 != null) {
+            logln(p3.toString());
+        } else {
+            logln("null");
+        }
         logln();
 //        logLoopIterations();
     }
 
     protected void logInsn(int opcode, Object p1, Object p2, Object p3, Object p4) {
         log(ConcolicConfig.BYTECODE_NAME[opcode], " ");
-//        log(p1.toString(), " ");
-//        log(p2.toString(), " ");
-//        log(p3.toString(), " ");
-//        log(p4.toString());
+        if (p1 != null) {
+            logln(p1.toString(), " ");
+        } else {
+            logln("null", " ");
+        }
+        if (p2 != null) {
+            logln(p2.toString(), " ");
+        } else {
+            logln("null", " ");
+        }
+        if (p3 != null) {
+            logln(p3.toString(), " ");
+        } else {
+            logln("null", " ");
+        }
+        if (p4 != null) {
+            logln(p4.toString());
+        } else {
+            logln("null");
+        }
         logln();
 //        logLoopIterations();
     }

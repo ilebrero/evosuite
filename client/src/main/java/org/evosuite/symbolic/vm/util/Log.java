@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2010-2018 Gordon Fraser, Andrea Arcuri and EvoSuite
+ * contributors
+ *
+ * This file is part of EvoSuite.
+ *
+ * EvoSuite is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3.0 of the License, or
+ * (at your option) any later version.
+ *
+ * EvoSuite is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.evosuite.symbolic.vm.util;
 
 import org.slf4j.Logger;
@@ -6,6 +25,14 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+
+/*
+    This class is taken and adapted from the DSC tool developed by Christoph Csallner.
+    Link at :
+    http://ranger.uta.edu/~csallner/dsc/index.html
+ */
 
 /**
  * Central log.
@@ -20,6 +47,8 @@ import java.io.PrintStream;
 public abstract class Log {
 
     private static final transient Logger logger = LoggerFactory.getLogger(Log.class);
+    static List<String> instructionsExecuted = new ArrayList();
+    static StringBuilder buffer = new StringBuilder();
 
     public final static String NL = System.getProperty("line.separator");
     public final static String FS = System.getProperty("file.separator");
@@ -35,6 +64,7 @@ public abstract class Log {
      */
     public static void log(int p) {
         logger.info(String.valueOf(p));
+        buffer.append(p + " ");
     }
 
     /**
@@ -42,6 +72,25 @@ public abstract class Log {
      */
     public static void log(String p) {
         logger.info(p);
+        buffer.append(p + " ");
+    }
+
+    /**
+     * Log newline.
+     */
+    public static void logln() {
+        logger.info("");
+        instructionsExecuted.add(buffer.toString());
+        buffer = new StringBuilder();
+    }
+
+    /**
+     * Log parameter as p followed by newline.
+     */
+    public static void logln(int p) {
+        logger.info(String.valueOf(p));
+        buffer.append(p + " ");
+        logln();
     }
 
     /**
@@ -80,21 +129,6 @@ public abstract class Log {
         log(c);
         log(d);
         log(e);
-    }
-
-    /**
-     * Log newline.
-     */
-    public static void logln() {
-        logger.info("");
-    }
-
-    /**
-     * Log parameter as p followed by newline.
-     */
-    public static void logln(int p) {
-        logger.info(String.valueOf(p));
-        logln();
     }
 
     /**
