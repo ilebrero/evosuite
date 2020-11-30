@@ -154,12 +154,12 @@ import static org.objectweb.asm.Opcodes.TABLESWITCH;
 
 /**
  * Main instrumentation class
- * 
+ *
  * <p>
  * Before each user ByteCode instruction, add a call to one of our static
  * methods, that reflects the particular ByteCode. In a few cases noted below,
  * we add our callback after the user ByteCode, instead of before.
- * 
+ *
  * @author csallner@uta.edu (Christoph Csallner)
  */
 public final class ConcolicMethodAdapter extends GeneratorAdapter {
@@ -203,12 +203,12 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 	/**
 	 * Before first ByteCode of the method/constructor
-	 * 
+	 *
 	 * <p>
 	 * Issue one call per argument, excluding the "this" receiver for
 	 * non-constructor instance methods. Work left to right, starting with
 	 * receiver.
-	 * 
+	 *
 	 * <ol>
 	 * <li>
 	 * METHOD_BEGIN_RECEIVER(value) -- optional</li>
@@ -412,7 +412,7 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 	@Override
 	public void visitJumpInsn(int opcode, Label label) {
-		
+
 		// The use of branchCounter is inlined so that branchIds match
 		// what EvoSuite produces
 		//
@@ -488,7 +488,7 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	/**
 	 * Pseudo-instruction, inserted directly before the corresponding target
 	 * instruction.
-	 * 
+	 *
 	 * <p>
 	 * Our instrumentation code does not change the shape of the instrumented
 	 * method's control flow graph. So hopefully we do not need to modify any
@@ -555,14 +555,14 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	 * <li>
 	 * LDC2_W -- push category two constant from constant pool</li>
 	 * </ul>
-	 * 
+	 *
 	 * Insert call to our method after user ByteCode instruction, allows us to
 	 * use the result of LDC.
-	 * 
-	 * @see http 
+	 *
+	 * @see http
 	 *      ://java.sun.com/docs/books/jvms/second_edition/html/Instructions2
 	 *      .doc8.html#ldc
-	 * @see http 
+	 * @see http
 	 *      ://java.sun.com/docs/books/jvms/second_edition/html/Instructions2
 	 *      .doc8.html#ldc2_w
 	 */
@@ -601,7 +601,7 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 	/**
 	 * ILOAD, ISTORE, ILOAD_0, ILOAD_1, etc.
-	 * 
+	 *
 	 * <p>
 	 * These may follow a WIDE instruction.
 	 */
@@ -632,7 +632,7 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 	/**
 	 * GETFIELD, PUTFIELD, GETSTATIC, PUTSTATIC
-	 * 
+	 *
 	 * http://java.sun.com/docs/books/jvms/second_edition/html/Instructions2.
 	 * doc5.html#getfield
 	 * http://java.sun.com/docs/books/jvms/second_edition/html
@@ -729,7 +729,6 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	 */
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
-		// FIXME proper handling of INVOKEDYNAMIC (currently handled like INVOKESTATIC)
 		Type[] argTypes = Type.getArgumentTypes(descriptor); // does not include
 		// "this"
 
@@ -831,10 +830,10 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 	/**
 	 * IINC
-	 * 
+	 *
 	 * <p>
 	 * Increment i-th local (int) variable by constant (int) value.
-	 * 
+	 *
 	 * <p>
 	 * May follow a WIDE instruction.
 	 */
@@ -848,7 +847,7 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 	/**
 	 * MULTIANEWARRAY
-	 * 
+	 *
 	 * <pre>
 	 * boolean[] b1 = new boolean[1]; // NEWARRAY T_BOOLEAN
 	 * Boolean[] B1 = new Boolean[1]; // ANEWARRAY java/lang/Boolean
@@ -878,8 +877,8 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	 */
 	@Override
 	public void visitTableSwitchInsn(int min, int max, Label dflt, Label[] labels) {
-		
-		
+
+
 		int currentBranchIndex = branchCounter++;
 
 		mv.visitInsn(DUP); // pass concrete int value
@@ -898,7 +897,7 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 	/**
 	 * LOOKUPSWITCH
-	 * 
+	 *
 	 * <p>
 	 * TODO: Optimize this. Do we really need to create a new array every time
 	 * we execute this switch statement?
@@ -906,7 +905,7 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	@Override
 	public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
 
-		
+
 		int currentBranchIndex = branchCounter++;
 
 		mv.visitInsn(DUP); // pass concrete int value

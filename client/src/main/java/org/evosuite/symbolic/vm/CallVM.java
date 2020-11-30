@@ -471,7 +471,7 @@ public final class CallVM extends AbstractVM {
 		if (nullReferenceViolation(concreteReceiver, null))
 			return;
 
-		// Non-anonymous classes calls
+		// Lambdas are not instrumentable for now.
 		if (SymbolicEnvironment.isLambda(concreteReceiver.getClass()))
     		return;
 
@@ -486,31 +486,35 @@ public final class CallVM extends AbstractVM {
 //		 * - push captured (as receiver fields) operands
 //		 * - push original operands
 //		 */
+
+//		/** Pop original operands */
 //		final int interfaceParams = getArgumentClasses(methDesc).length;
 //		final Operand[] argsSymbolic = new Operand[interfaceParams];
 //		for (int i=interfaceParams-1; i>=0; i--)
 //			argsSymbolic[i] = env.topFrame().operandStack.popOperand();
 //
+//		/** Prepare Symbolic fields */
 //		final Field[] fields = concreteReceiver.getClass().getDeclaredFields();
 //		final Expression[] fieldVals = new Expression[fields.length];
+//
+//		/** pop receiver */
 //		final ReferenceOperand receiverSymbolic = (ReferenceOperand) env.topFrame().operandStack.popOperand();
-//
-//
-//		final LiteralClassType classSymbolic = state.types.getClass(claz);
-//		final boolean callsNonInstrumented =
-//				classSymbolic.isMagicLambdaClassThatCallsNonInstrumented();
+
+
+		/** If we call non instrumented code, there's nothing left to do */
+//		final LiteralClassType classSymbolic = state.types.getClass(className);
+//		final boolean callsNonInstrumented = classSymbolic.isMagicLambdaClassThatCallsNonInstrumented();
 //		topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(callsNonInstrumented);
 //		if (callsNonInstrumented)
 //			return;	// no callback from method body can discard actual params
-//
-//		for (Field field: fields)
-//		{
+
+		/** push captured (as receiver fields) operands */
+//		for (Field field: fields) {
 //			final Z3Array fieldMap = notNull(state.getInstanceField(field));
 //			final Class<?> fieldType = field.getType();
-//			JvmExpression select = null;
+//			Expression select = null;
 //
-//			if (! fieldType.isPrimitive())
-//			{
+//			if (! fieldType.isPrimitive()) {
 //			  if (fieldType.isArray())
 //				select = state.map.getFieldSelectArrayRef(field, fieldMap, receiverSymbolic);
 //			  else if (Map.class.isAssignableFrom(fieldType))
@@ -530,12 +534,13 @@ public final class CallVM extends AbstractVM {
 //			int fieldLoc = Integer.parseInt(field.getName().substring(4)) - 1;
 //			fieldVals[fieldLoc] = select;
 //		}
-//
-//		for (JvmExpression val: fieldVals)
-//			pushOperand(val);
-//
+
+//		for (Expression val: fieldVals)
+//			env.topFrame().operandStack.pushOperand(val);
+
+ 		/** push original operands */
 //		for (int i=0; i<interfaceParams; i++)
-//			pushOperand(argsSymbolic[i]);
+//			env.topFrame().operandStack.pushOperand(argsSymbolic[i]);
 	}
 
 	/**
