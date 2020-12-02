@@ -20,6 +20,7 @@
 package org.evosuite.symbolic.instrument;
 
 
+import static org.evosuite.dse.MainConfig.LAMBDA_CLASS_NAME_FRAGMENT;
 import static org.evosuite.dse.util.Assertions.check;
 import static org.evosuite.dse.util.Assertions.notNull;
 
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.evosuite.dse.MainConfig;
+import org.evosuite.symbolic.vm.SymbolicEnvironment;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 
@@ -43,7 +45,7 @@ import org.objectweb.asm.Type;
  *
  */
 public class ConcolicInstrumentingClassLoader extends ClassLoader {
-	
+
 	//private final static Logger logger = LoggerFactory.getLogger(DscInstrumentingClassLoader.class);
 
 	private final ClassLoader classLoader;
@@ -59,6 +61,10 @@ public class ConcolicInstrumentingClassLoader extends ClassLoader {
 
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
+
+		if (name.contains(LAMBDA_CLASS_NAME_FRAGMENT)) {
+			int i = 0;
+		}
 
 		if (!checkIfCanInstrument(name)) {
 			Class<?> result = findLoadedClass(name);
@@ -98,17 +104,23 @@ public class ConcolicInstrumentingClassLoader extends ClassLoader {
 		//logger.info("Instrumenting class '" + fullyQualifiedTargetClass + "'.");
 		try {
 			String className = fullyQualifiedTargetClass.replace('.', '/');
-			InputStream is = ClassLoader.getSystemResourceAsStream(className + ".class");
-			if (is == null) {
-				try {
-					is = findTargetResource(className + ".class");
-				} catch (FileNotFoundException e) {
-					throw new ClassNotFoundException("Class '" + className + ".class"
-					        + "' should be in target project, but could not be found!");
+			ClassReader reader;
+
+			if (!className.contains(LAMBDA_CLASS_NAME_FRAGMENT)) {
+				InputStream is = ClassLoader.getSystemResourceAsStream(className + ".class");
+				if (is == null) {
+					try {
+						is = findTargetResource(className + ".class");
+					} catch (FileNotFoundException e) {
+						throw new ClassNotFoundException("Class '" + className + ".class"
+								+ "' should be in target project, but could not be found!");
+					}
 				}
+				reader = new ClassReader(is);
+			} else {
+				reader = new ClassReader(className);
 			}
-			byte[] byteBuffer = instrumentation.transformBytes(className,
-			                                                   new ClassReader(is));
+				byte[] byteBuffer = instrumentation.transformBytes(className, reader);
 			Class<?> result = defineClass(fullyQualifiedTargetClass, byteBuffer, 0,
 			                              byteBuffer.length);
 			classes.put(fullyQualifiedTargetClass, result);
