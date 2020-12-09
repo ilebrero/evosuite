@@ -19,6 +19,7 @@
  */
 package org.evosuite.dse;
 
+import com.examples.with.different.packagename.dse.StreamAPIExample;
 import com.examples.with.different.packagename.dse.StringConcatenationExample;
 import com.examples.with.different.packagename.dse.invokedynamic.dsc.instrument.SingleMethodReference;
 import com.examples.with.different.packagename.dse.ClosureExample;
@@ -101,7 +102,22 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 	@Test
 	public void testStreamAPI() {
-		throw new NotImplementedException("Implement me!");
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = StreamAPIExample.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+		Properties.SHOW_PROGRESS = true;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertFalse(best.getTests().isEmpty());
+
+		assertEquals(best.getNumOfCoveredGoals(), 2);
+		assertEquals(best.getNumOfNotCoveredGoals(), 0);
 	}
 
 	@Test

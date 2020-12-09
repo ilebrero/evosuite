@@ -19,11 +19,17 @@
  */
 package com.examples.with.different.packagename.dse;
 
+import java.util.function.Function;
+
 public class LambdaExample {
 
-    public static int test(int a) {
-        TestClosureClass closure = new TestClosureClass();
-        return closure.closureTest(a);
+    public static int test(int in) {
+        Function<Integer, Integer> test = (a) -> {
+            if (a == 2) return 0;
+            return 1;
+        };
+
+        return test.apply(in);
     }
 
 }

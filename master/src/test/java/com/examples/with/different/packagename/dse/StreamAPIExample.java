@@ -19,22 +19,27 @@
  */
 package com.examples.with.different.packagename.dse;
 
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Simple lambda example
+ * This will make more sense when we add complex object support to the Symbolic Engine
  *
  * @author Ignacio Lebrero
  */
-public class TestLambdaClass {
+public class StreamAPIExample {
+    public static int test(int a) {
+        List<Integer> list = new ArrayList() {{
+            add(5839);
+        }};
 
-    public int lambdaTest(int in) {
-        Function<Integer, Integer> test = (a) -> {
-            if (a == 2) return 0;
+        Integer i = list.stream().filter((val) -> val == a).findFirst().orElse(0);
+
+        if (i == 5839) {
             return 1;
-        };
-
-        return test.apply(in);
+        } else {
+            return 0;
+        }
     }
-
 }
