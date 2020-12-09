@@ -351,8 +351,16 @@ public final class CallVM extends AbstractVM {
 	 * {@link ConcolicMethodAdapter#visitInvokeDynamicInsn}
 	 */
 	@Override
-	public void INVOKEDYNAMIC(Object anonymousInstance, String owner) {
-		final Class<?> anonymousClass =	anonymousInstance.getClass();
+	public void INVOKEDYNAMIC(Object indyResult, String owner) {
+		final Class<?> anonymousClass =	indyResult.getClass();
+
+		if (owner.equals(String.class.getName().replace(".", "/"))) {
+			Type anonymousClassType = Type.getType(anonymousClass);
+			env.ensurePrepared(anonymousClass); // prepare symbolic fields
+			final ReferenceConstant symbolicRef = env.heap.buildNewReferenceConstant(anonymousClassType);
+			env.topFrame().operandStack.pushRef(symbolicRef); // Symbolic instance produced by invokedynamic
+			return;
+		}
 
 		if (!SymbolicEnvironment.isLambda(anonymousClass)) throw new IllegalArgumentException("InvokeDynamic for things other than lambdas are not implemented yet!, class found: " + anonymousClass.getName());
 
@@ -471,7 +479,7 @@ public final class CallVM extends AbstractVM {
 		if (nullReferenceViolation(concreteReceiver, null))
 			return;
 
-		// Lambdas are not instrumentable for now.
+		// Lambdas doesn't need to be instrumented, the code itself is in the respective owner class.
 		if (SymbolicEnvironment.isLambda(concreteReceiver.getClass()))
     		return;
 

@@ -19,6 +19,7 @@
  */
 package org.evosuite.symbolic.instrument;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -26,6 +27,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.StringConcatFactory;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -559,12 +562,8 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	 * Insert call to our method after user ByteCode instruction, allows us to
 	 * use the result of LDC.
 	 *
-	 * @see http
-	 *      ://java.sun.com/docs/books/jvms/second_edition/html/Instructions2
-	 *      .doc8.html#ldc
-	 * @see http
-	 *      ://java.sun.com/docs/books/jvms/second_edition/html/Instructions2
-	 *      .doc8.html#ldc2_w
+	 * @see  <a href="http://java.sun.com/docs/books/jvms/second_edition/html/Instructions2.doc8.html#ldc">ldc doc</a>
+	 * @see  <a href="http://java.sun.com/docs/books/jvms/second_edition/html/Instructions2.doc8.html#ldc2_w">ldc2 doc</a>
 	 */
 	@Override
 	public void visitLdcInsn(Object constant) {
@@ -677,7 +676,10 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	/**
 	 * INVOKEDYNAMIC
 	 *
-	 * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-6.html#jvms-6.5.invokedynamic</a>
+	 * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-6.html#jvms-6.5.invokedynamic>invokedynamic doc</a>
+	 *
+	 * TODO: Add support for other InvokeDynamic based features.
+	 * 		 (e.g. milling coin project, local variable type inference, dynalink, etc...)
 	 *
 	 * @param name
 	 * @param methodDesc
@@ -688,8 +690,23 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	public void visitInvokeDynamicInsn(String name, String methodDesc, Handle bsm, Object... bsmArgs) {
 		super.visitInvokeDynamicInsn(name, methodDesc, bsm, bsmArgs); // user ByteCode instruction
 
-		mv.visitInsn(DUP); // newly created anonymous class instance
-		push(((Handle) bsmArgs[1]).getOwner());	// target method's owner class
+		mv.visitInsn(DUP); // newly created indy result
+
+		/**
+		 * These two seems to be the only cases of invokedynamic uses in JDK 9.
+		 * Dynalink and other JVM invokedynamic features are still not being
+		 * used at the java language level at this point.
+		 */
+		if (ownerIsLambdaMetafactory(bsm)) {
+			// Lambda case, is either a method reference, lambda usage or SAM method conversion
+			push(((Handle) bsmArgs[1]).getOwner());
+		} else if (ownerIsStringConcatFactory(bsm)){
+			// String concatenation case
+			push(String.class.getName().replace(".", "/"));
+		} else {
+			throw new NotImplementedException("Invokedynamic's bootstrap method not supported yet: " + bsm.getOwner());
+		}
+
 		insertCallback(BYTECODE_NAME[INVOKEDYNAMIC], LG_V, false);
 	}
 
@@ -1031,5 +1048,13 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 		if (needThis)
 			calleeLocalsIndex += 1;
 		return calleeLocalsIndex;
+	}
+
+	private boolean ownerIsLambdaMetafactory(Handle bsm) {
+		return bsm.getOwner().contains(LambdaMetafactory.class.getSimpleName());
+	}
+
+	private boolean ownerIsStringConcatFactory(Handle bsm) {
+		return bsm.getOwner().contains(StringConcatFactory.class.getSimpleName());
 	}
 }

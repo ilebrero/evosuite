@@ -42,8 +42,6 @@ import static org.evosuite.symbolic.vm.util.Log.logln;
 public class InstructionLoggerVM extends AbstractVM {
 
     private final SymbolicEnvironment environment;
-    static List<String> instructionsExecuted = new ArrayList();
-
 
     /**
      * Constructor
