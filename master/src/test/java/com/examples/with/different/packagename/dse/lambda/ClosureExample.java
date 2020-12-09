@@ -19,11 +19,10 @@
  */
 package com.examples.with.different.packagename.dse.lambda;
 
-public class LambdaExample {
+public class ClosureExample {
 
     public static int test(int a) {
         TestClosureClass closure = new TestClosureClass();
         return closure.closureTest(a);
     }
-
 }
