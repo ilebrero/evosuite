@@ -17,13 +17,24 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.examples.with.different.packagename.dse.lambda;
+package com.examples.with.different.packagename.dse;
 
-public class LambdaExample {
+import java.util.function.Function;
 
-    public static int test(int a) {
-        TestClosureClass closure = new TestClosureClass();
-        return closure.closureTest(a);
+/**
+ * Simple lambda example
+ *
+ * @author Ignacio Lebrero
+ */
+public class TestLambdaClass {
+
+    public int lambdaTest(int in) {
+        Function<Integer, Integer> test = (a) -> {
+            if (a == 2) return 0;
+            return 1;
+        };
+
+        return test.apply(in);
     }
 
 }

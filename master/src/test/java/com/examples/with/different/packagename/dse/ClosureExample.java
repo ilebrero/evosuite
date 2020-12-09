@@ -17,32 +17,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.examples.with.different.packagename.dse.lambda;
+package com.examples.with.different.packagename.dse;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
+public class ClosureExample {
 
-/**
- * Simple closure example
- *
- * @author Ignacio Lebrero
- */
-public class TestClosureClass {
-    private List<Integer> list = new ArrayList();
-
-    public int closureTest(int in) {
-        if (in > 3) list.add(1);
-
-        Function<Integer, Integer> test = (a) -> {
-            if (check(list, a)) return 0;
-            return 1;
-        };
-
-        return test.apply(in);
-    }
-
-    public boolean check(List<Integer> vals, int val) {
-        return vals.size() > 0 && val > 6;
+    public static int test(int a) {
+        TestClosureClass closure = new TestClosureClass();
+        return closure.closureTest(a);
     }
 }

@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.examples.with.different.packagename.dse.invokedynamicdsc.instrument;
+package com.examples.with.different.packagename.dse.invokedynamic.dsc.instrument;
 
 /*
     This class is taken and adapted from the DSC tool developed by Christoph Csallner.

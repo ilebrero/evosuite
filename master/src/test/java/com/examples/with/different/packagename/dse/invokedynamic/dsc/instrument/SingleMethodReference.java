@@ -17,12 +17,44 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.examples.with.different.packagename.dse.lambda;
+package com.examples.with.different.packagename.dse.invokedynamic.dsc.instrument;
 
-public class ClosureExample {
+/*
+    This class is taken and adapted from the DSC tool developed by Christoph Csallner.
+    Link at :
+    http://ranger.uta.edu/~csallner/dsc/index.html
+ */
 
-    public static int test(int a) {
-        TestClosureClass closure = new TestClosureClass();
-        return closure.closureTest(a);
-    }
+/** 
+ * @author csallner@uta.edu (Christoph Csallner)
+ */
+public class SingleMethodReference
+{	
+	interface GetInt {
+		int test(int y);
+	}
+
+	private static class MyIntegerClass implements GetInt {
+		private int val;
+
+		public MyIntegerClass(int x) {
+			this.val = x;
+		}
+
+		@Override
+		public int test(int y) {
+			if (this.val * y > 748)
+				return 0;
+			else
+				return 1;
+		}
+	}
+		
+	public static int instanceRef(int x, int y)
+	{
+		MyIntegerClass myInt = new MyIntegerClass(x);
+		
+		GetInt magic = myInt::test;
+		return magic.test(y);
+	}
 }

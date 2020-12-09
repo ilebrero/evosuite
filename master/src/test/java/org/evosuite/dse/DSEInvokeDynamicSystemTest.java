@@ -19,9 +19,10 @@
  */
 package org.evosuite.dse;
 
-import com.examples.with.different.packagename.dse.invokedynamicdsc.instrument.SingleMethodReference;
-import com.examples.with.different.packagename.dse.lambda.ClosureExample;
-import com.examples.with.different.packagename.dse.lambda.LambdaExample;
+import com.examples.with.different.packagename.dse.StringConcatenationExample;
+import com.examples.with.different.packagename.dse.invokedynamic.dsc.instrument.SingleMethodReference;
+import com.examples.with.different.packagename.dse.ClosureExample;
+import com.examples.with.different.packagename.dse.LambdaExample;
 import org.apache.commons.lang3.NotImplementedException;
 import org.evosuite.EvoSuite;
 import org.evosuite.Properties;
@@ -112,7 +113,22 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 	@Test
 	public void testConcatenation() {
-		throw new NotImplementedException("Implement me!");
+		EvoSuite evosuite = new EvoSuite();
+		String targetClass = StringConcatenationExample.class.getCanonicalName();
+		Properties.TARGET_CLASS = targetClass;
+		Properties.SHOW_PROGRESS = true;
+
+		String[] command = new String[] { "-generateSuiteUsingDSE", "-class", targetClass };
+
+		Object result = evosuite.parseCommandLine(command);
+		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
+		TestSuiteChromosome best = dse.getGeneratedTestSuite();
+		System.out.println("EvolvedTestSuite:\n" + best);
+
+		assertFalse(best.getTests().isEmpty());
+
+		assertEquals(2, best.getNumOfCoveredGoals());
+		assertEquals(0, best.getNumOfNotCoveredGoals());
 	}
 
 	/** Method Handles (JDK 8) */
