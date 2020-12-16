@@ -31,15 +31,32 @@ import java.util.stream.Collectors;
 public class StreamAPIExample {
     public static int test(int a) {
         List<Integer> list = new ArrayList() {{
-            add(5839);
+            add(2);
         }};
 
-        Integer i = list.stream().filter((val) -> val == a).findFirst().orElse(0);
+        Integer i = list
+                .stream()
+                .map(val -> {
+                    if (a == 3) {
+                        return val * 2;
+                    } else {
+                        if(a == 7) {
+                            return val * 3;
+                        } else {
+                            return val;
+                        }
+                    }
+                }).findFirst()
+                .orElse(0);
 
-        if (i == 5839) {
+        if (i == 2) {
             return 1;
+        } else if (i == 4) {
+            return 2;
+        } else if (i == 6) {
+            return 3;
         } else {
-            return 0;
+            return 4;
         }
     }
 }

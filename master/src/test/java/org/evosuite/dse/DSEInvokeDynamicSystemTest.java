@@ -121,8 +121,8 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 		assertFalse(generatedTestSuite.getTests().isEmpty());
 
-		assertEquals(generatedTestSuite.getNumOfCoveredGoals(), 2);
-		assertEquals(generatedTestSuite.getNumOfNotCoveredGoals(), 0);
+		assertEquals(4, generatedTestSuite.getNumOfCoveredGoals());
+		assertEquals(0, generatedTestSuite.getNumOfNotCoveredGoals());
 	}
 
 	@Test
