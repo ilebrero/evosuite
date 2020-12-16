@@ -21,8 +21,8 @@ package org.evosuite.dse;
 
 import com.examples.with.different.packagename.dse.StreamAPIExample;
 import com.examples.with.different.packagename.dse.StringConcatenationExample;
+import com.examples.with.different.packagename.dse.TestClosureClass;
 import com.examples.with.different.packagename.dse.invokedynamic.dsc.instrument.SingleMethodReference;
-import com.examples.with.different.packagename.dse.ClosureExample;
 import com.examples.with.different.packagename.dse.LambdaExample;
 import org.apache.commons.lang3.NotImplementedException;
 import org.evosuite.EvoSuite;
@@ -66,7 +66,7 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 	@Test
 	public void testClosure() {
 		EvoSuite evosuite = new EvoSuite();
-		String targetClass = ClosureExample.class.getCanonicalName();
+		String targetClass = TestClosureClass.class.getCanonicalName();
 		Properties.TARGET_CLASS = targetClass;
 		Properties.SHOW_PROGRESS = true;
 
@@ -79,8 +79,8 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 		assertFalse(generatedTestSuite.getTests().isEmpty());
 
-		assertEquals(1, generatedTestSuite.getNumOfCoveredGoals());
-		assertEquals(0, generatedTestSuite.getNumOfNotCoveredGoals());
+		assertEquals(8, generatedTestSuite.getNumOfCoveredGoals());
+		assertEquals(1, generatedTestSuite.getNumOfNotCoveredGoals());
 	}
 
 	/** Method references (JDK 8) */

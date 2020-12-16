@@ -29,9 +29,9 @@ import java.util.function.Function;
  * @author Ignacio Lebrero
  */
 public class TestClosureClass {
-    private List<Integer> list = new ArrayList();
+    private static List<Integer> list = new ArrayList();
 
-    public int closureTest(int in) {
+    public static int closureTest(int in) {
         if (in == 0) list.add(1);
 
         Function<Integer, Integer> testClosure = (a) -> {
@@ -42,7 +42,7 @@ public class TestClosureClass {
         return testClosure.apply(in);
     }
 
-    public boolean check(List<Integer> vals, int val) {
+    private static boolean check(List<Integer> vals, int val) {
         return vals.size() > 0 || val > 6;
     }
 }
