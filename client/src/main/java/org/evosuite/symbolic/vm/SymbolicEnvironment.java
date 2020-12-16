@@ -163,16 +163,6 @@ public final class SymbolicEnvironment {
 	}
 
 	/**
-	 * Checks if the current class is a magic lambda instance.
-	 *
-	 * @param claz
-	 * @return
-	 */
-	public static boolean isLambda(Class<?> claz) {
-		return claz.isSynthetic() && claz.getSimpleName().contains(LAMBDA_CLASS_NAME_FRAGMENT);
-	}
-
-	/**
 	 * @return method is instrumented. It is neither native nor declared by an
 	 *         ignored JDK class, etc.
 	 */

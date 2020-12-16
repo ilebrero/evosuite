@@ -40,7 +40,7 @@ public abstract class Frame {
    	 * The last method we invoked was the code of a jvm-generated
      * magic lambda class.
      */
-    private boolean weInvokedMagicLambdaCodeThatInvokesNonInstrCode = false;
+    private boolean weInvokedSynteticLambdaCodeThatInvokesNonInstrCode = false;
 
 	/**
 	 * @return the last method invoked is instrumented, because it is neither
@@ -62,12 +62,15 @@ public abstract class Frame {
 		weInvokedInstrumentedCode = b;
 	}
 
-	boolean weInvokedMagicLambdaCodeThatInvokesNonInstrCode() {
-		return weInvokedMagicLambdaCodeThatInvokesNonInstrCode;
+	/**
+	 * The next call is to a lambda's synthetic method which calls non-instrumented code.
+	 */
+	boolean weInvokedSyntheticLambdaCodeThatInvokesNonInstrCode() {
+		return weInvokedSynteticLambdaCodeThatInvokesNonInstrCode;
 	}
 
-	public void invokeMagicLambdaCodeThatInvokesNonInstrCode(boolean b) {
-    	weInvokedMagicLambdaCodeThatInvokesNonInstrCode = b;
+	public void invokeLambdaSyntheticCodeThatInvokesNonInstrCode(boolean b) {
+    	weInvokedSynteticLambdaCodeThatInvokesNonInstrCode = b;
 	}
 
 	/**

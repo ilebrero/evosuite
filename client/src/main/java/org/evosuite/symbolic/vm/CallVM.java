@@ -20,11 +20,13 @@
 package org.evosuite.symbolic.vm;
 
 import org.evosuite.dse.AbstractVM;
+import org.evosuite.symbolic.LambdaUtils;
 import org.evosuite.symbolic.expr.Expression;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.fp.RealConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
+import org.evosuite.symbolic.expr.reftype.LambdaSyntheticType;
 import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
 import org.evosuite.symbolic.instrument.ConcolicMethodAdapter;
 import org.objectweb.asm.Type;
@@ -167,7 +169,8 @@ public final class CallVM extends AbstractVM {
 			return;
 		}
 
-		if (env.topFrame().weInvokedInstrumentedCode() == false) {
+		if (env.topFrame().weInvokedInstrumentedCode() == false
+				|| env.topFrame().weInvokedSyntheticLambdaCodeThatInvokesNonInstrCode()) {
 			// An uninstrumented caller has called instrumented code
 			// This is problemtatic
 		}
@@ -346,9 +349,9 @@ public final class CallVM extends AbstractVM {
 	}
 
 	/**
-	 * We get this callback immediately after the user's invokedynamic
-	 * instruction. See:
-	 * {@link ConcolicMethodAdapter#visitInvokeDynamicInsn}
+	 * We get this callback immediately after the user's invokedynamic instruction.
+	 *
+	 * See: {@link ConcolicMethodAdapter#visitInvokeDynamicInsn}
 	 */
 	@Override
 	public void INVOKEDYNAMIC(Object indyResult, String owner) {
@@ -362,8 +365,9 @@ public final class CallVM extends AbstractVM {
 			return;
 		}
 
-		if (!SymbolicEnvironment.isLambda(anonymousClass)) throw new IllegalArgumentException("InvokeDynamic for things other than lambdas are not implemented yet!, class found: " + anonymousClass.getName());
+		if (!LambdaUtils.isLambda(anonymousClass)) throw new IllegalArgumentException("InvokeDynamic for things other than lambdas are not implemented yet!, class found: " + anonymousClass.getName());
 
+		env.heap.buildNewLambdaConstant(anonymousClass, conf.isIgnored(owner));	// make it lambda
 		Type anonymousClassType = Type.getType(anonymousClass);
 		env.ensurePrepared(anonymousClass); // prepare symbolic fields
 		final ReferenceConstant symbolicRef = env.heap.buildNewReferenceConstant(anonymousClassType);
@@ -410,7 +414,7 @@ public final class CallVM extends AbstractVM {
 		if (conf.INIT.equals(methName)) {
 			boolean instrumented = !conf.isIgnored(className);
 			env.topFrame().invokeInstrumentedCode(instrumented);
-			env.topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(false);
+			env.topFrame().invokeLambdaSyntheticCodeThatInvokesNonInstrCode(false);
 		} else {
 			methodCall(className, methName, methDesc);
 		}
@@ -479,76 +483,22 @@ public final class CallVM extends AbstractVM {
 		if (nullReferenceViolation(concreteReceiver, null))
 			return;
 
-		// Lambdas doesn't need to be instrumented, the code itself is in the respective owner class.
-		if (SymbolicEnvironment.isLambda(concreteReceiver.getClass()))
-    		return;
+		// Ilebrero: Lambdas doesn't seem to be instrumentable.
+		// The code itself is in the respective owner class so doing just this seems to work fine.
+		if (LambdaUtils.isLambda(concreteReceiver.getClass())) {
+
+			// Check if we call non-instrumented code
+			Class anonymousClass = concreteReceiver.getClass();
+			LambdaSyntheticType type = (LambdaSyntheticType) env.heap.getReferenceType(anonymousClass);
+			env.topFrame().invokeLambdaSyntheticCodeThatInvokesNonInstrCode(type.callsNonInstrumentedCode());
+
+			//TODO: add symbolizacion for something else? doesn't seem to be needed
+			return;
+		}
 
 		String concreteClassName = concreteReceiver.getClass().getName();
 		Method method = methodCall(concreteClassName, methName, methDesc);
 		chooseReceiverType(className, concreteReceiver, methDesc, method);
-
-
-//		/* lambda receiver: prepare for jump to possibly static (!) lambda method
-//		 * - pop original operands
-//		 * - pop receiver
-//		 * - push captured (as receiver fields) operands
-//		 * - push original operands
-//		 */
-
-//		/** Pop original operands */
-//		final int interfaceParams = getArgumentClasses(methDesc).length;
-//		final Operand[] argsSymbolic = new Operand[interfaceParams];
-//		for (int i=interfaceParams-1; i>=0; i--)
-//			argsSymbolic[i] = env.topFrame().operandStack.popOperand();
-//
-//		/** Prepare Symbolic fields */
-//		final Field[] fields = concreteReceiver.getClass().getDeclaredFields();
-//		final Expression[] fieldVals = new Expression[fields.length];
-//
-//		/** pop receiver */
-//		final ReferenceOperand receiverSymbolic = (ReferenceOperand) env.topFrame().operandStack.popOperand();
-
-
-		/** If we call non instrumented code, there's nothing left to do */
-//		final LiteralClassType classSymbolic = state.types.getClass(className);
-//		final boolean callsNonInstrumented = classSymbolic.isMagicLambdaClassThatCallsNonInstrumented();
-//		topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(callsNonInstrumented);
-//		if (callsNonInstrumented)
-//			return;	// no callback from method body can discard actual params
-
-		/** push captured (as receiver fields) operands */
-//		for (Field field: fields) {
-//			final Z3Array fieldMap = notNull(state.getInstanceField(field));
-//			final Class<?> fieldType = field.getType();
-//			Expression select = null;
-//
-//			if (! fieldType.isPrimitive()) {
-//			  if (fieldType.isArray())
-//				select = state.map.getFieldSelectArrayRef(field, fieldMap, receiverSymbolic);
-//			  else if (Map.class.isAssignableFrom(fieldType))
-//				select = state.map.getFieldSelectMapRef(field, fieldMap, receiverSymbolic, receiver);
-//			  else
-//				select = state.map.getRefFieldSelect(field, fieldMap, receiverSymbolic);
-//			}
-//			else if (fieldType.equals(long.class))
-//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.BV64);
-//			else if (fieldType.equals(float.class))
-//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.FP32);
-//			else if (fieldType.equals(double.class))
-//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.FP64);
-//			else
-//				select = state.map.getPrimitiveFieldSelect(fieldMap, receiverSymbolic, TypeKind.BV32);
-//
-//			int fieldLoc = Integer.parseInt(field.getName().substring(4)) - 1;
-//			fieldVals[fieldLoc] = select;
-//		}
-
-//		for (Expression val: fieldVals)
-//			env.topFrame().operandStack.pushOperand(val);
-
- 		/** push original operands */
-//		for (int i=0; i<interfaceParams; i++)
-//			env.topFrame().operandStack.pushOperand(argsSymbolic[i]);
 	}
 
 	/**
@@ -593,7 +543,7 @@ public final class CallVM extends AbstractVM {
 	 */
 	@Override
 	public void CALL_RESULT(String owner, String name, String desc) {
-		if (env.topFrame().weInvokedInstrumentedCode())
+		if (callResultIsPushed())
 			// RETURN already did it
 			return;
 
@@ -613,7 +563,7 @@ public final class CallVM extends AbstractVM {
 	public void CALL_RESULT(boolean res, String owner, String name, String desc) {
 		CALL_RESULT(owner, name, desc);
 
-		if (env.topFrame().weInvokedInstrumentedCode()) { // RETURN already did
+		if (callResultIsPushed()) { // RETURN already did
 															// it
 			return;
 		} else {
@@ -636,7 +586,7 @@ public final class CallVM extends AbstractVM {
 	public void CALL_RESULT(int res, String owner, String name, String desc) {
 		CALL_RESULT(owner, name, desc);
 
-		if (env.topFrame().weInvokedInstrumentedCode()) {// RETURN already did
+		if (callResultIsPushed()) {// RETURN already did
 															// it
 			return;
 		} else {
@@ -653,7 +603,7 @@ public final class CallVM extends AbstractVM {
 	public void CALL_RESULT(Object res, String owner, String name, String desc) {
 		CALL_RESULT(owner, name, desc);
 
-		if (env.topFrame().weInvokedInstrumentedCode())
+		if (callResultIsPushed())
 			// RETURN already did it
 			return;
 		else {
@@ -670,7 +620,7 @@ public final class CallVM extends AbstractVM {
 	public void CALL_RESULT(long res, String owner, String name, String desc) {
 		CALL_RESULT(owner, name, desc);
 
-		if (env.topFrame().weInvokedInstrumentedCode()) {
+		if (callResultIsPushed()) {
 			// RETURN already did it
 			return;
 		} else {
@@ -687,7 +637,7 @@ public final class CallVM extends AbstractVM {
 	public void CALL_RESULT(double res, String owner, String name, String desc) {
 		CALL_RESULT(owner, name, desc);
 
-		if (env.topFrame().weInvokedInstrumentedCode()) {
+		if (callResultIsPushed()) {
 			// RETURN already did it
 			return;
 		} else {
@@ -704,7 +654,7 @@ public final class CallVM extends AbstractVM {
 	public void CALL_RESULT(float res, String owner, String name, String desc) {
 		CALL_RESULT(owner, name, desc);
 
-		if (env.topFrame().weInvokedInstrumentedCode()) {// RETURN already did
+		if (callResultIsPushed()) {// RETURN already did
 															// it
 			return;
 		} else {
@@ -983,7 +933,7 @@ public final class CallVM extends AbstractVM {
 		/* private method may be native */
 		boolean instrumented = isIgnored(method);
 		env.topFrame().invokeInstrumentedCode(instrumented);
-		env.topFrame().invokeMagicLambdaCodeThatInvokesNonInstrCode(false);
+		env.topFrame().invokeLambdaSyntheticCodeThatInvokesNonInstrCode(false);
 		return method;
 	}
 
@@ -1042,5 +992,10 @@ public final class CallVM extends AbstractVM {
 			this.maxStack = maxStack;
 			this.maxLocals = maxLocals;
 		}
+	}
+
+	private boolean callResultIsPushed() {
+		return env.topFrame().weInvokedInstrumentedCode()
+				&& !env.topFrame().weInvokedSyntheticLambdaCodeThatInvokesNonInstrCode();
 	}
 }
