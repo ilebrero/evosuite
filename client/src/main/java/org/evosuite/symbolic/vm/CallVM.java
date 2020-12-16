@@ -171,6 +171,16 @@ public final class CallVM extends AbstractVM {
 
 		if (env.topFrame().weInvokedInstrumentedCode() == false
 				|| env.topFrame().weInvokedSyntheticLambdaCodeThatInvokesNonInstrCode()) {
+				/**
+					TODO: Stream API seems to need special treatment call stack is of the form:
+				 				4 - lambda static method call (instrumented)
+				 				3 - lambda's call (non-instrumented)
+				 				2 - Stream API code (un-instrumented code)
+				 				1 - stream API call (instrumented)
+				 				0 - Code (Instruemnted)
+				 		  This way we loose track of symbolic elements in the first un-instrumented code section.
+				 */
+
 			// An uninstrumented caller has called instrumented code
 			// This is problemtatic
 		}

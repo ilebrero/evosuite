@@ -24,7 +24,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * This will make more sense when we add complex object support to the Symbolic Engine
+ * This will make more sense when we add complex object support to the Symbolic Engine.
+ *
+ * //TODO: Stream API seems to need special treatmen as the code flow is of the form:
+ *         instrumented code -> call to stream API -> un-instrumented code -> call to lambda -> instrumented code
+ *         This way we loose track of symbolic elements in the first un-instrumented code section.
  *
  * @author Ignacio Lebrero
  */
