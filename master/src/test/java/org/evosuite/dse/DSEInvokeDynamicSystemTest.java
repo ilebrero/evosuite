@@ -74,13 +74,13 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 		Object result = evosuite.parseCommandLine(command);
 		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
-		TestSuiteChromosome best = dse.getGeneratedTestSuite();
-		System.out.println("EvolvedTestSuite:\n" + best);
+		TestSuiteChromosome generatedTestSuite = dse.getGeneratedTestSuite();
+		System.out.println("Generated Test Suite:\n" + generatedTestSuite);
 
-		assertFalse(best.getTests().isEmpty());
+		assertFalse(generatedTestSuite.getTests().isEmpty());
 
-		assertEquals(7, best.getNumOfCoveredGoals());
-		assertEquals(0, best.getNumOfNotCoveredGoals());
+		assertEquals(1, generatedTestSuite.getNumOfCoveredGoals());
+		assertEquals(0, generatedTestSuite.getNumOfNotCoveredGoals());
 	}
 
 	/** Method references (JDK 8) */
@@ -96,13 +96,13 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 		Object result = evosuite.parseCommandLine(command);
 		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
-		TestSuiteChromosome best = dse.getGeneratedTestSuite();
-		System.out.println("EvolvedTestSuite:\n" + best);
+		TestSuiteChromosome generatedTestSuite = dse.getGeneratedTestSuite();
+		System.out.println("Generated Test Suite:\n" + generatedTestSuite);
 
-		assertFalse(best.getTests().isEmpty());
+		assertFalse(generatedTestSuite.getTests().isEmpty());
 
-		assertEquals(7, best.getNumOfCoveredGoals());
-		assertEquals(0, best.getNumOfNotCoveredGoals());
+		assertEquals(7, generatedTestSuite.getNumOfCoveredGoals());
+		assertEquals(0, generatedTestSuite.getNumOfNotCoveredGoals());
 	}
 
 	@Test
@@ -116,13 +116,13 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 		Object result = evosuite.parseCommandLine(command);
 		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
-		TestSuiteChromosome best = dse.getGeneratedTestSuite();
-		System.out.println("EvolvedTestSuite:\n" + best);
+		TestSuiteChromosome generatedTestSuite = dse.getGeneratedTestSuite();
+		System.out.println("Generated Test Suite:\n" + generatedTestSuite);
 
-		assertFalse(best.getTests().isEmpty());
+		assertFalse(generatedTestSuite.getTests().isEmpty());
 
-		assertEquals(best.getNumOfCoveredGoals(), 2);
-		assertEquals(best.getNumOfNotCoveredGoals(), 0);
+		assertEquals(generatedTestSuite.getNumOfCoveredGoals(), 2);
+		assertEquals(generatedTestSuite.getNumOfNotCoveredGoals(), 0);
 	}
 
 	@Test
@@ -143,16 +143,15 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 		Object result = evosuite.parseCommandLine(command);
 		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
-		TestSuiteChromosome best = dse.getGeneratedTestSuite();
-		System.out.println("EvolvedTestSuite:\n" + best);
+		TestSuiteChromosome generatedTestSuite = dse.getGeneratedTestSuite();
+		System.out.println("Generated Test Suite:\n" + generatedTestSuite);
 
-		assertFalse(best.getTests().isEmpty());
+		assertFalse(generatedTestSuite.getTests().isEmpty());
 
-		assertEquals(2, best.getNumOfCoveredGoals());
-		assertEquals(0, best.getNumOfNotCoveredGoals());
+		assertEquals(2, generatedTestSuite.getNumOfCoveredGoals());
+		assertEquals(0, generatedTestSuite.getNumOfNotCoveredGoals());
 	}
 
 	/** Method Handles (JDK 8) */
-
-	// TODO: complete
+	// TODO: complete eventually, for now we won't support it as we don't support reflection either
 }
