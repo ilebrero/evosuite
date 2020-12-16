@@ -21,15 +21,36 @@ package com.examples.with.different.packagename.dse;
 
 import java.util.function.Function;
 
+/**
+ * Simple lambda example code
+ *
+ * @author Ignacio Lebrero
+ */
 public class LambdaExample {
 
-    public static int test(int in) {
-        Function<Integer, Integer> test = (a) -> {
+    public interface Function2<One, Two, Three> {
+        public Three apply(One a, Two b);
+    }
+
+    public static int test(int in, int in2) {
+        Function2<Integer, Integer, Integer> testLambda2 = (a, b) -> {
+            if (a * b == 20) return 0;
+            return 1;
+        };
+
+        Function<Integer, Integer> testLambda = (a) -> {
             if (a == 2) return 0;
             return 1;
         };
 
-        return test.apply(in);
+        int result1 = testLambda.apply(in);
+        int result2 = testLambda2.apply(result1, in2);
+
+        if (result2 == 0) {
+            return 2;
+        } else {
+            return 1;
+        }
     }
 
 }

@@ -34,6 +34,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+/**
+ * Tests for the invokedynamic usages on java (JDK9 for now)
+ *
+ * @author Ignacio Lebrero
+ */
 public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
     /** Lambdas (JDK 8) */
@@ -49,13 +54,13 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 
 		Object result = evosuite.parseCommandLine(command);
 		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
-		TestSuiteChromosome best = dse.getGeneratedTestSuite();
-		System.out.println("EvolvedTestSuite:\n" + best);
+		TestSuiteChromosome generatedTestSuite = dse.getGeneratedTestSuite();
+		System.out.println("Generated Test Suite:\n" + generatedTestSuite);
 
-		assertFalse(best.getTests().isEmpty());
+		assertFalse(generatedTestSuite.getTests().isEmpty());
 
-		assertEquals(7, best.getNumOfCoveredGoals());
-		assertEquals(0, best.getNumOfNotCoveredGoals());
+		assertEquals(6, generatedTestSuite.getNumOfCoveredGoals());
+		assertEquals(1, generatedTestSuite.getNumOfNotCoveredGoals()); // Constructor cannot be reached
 	}
 
 	@Test
