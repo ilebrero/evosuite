@@ -20,7 +20,6 @@
 package org.evosuite.symbolic.instrument;
 
 
-import static org.evosuite.dse.MainConfig.LAMBDA_CLASS_NAME_FRAGMENT;
 import static org.evosuite.dse.util.Assertions.check;
 import static org.evosuite.dse.util.Assertions.notNull;
 
@@ -33,14 +32,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.evosuite.dse.MainConfig;
-import org.evosuite.symbolic.vm.SymbolicEnvironment;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 
 /**
  * A ClassLoader very similar to the <code>org.evosuite.javaagent.InstrumentingClassLoader</code>
  * It must instrument java bytecode to allow recording constraints on the program.
- * 
+ *
  * @author galeotti
  *
  */
@@ -61,11 +59,6 @@ public class ConcolicInstrumentingClassLoader extends ClassLoader {
 
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
-
-		if (name.contains(LAMBDA_CLASS_NAME_FRAGMENT)) {
-			int i = 0;
-		}
-
 		if (!checkIfCanInstrument(name)) {
 			Class<?> result = findLoadedClass(name);
 			if (result != null) {
@@ -104,25 +97,18 @@ public class ConcolicInstrumentingClassLoader extends ClassLoader {
 		//logger.info("Instrumenting class '" + fullyQualifiedTargetClass + "'.");
 		try {
 			String className = fullyQualifiedTargetClass.replace('.', '/');
-			ClassReader reader;
-
-			if (!className.contains(LAMBDA_CLASS_NAME_FRAGMENT)) {
-				InputStream is = ClassLoader.getSystemResourceAsStream(className + ".class");
-				if (is == null) {
-					try {
-						is = findTargetResource(className + ".class");
-					} catch (FileNotFoundException e) {
-						throw new ClassNotFoundException("Class '" + className + ".class"
-								+ "' should be in target project, but could not be found!");
-					}
+			InputStream is = ClassLoader.getSystemResourceAsStream(className + ".class");
+			if (is == null) {
+				try {
+					is = findTargetResource(className + ".class");
+				} catch (FileNotFoundException e) {
+					throw new ClassNotFoundException("Class '" + className + ".class"
+							+ "' should be in target project, but could not be found!");
 				}
-				reader = new ClassReader(is);
-			} else {
-				reader = new ClassReader(className);
 			}
-				byte[] byteBuffer = instrumentation.transformBytes(className, reader);
-			Class<?> result = defineClass(fullyQualifiedTargetClass, byteBuffer, 0,
-			                              byteBuffer.length);
+
+			byte[] byteBuffer = instrumentation.transformBytes(className, new ClassReader(is));
+			Class<?> result = defineClass(fullyQualifiedTargetClass, byteBuffer, 0, byteBuffer.length);
 			classes.put(fullyQualifiedTargetClass, result);
 			//logger.info("Keeping class: " + fullyQualifiedTargetClass);
 			return result;
@@ -130,9 +116,9 @@ public class ConcolicInstrumentingClassLoader extends ClassLoader {
 			throw new ClassNotFoundException(e.getMessage(), e);
 		}
 	}
-	
+
 	private InputStream findTargetResource(String name) throws FileNotFoundException {
-		Collection<String> resources = ResourceList.findResourceInClassPath(name); 
+		Collection<String> resources = ResourceList.findResourceInClassPath(name);
 		if (resources.isEmpty())
 			throw new FileNotFoundException(name);
 		else {
@@ -146,13 +132,13 @@ public class ConcolicInstrumentingClassLoader extends ClassLoader {
 
 	/**
 	 * Loads class named className, without initializing it.
-	 * 
+	 *
 	 * @param className
 	 *            either as p/q/MyClass or as p.q.MyClass
 	 */
 	public Class<?> getClassForName(String className) {
 		notNull(className);
-	
+
 		Class<?> res = null;
 		String classNameDot = className.replace('/', '.');
 		try {
@@ -167,7 +153,7 @@ public class ConcolicInstrumentingClassLoader extends ClassLoader {
 
 	/**
 	 * Loads class whose type is aType, without initializing it.
-	 * 
+	 *
 	 * @param aType
 	 */
 	public Class<?> getClassForType(Type aType) {
@@ -197,13 +183,13 @@ public class ConcolicInstrumentingClassLoader extends ClassLoader {
 			Class<?> array_class = Array.newInstance(elementClass, lenghts)
 					.getClass();
 			return array_class;
-	
+
 		}
 		default:
 			return this.getClassForName(aType.getInternalName());
-	
+
 		}
 	}
-	
+
 
 }
