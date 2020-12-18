@@ -36,7 +36,13 @@ public abstract class ReferenceTypeExpression extends AbstractExpression<Object>
 	 */
 	private int concIdentityHashCode;
 
-    public ReferenceTypeExpression(Object concreteValue, int size, boolean containsSymbolicVariable) {
-        super(concreteValue, size, containsSymbolicVariable);
+    public ReferenceTypeExpression(Class concreteClass, int size, boolean containsSymbolicVariable) {
+        super(concreteClass, size, containsSymbolicVariable);
+
+        this.concIdentityHashCode = System.identityHashCode(concreteClass);
+    }
+
+    public int getConcIdentityHashCode() {
+        return this.concIdentityHashCode;
     }
 }
