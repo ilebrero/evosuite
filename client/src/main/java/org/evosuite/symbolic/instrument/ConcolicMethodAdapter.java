@@ -676,7 +676,9 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	/**
 	 * INVOKEDYNAMIC
 	 *
-	 * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-6.html#jvms-6.5.invokedynamic>invokedynamic doc</a>
+	 * @see <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-6.html#jvms-6.5.invokedynamic">
+	 *     		invokedynamic doc
+	 *      </a>
 	 *
 	 * TODO: Add support for other InvokeDynamic based features.
 	 * 		 (e.g. milling coin project, local variable type inference, dynalink, etc...)
@@ -692,22 +694,33 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 		mv.visitInsn(DUP); // newly created indy result
 
+		String callbackMethodDesc;
+
 		/**
 		 * These two seems to be the only cases of invokedynamic uses in JDK 9.
 		 * Dynalink and other JVM invokedynamic features are still not being
-		 * used at the java language level at this point.
+		 * used in java. If we want to support dynamic languages at some point (scala, jruby, etc.) we should
+		 * use a more general implementation of indy.
 		 */
 		if (ownerIsLambdaMetafactory(bsm)) {
 			// Lambda case, is either a method reference, lambda usage or SAM method conversion
-			push(((Handle) bsmArgs[1]).getOwner());
+			push(((Handle) bsmArgs[1]).getOwner ());
+			callbackMethodDesc = LG_V;
 		} else if (ownerIsStringConcatFactory(bsm)){
 			// String concatenation case
-			push(String.class.getName().replace(".", "/"));
+			push(bsm.getOwner());
+
+			/**
+			 * String concatenation recipe, all parameter are already pushed to the symbolic stack
+			 * @see  <a href="https://docs.oracle.com/javase/9/docs/api/java/lang/invoke/StringConcatFactory.html">ldc doc</a>
+			 */
+			push((String) bsmArgs[0]);
+			callbackMethodDesc = GGG_V;
 		} else {
 			throw new NotImplementedException("Invokedynamic's bootstrap method not supported yet: " + bsm.getOwner());
 		}
 
-		insertCallback(BYTECODE_NAME[INVOKEDYNAMIC], LG_V, false);
+		insertCallback(BYTECODE_NAME[INVOKEDYNAMIC], callbackMethodDesc, false);
 	}
 
 

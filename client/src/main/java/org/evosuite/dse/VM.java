@@ -3506,15 +3506,28 @@ public final class VM {
 		ignoreCallback = false;
 	}
 
+	/**
+	 * Lambdas, closures and method references
+	 *
+	 * @param instance
+	 * @param ownerClass
+	 */
 	public static void INVOKEDYNAMIC(Object instance, String ownerClass) {
         if (!ignoreCallback)
             interpret((IVM ivm) -> ivm.INVOKEDYNAMIC(instance, ownerClass));
     }
 
-	public static void UNUSED() {
-		if (!ignoreCallback)
-            interpret((IVM ivm) -> ivm.UNUSED());
-	}
+	/**
+	 * String concatenation
+	 *
+	 * @param concatenationResult
+	 * @param stringOwnerClass
+	 * @param stringRecipe
+	 */
+    public static void INVOKEDYNAMIC(String concatenationResult, String stringOwnerClass, String stringRecipe) {
+        if (!ignoreCallback)
+            interpret((IVM ivm) -> ivm.INVOKEDYNAMIC(concatenationResult, stringOwnerClass, stringRecipe));
+    }
 
 	protected static Class<?> getArrayComponentType(int componentTypeInt) {
 		switch (componentTypeInt) {

@@ -21,51 +21,29 @@ package com.examples.with.different.packagename.dse;
 
 /**
  * We dont care about actual DSE behaviour here, we only check that the execution finished correctly.
+ * TODO: Symbolic strings handling will be implemented when adding objects support.
+ *
  * Based on {@link com.examples.with.different.packagename.solver.MazeClient}.
  *
  * @author Ignacio Lebrero
  */
 public class StringConcatenationExample {
 
-  private static int test(int a) throws IllegalArgumentException {
-      char[][] maze = new char[][]{
-              "+-+---+---+".toCharArray(),
-              "| |     |#|".toCharArray(),
-              "| | --+ | |".toCharArray(),
-              "| |   | | |".toCharArray(),
-              "| +-- | | |".toCharArray(),
-              "|     |   |".toCharArray(),
-              "+-----+---+".toCharArray()
-      };
+    private static final int H_SIZE = 7;
+    private static final int W_SIZE = 11;                                                                                                                                                                                                   
 
-      // Print some info
-      System.out.print("Maze dimensions: " + W_SIZE + "," + H_SIZE + "\n");
-      System.out.print("In value: " + a + "\n");
+    public static int test(int a) throws IllegalArgumentException {
+        String string1 = "test string 1... "+ a + "," + H_SIZE + "\n";
+        String string2 = "test string 2: " + a + "\n" + string1;
+        System.out.print(string2);
 
-      // Draw the maze
-      draw(maze);
-
-      if (a == 2) {
-        System.out.print("Correct value! -> " + a + "\n");
-        return 1;
-      } else {
-        System.out.print("Not correct value -> " + a + "\n");
-        return 0;
-      }
-  }
-
-  // Maze hard-coded dimensions
-  private static final int H_SIZE = 7;
-  private static final int W_SIZE = 11;
-
-  private static void draw(char[][] maze) {
-    int k, j;
-    for (k = 0; k < H_SIZE; k++) {
-      for (j = 0; j < W_SIZE; j++) {
-        System.out.print(maze[k][j]);
-      }
-      System.out.print("\n");
+        if (a == 2) {
+            System.out.print("Correct value! -> " + a + "\n");
+            return 1;
+        } else {
+            System.out.print("Not correct value -> " + a + "\n");
+            return 0;
+        }
     }
-    System.out.print("\n");
-  }
+
 }

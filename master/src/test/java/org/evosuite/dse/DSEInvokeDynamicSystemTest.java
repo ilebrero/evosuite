@@ -133,7 +133,7 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 	/** String concatenation (JDK 9) */
 
 	@Test
-	public void testConcatenation() {
+	public void testStringConcatenation() {
 		EvoSuite evosuite = new EvoSuite();
 		String targetClass = StringConcatenationExample.class.getCanonicalName();
 		Properties.TARGET_CLASS = targetClass;
@@ -149,7 +149,7 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 		assertFalse(generatedTestSuite.getTests().isEmpty());
 
 		assertEquals(2, generatedTestSuite.getNumOfCoveredGoals());
-		assertEquals(0, generatedTestSuite.getNumOfNotCoveredGoals());
+		assertEquals(1, generatedTestSuite.getNumOfNotCoveredGoals());
 	}
 
 	/** Method Handles (JDK 8) */

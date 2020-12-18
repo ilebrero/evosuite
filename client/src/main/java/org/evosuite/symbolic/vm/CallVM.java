@@ -22,13 +22,18 @@ package org.evosuite.symbolic.vm;
 import org.evosuite.dse.AbstractVM;
 import org.evosuite.symbolic.LambdaUtils;
 import org.evosuite.symbolic.expr.Expression;
+import org.evosuite.symbolic.expr.Operator;
 import org.evosuite.symbolic.expr.bv.IntegerConstant;
 import org.evosuite.symbolic.expr.fp.RealConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceConstant;
 import org.evosuite.symbolic.expr.ref.ReferenceExpression;
 import org.evosuite.symbolic.expr.reftype.LambdaSyntheticType;
+import org.evosuite.symbolic.expr.str.StringBinaryExpression;
+import org.evosuite.symbolic.expr.str.StringConstant;
 import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
 import org.evosuite.symbolic.instrument.ConcolicMethodAdapter;
+import org.evosuite.symbolic.vm.heap.SymbolicHeap;
+import org.evosuite.symbolic.vm.string.Types;
 import org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
@@ -36,11 +41,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
 
 /**
  * Explicit inter-procedural control transfer: InvokeXXX, Return, etc.
@@ -54,6 +62,7 @@ import java.util.LinkedList;
  */
 public final class CallVM extends AbstractVM {
 
+	public static final String STRING_CONCATENATION_INDY_PARAMETER_IDENTIFIER = "\u0001";
 	/** Environment */
 	private final SymbolicEnvironment env;
 
@@ -357,6 +366,88 @@ public final class CallVM extends AbstractVM {
 		env.topFrame().invokeNeedsThis = false;
 		methodCall(className, methName, methDesc);
 	}
+
+	/**
+	 * We get this callback immediately after the user's invokedynamic instruction.
+	 *
+	 * See: {@link ConcolicMethodAdapter#visitInvokeDynamicInsn}
+	 */
+	@Override
+	public void INVOKEDYNAMIC(String concatenationResult, String stringOwnerClass, String stringRecipe) {
+		// Retrieve concatenated elements from recipe
+		String[] pieces = stringRecipe.split(STRING_CONCATENATION_INDY_PARAMETER_IDENTIFIER, -1);
+
+		List<StringConstant> symbolicLiterals = new ArrayList();
+		Stack<Expression<?>> symbolicParameters = new Stack();
+
+		// Build literals
+		for (String piece : pieces) {
+			symbolicLiterals.add(ExpressionFactory.buildNewStringConstant(piece));
+		}
+
+		// Pop arguments
+		for (int i = 0; i < pieces.length-1; i++) {
+			Operand symbolicOperand = env.topFrame().operandStack.popOperand();
+            Expression currentOperandExpression = OperandUtils.retrieveOperandExpression(symbolicOperand);
+
+            // For Strings we take the expression stored in the heap
+            if (currentOperandExpression instanceof ReferenceExpression
+			&& currentOperandExpression.getConcreteValue().getClass().equals(String.class)) {
+				currentOperandExpression = env.heap.getField(
+						Types.JAVA_LANG_STRING,
+						SymbolicHeap.$STRING_VALUE,
+						null,
+						(ReferenceExpression) currentOperandExpression,
+						(String) currentOperandExpression.getConcreteValue());
+			}
+
+			symbolicParameters.add(currentOperandExpression);
+		}
+
+		Expression<String> symbolicResult = symbolicLiterals.get(0);
+		// We create a chain of appended elements
+		for (int i = 1; i < symbolicLiterals.toArray().length; ++i) {
+			Expression<?> currentParameter = symbolicParameters.pop();
+			Expression<String> currentLiteral = symbolicLiterals.get(i);
+
+			// Appends next parameter
+			symbolicResult = buildNewAppendExpression(symbolicResult, currentParameter);
+
+			// Appends next literal
+			symbolicResult = new StringBinaryExpression(symbolicResult, Operator.APPEND_STRING, currentLiteral, symbolicResult.getConcreteValue() + currentLiteral.getConcreteValue());
+		}
+
+
+        ReferenceConstant resultReference = (ReferenceConstant) env.heap.getReference(concatenationResult);
+		env.heap.putField(Types.JAVA_LANG_STRING, SymbolicHeap.$STRING_VALUE, concatenationResult, resultReference, symbolicResult);
+
+		env.topFrame().operandStack.pushRef(resultReference);
+	}
+
+    /**
+     * Helper for creating Strings append expressions.
+     *
+     * @param symbolicResult
+     * @param expression
+     * @return
+     */
+    private StringBinaryExpression buildNewAppendExpression(Expression<String> symbolicResult, Expression<?> expression) {
+        Class type = expression.getConcreteValue().getClass();
+
+        if (type.equals(Integer.class) || type.equals(Long.class) || type.equals(Short.class) || type.equals(Byte.class)) {
+            return new StringBinaryExpression(symbolicResult, Operator.APPEND_INTEGER, expression, symbolicResult.getConcreteValue() + expression.getConcreteValue());
+        } else if (type.equals(Character.class)) {
+            return new StringBinaryExpression(symbolicResult, Operator.APPEND_CHAR, expression, symbolicResult.getConcreteValue() + expression.getConcreteValue());
+        } else if (type.equals(Boolean.class)) {
+            return new StringBinaryExpression(symbolicResult, Operator.APPEND_BOOLEAN, expression, symbolicResult.getConcreteValue() + expression.getConcreteValue());
+        } else if (type.equals(Float.class) || type.equals(Double.class)) {
+            return new StringBinaryExpression(symbolicResult, Operator.APPEND_REAL, expression, symbolicResult.getConcreteValue() + expression.getConcreteValue());
+        } else if (type.equals(String.class)){
+            return new StringBinaryExpression(symbolicResult, Operator.APPEND_STRING, expression, symbolicResult.getConcreteValue() + expression.getConcreteValue());
+        } else {
+            throw new IllegalArgumentException("Expression appended type not supported yet");
+        }
+    }
 
 	/**
 	 * We get this callback immediately after the user's invokedynamic instruction.

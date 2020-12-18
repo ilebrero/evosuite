@@ -576,6 +576,8 @@ public interface IVM {
 
 	void INVOKEDYNAMIC(Object clazz, String owner);
 
+	void INVOKEDYNAMIC(String concatenationResult, String stringOwnerClass, String stringRecipe);
+
 	void UNUSED();
 
 	void NEW(String typeName);
