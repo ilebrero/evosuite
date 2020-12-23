@@ -32,7 +32,7 @@ public class LambdaSyntheticType extends LiteralClassType {
 
     private boolean callsNonInstrumentedCode;
 
-    public LambdaSyntheticType(Object concreteValue, boolean callsNonInstrumentedCode) {
+    public LambdaSyntheticType(Class concreteValue, boolean callsNonInstrumentedCode) {
         super(concreteValue);
 
         this.callsNonInstrumentedCode = callsNonInstrumentedCode;

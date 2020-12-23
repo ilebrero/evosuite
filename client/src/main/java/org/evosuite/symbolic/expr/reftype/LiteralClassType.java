@@ -31,7 +31,7 @@ import java.util.Set;
  * @author Ignacio Lebrero
  */
 public class LiteralClassType extends ReferenceTypeExpression {
-    public LiteralClassType(Object concreteValue) {
+    public LiteralClassType(Class concreteValue) {
         super(concreteValue, 1, false);
     }
 
