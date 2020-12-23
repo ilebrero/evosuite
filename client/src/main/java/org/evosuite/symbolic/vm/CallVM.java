@@ -368,7 +368,7 @@ public final class CallVM extends AbstractVM {
 	}
 
 	/**
-	 * We get this callback immediately after the user's invokedynamic instruction.
+	 * We get this callback immediately after the user's invokedynamic instruction for string concatenation.
 	 *
 	 * See: {@link ConcolicMethodAdapter#visitInvokeDynamicInsn}
 	 */

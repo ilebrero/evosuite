@@ -189,13 +189,6 @@ public final class LocalsVM extends AbstractVM {
 			ReferenceConstant stringRef = (ReferenceConstant) env.heap
 					.getReference(x);
 
-			// Updates the heap string value, we'll need it in the future
-			env.heap.putField(Types.JAVA_LANG_STRING,
-					SymbolicHeap.$STRING_VALUE,
-					x,
-					stringRef,
-					new StringConstant(x));
-
 			env.topFrame().operandStack.pushRef(stringRef);
 		}
 	}

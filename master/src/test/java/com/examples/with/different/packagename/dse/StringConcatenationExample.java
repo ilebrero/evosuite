@@ -20,10 +20,7 @@
 package com.examples.with.different.packagename.dse;
 
 /**
- * We dont care about actual DSE behaviour here, we only check that the execution finished correctly.
- * TODO: Symbolic strings handling will be implemented when adding objects support.
- *
- * Based on {@link com.examples.with.different.packagename.solver.MazeClient}.
+ * Simple String concatenation test
  *
  * @author Ignacio Lebrero
  */
@@ -37,7 +34,7 @@ public class StringConcatenationExample {
         String string2 = "test string 2: " + a + "\n" + string1;
         System.out.print(string2);
 
-        if (a == 2) {
+        if (string2.equals("test string 2: 65\ntest string 1... 65,7\n")) {
             System.out.print("Correct value! -> " + a + "\n");
             return 1;
         } else {
