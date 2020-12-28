@@ -569,6 +569,7 @@ public final class SymbolicHeap {
 
 		if (lambdaExpression == null) {
 			 lambdaExpression = new LambdaSyntheticType(lambdaAnonymousClass, ownerIsIgnored);
+			 symbolicReferenceTypes.put(lambdaAnonymousClass, lambdaExpression);
 		}
 
 		return lambdaExpression;

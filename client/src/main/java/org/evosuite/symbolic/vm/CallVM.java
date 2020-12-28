@@ -458,17 +458,9 @@ public final class CallVM extends AbstractVM {
 	public void INVOKEDYNAMIC(Object indyResult, String owner) {
 		final Class<?> anonymousClass =	indyResult.getClass();
 
-		if (owner.equals(String.class.getName().replace(".", "/"))) {
-			Type anonymousClassType = Type.getType(anonymousClass);
-			env.ensurePrepared(anonymousClass); // prepare symbolic fields
-			final ReferenceConstant symbolicRef = env.heap.buildNewReferenceConstant(anonymousClassType);
-			env.topFrame().operandStack.pushRef(symbolicRef); // Symbolic instance produced by invokedynamic
-			return;
-		}
-
 		if (!LambdaUtils.isLambda(anonymousClass)) throw new IllegalArgumentException("InvokeDynamic for things other than lambdas are not implemented yet!, class found: " + anonymousClass.getName());
 
-		env.heap.buildNewLambdaConstant(anonymousClass, conf.isIgnored(owner));	// make it lambda
+		env.heap.buildNewLambdaConstant(anonymousClass, conf.isIgnored(owner));	// Add it as lambda owner
 		Type anonymousClassType = Type.getType(anonymousClass);
 		env.ensurePrepared(anonymousClass); // prepare symbolic fields
 		final ReferenceConstant symbolicRef = env.heap.buildNewReferenceConstant(anonymousClassType);
@@ -585,15 +577,12 @@ public final class CallVM extends AbstractVM {
 			return;
 
 		// Ilebrero: Lambdas doesn't seem to be instrumentable.
-		// The code itself is in the respective owner class so doing just this seems to work fine.
+		// The code itself is in the respective owner class.
 		if (LambdaUtils.isLambda(concreteReceiver.getClass())) {
-
 			// Check if we call non-instrumented code
 			Class anonymousClass = concreteReceiver.getClass();
-			LambdaSyntheticType type = (LambdaSyntheticType) env.heap.getReferenceType(anonymousClass);
-			env.topFrame().invokeLambdaSyntheticCodeThatInvokesNonInstrCode(type.callsNonInstrumentedCode());
-
-			//TODO: add symbolizacion for something else? doesn't seem to be needed
+			LambdaSyntheticType lambdaReferenceType = (LambdaSyntheticType) env.heap.getReferenceType(anonymousClass);
+			env.topFrame().invokeLambdaSyntheticCodeThatInvokesNonInstrCode(lambdaReferenceType.callsNonInstrumentedCode());
 			return;
 		}
 
