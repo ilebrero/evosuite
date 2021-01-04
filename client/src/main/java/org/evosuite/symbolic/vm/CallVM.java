@@ -585,6 +585,12 @@ public final class CallVM extends AbstractVM {
 			// If this lambda hasn't been seen before, we assume it's not instrumented
 			env.topFrame().invokeInstrumentedCode(!lambdaReferenceType.callsNonInstrumentedCode());
 			env.topFrame().invokeLambdaSyntheticCodeThatInvokesNonInstrCode(lambdaReferenceType.callsNonInstrumentedCode());
+
+			// TODO(ilebrero): If this lambda is related to a method reference, we need to replace the lambda's symbolic
+			//                 receiver with the method reference's related instance as this is just a redirection,
+			//                 is this possible? Currently when trying to get a symbolic field, as the symbolic receiver
+			//                 is from the lambda, no previous symbolic elements of tat object instance are being used.
+
 			return;
 		}
 
