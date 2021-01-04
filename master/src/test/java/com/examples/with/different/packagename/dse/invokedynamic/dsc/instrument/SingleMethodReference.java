@@ -25,36 +25,34 @@ package com.examples.with.different.packagename.dse.invokedynamic.dsc.instrument
     http://ranger.uta.edu/~csallner/dsc/index.html
  */
 
-/** 
+/**
  * @author csallner@uta.edu (Christoph Csallner)
  */
-public class SingleMethodReference
-{	
-	interface GetInt {
-		int test(int y);
-	}
+public class SingleMethodReference {
+    interface GetInt {
+        int test(int y);
+    }
 
-	private static class MyIntegerClass implements GetInt {
-		private int val;
+    private static class MyIntegerClass implements GetInt {
+        private int val;
 
-		public MyIntegerClass(int x) {
-			this.val = x;
-		}
+        public MyIntegerClass(int x) {
+            this.val = x;
+        }
 
-		@Override
-		public int test(int y) {
-			if (this.val * y > 748)
-				return 0;
-			else
-				return 1;
-		}
-	}
-		
-	public static int instanceRef(int x, int y)
-	{
-		MyIntegerClass myInt = new MyIntegerClass(x);
-		
-		GetInt magic = myInt::test;
-		return magic.test(y);
-	}
+        @Override
+        public int test(int y) {
+            if (this.val * y > 748)
+                return 0;
+            else
+                return 1;
+        }
+    }
+
+    public static int instanceRef(int x, int y) {
+        MyIntegerClass myInt = new MyIntegerClass(x);
+
+        GetInt magic = myInt::test;
+        return magic.test(y);
+    }
 }
