@@ -42,10 +42,12 @@ public class SingleMethodReference {
 
         @Override
         public int test(int y) {
-            if (this.val * y > 748)
+            if (this.val - y == 5)
                 return 0;
-            else
+            else if (this.val == 35)
                 return 1;
+            else
+                return 2;
         }
     }
 

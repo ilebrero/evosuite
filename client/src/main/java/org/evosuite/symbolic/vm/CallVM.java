@@ -577,9 +577,13 @@ public final class CallVM extends AbstractVM {
 		// Ilebrero: Lambdas doesn't seem to be instrumentable.
 		// The code itself is in the respective owner class.
 		if (LambdaUtils.isLambda(concreteReceiver.getClass())) {
+
 			// Check if we call non-instrumented code
 			Class anonymousClass = concreteReceiver.getClass();
 			LambdaSyntheticType lambdaReferenceType = (LambdaSyntheticType) env.heap.getReferenceType(anonymousClass);
+
+			// If this lambda hasn't been seen before, we assume it's not instrumented
+			env.topFrame().invokeInstrumentedCode(!lambdaReferenceType.callsNonInstrumentedCode());
 			env.topFrame().invokeLambdaSyntheticCodeThatInvokesNonInstrCode(lambdaReferenceType.callsNonInstrumentedCode());
 			return;
 		}
