@@ -27,8 +27,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.StringConcatFactory;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -178,6 +176,15 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 
 	private static final String CALL_RESULT = "CALL_RESULT"; //$NON-NLS-1$
 	private static final String METHOD_MAXS = "METHOD_MAXS"; //$NON-NLS-1$
+
+	/**
+	 * InokveDynamic bootstrap methods owner classes
+	 *
+	 * NOTE (ilebrero): We don't use class.getSimpleName() over LambdaMetaFactory and StringConcatFactory themselves
+	 * 					for retro compatibility with older JDK versions. Is there a more elegant way of doing this?
+	 */
+	private static final String LAMBDA_METAFACTORY = "LambdaMetafactory"; //$NON-NLS-1$
+	private static final String STRING_CONCAT_FACTORY = "StringConcatFactory"; //$NON-NLS-1$
 
 	private final int access;
 	private final String className;
@@ -1064,10 +1071,10 @@ public final class ConcolicMethodAdapter extends GeneratorAdapter {
 	}
 
 	private boolean ownerIsLambdaMetafactory(Handle bsm) {
-		return bsm.getOwner().contains(LambdaMetafactory.class.getSimpleName());
+		return bsm.getOwner().contains(LAMBDA_METAFACTORY);
 	}
 
 	private boolean ownerIsStringConcatFactory(Handle bsm) {
-		return bsm.getOwner().contains(StringConcatFactory.class.getSimpleName());
+		return bsm.getOwner().contains(STRING_CONCAT_FACTORY);
 	}
 }
