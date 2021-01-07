@@ -27,6 +27,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.StringConcatFactory;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

@@ -19,22 +19,15 @@
  */
 package org.evosuite.dse;
 
+import com.examples.with.different.packagename.dse.LambdaExample;
 import com.examples.with.different.packagename.dse.StreamAPIExample;
 import com.examples.with.different.packagename.dse.StringConcatenationExample;
 import com.examples.with.different.packagename.dse.TestClosureClass;
 import com.examples.with.different.packagename.dse.TestSAMConversions;
 import com.examples.with.different.packagename.dse.invokedynamic.dsc.instrument.SingleMethodReference;
-import com.examples.with.different.packagename.dse.LambdaExample;
 import org.apache.commons.lang3.NotImplementedException;
-import org.evosuite.EvoSuite;
-import org.evosuite.Properties;
-import org.evosuite.symbolic.dse.algorithm.ExplorationAlgorithmBase;
-import org.evosuite.testsuite.TestSuiteChromosome;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Tests for the invokedynamic usages on java (JDK9 for now)
@@ -73,12 +66,6 @@ public class DSEInvokeDynamicSystemTest extends DSESystemTestBase {
 	@Test
 	public void testStreamAPI() {
 		testDSEExecution(4, 8, StreamAPIExample.class);
-	}
-
-	@Test
-	@Ignore
-	public void testAutoBoxingConversions() {
-		throw new NotImplementedException("Implement me!");
 	}
 
 	/** String concatenation (JDK 9) */

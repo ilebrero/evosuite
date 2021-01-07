@@ -187,7 +187,6 @@ public final class CallVM extends AbstractVM {
 				 				1 - stream API call (instrumented)
 				 				0 - Code (Instruemnted)
 				 		  This way we loose track of symbolic elements in the first non-instrumented code section */
-
 			// An uninstrumented caller has called instrumented code
 			// This is problemtatic
 		}

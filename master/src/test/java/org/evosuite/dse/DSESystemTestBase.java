@@ -73,5 +73,4 @@ public class DSESystemTestBase extends SystemTestBase {
 		assertEquals(expectedCoveredGoals, generatedTestSuite.getNumOfCoveredGoals());
 		assertEquals(expectedNotCoveredGoals, generatedTestSuite.getNumOfNotCoveredGoals());
 	}
-
 }
