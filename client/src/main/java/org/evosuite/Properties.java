@@ -1065,6 +1065,9 @@ public class Properties {
 	@Parameter(key = "report_dir", group = "Output", description = "Directory in which to put HTML and CSV reports")
 	public static String REPORT_DIR = "evosuite-report";
 
+	@Parameter(key = "bytecode_logging_report_dir", group = "Output", description = "Directory in which to put TXT executed bytecode logs.")
+	public static String BYTECODE_LOGGING_REPORT_DIR = "executed-bytecode-logs";
+
 	@Parameter(key = "output_variables", group = "Output", description = "List of variables to output to CSV file. Variables are separated by commas. Null represents default values")
 	public static String OUTPUT_VARIABLES = null;
 

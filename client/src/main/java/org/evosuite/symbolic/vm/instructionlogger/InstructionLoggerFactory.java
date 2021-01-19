@@ -51,13 +51,19 @@ public class InstructionLoggerFactory {
 
         switch (bytecodeLoggingMode) {
             case STD_OUT:
-                return new StandardOutputInstructionLogger(SystemPathUtil.buildPath(Properties.TARGET_CLASS, Properties.TARGET_METHOD));
-            case FILE_DUMP:
-                return new FileDumpInstructionLogger(SystemPathUtil.buildFileName(
-                        SystemPathUtil.FileExtension.TXT,
-                        EXECUTED_BYTECODE_FILE_NAME,
+                return new StandardOutputInstructionLogger(SystemPathUtil.buildPath(
                         Properties.TARGET_CLASS,
                         Properties.TARGET_METHOD));
+            case FILE_DUMP:
+                return new FileDumpInstructionLogger(
+                        SystemPathUtil.buildPath(
+                                Properties.REPORT_DIR,
+                                Properties.BYTECODE_LOGGING_REPORT_DIR),
+                        SystemPathUtil.buildFileName(
+                                SystemPathUtil.FileExtension.TXT,
+                                EXECUTED_BYTECODE_FILE_NAME,
+                                Properties.TARGET_CLASS,
+                                Properties.TARGET_METHOD));
             default:
                 throw new IllegalStateException(LOGGING_MODE_NOT_YET_IMPLEMENTED + bytecodeLoggingMode.name());
         }

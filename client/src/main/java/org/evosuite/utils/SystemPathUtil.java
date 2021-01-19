@@ -56,12 +56,12 @@ public class SystemPathUtil {
     /**
      * Simple Delimiter for file creation
      */
-    private static final String FILE_NAME_DELIMITER = "_";
+    public static final String FILE_NAME_DELIMITER = "_";
 
     /**
      * Simple Delimiter for file extension
      */
-    private static final String FILE_EXTENSION_DELIMITER = ".";
+    public static final String FILE_EXTENSION_DELIMITER = ".";
 
 
     /**

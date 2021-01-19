@@ -19,10 +19,12 @@
  */
 package org.evosuite.symbolic.vm.instructionlogger.implementations;
 
+import org.evosuite.utils.SystemPathUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -37,22 +39,37 @@ public final class FileDumpInstructionLogger extends AbstractInstructionLogger {
     private static final Logger logger = LoggerFactory.getLogger(FileDumpInstructionLogger.class);
     public static final String EXECUTED_BYTECODE_FILE_NAME = "executedBytecode";
 
-    private String filename;
+    /**
+     * For each time the same method gets called, so we don't overwrite the same file.
+     * NOTE(ilebrero): A better solution for this? this is not an optimal way of doing this.
+     */
+    private static long internalCount = 0;
+
+    private String filePath;
+
     private FileWriter fstream;
     private BufferedWriter writer;
     private PrintWriter pw;
 
-    public FileDumpInstructionLogger(String filename) {
-        this.filename = filename;
+    public FileDumpInstructionLogger(String directory, String filename) {
+        createDirectoryIfDoesntExistst(directory);
+
+        this.filePath = SystemPathUtil.buildPath(directory, SystemPathUtil.joinWithDelimiter(
+                SystemPathUtil.FILE_NAME_DELIMITER,
+                String.valueOf(internalCount),
+                filename));
+
+        internalCount++;
 
         try {
-            this.fstream = new FileWriter(filename);
+            this.fstream = new FileWriter(filePath);
             this.writer = new BufferedWriter(this.fstream);
             this.pw = new PrintWriter(this.writer);
         } catch (IOException e) {
             logger.error("Error when opening file " + filename);
             logger.error(e.getMessage());
         }
+
     }
 
     @Override
@@ -72,8 +89,13 @@ public final class FileDumpInstructionLogger extends AbstractInstructionLogger {
             writer.close();
             fstream.close();
         } catch (IOException e) {
-            logger.error("Error when trying to close file " + filename);
+            logger.error("Error when trying to close file " + filePath);
             logger.error(e.getMessage());
         }
+    }
+
+    private void createDirectoryIfDoesntExistst(String directory) {
+        File file = new File(directory);
+        if (!file.exists()) file.mkdirs();
     }
 }
