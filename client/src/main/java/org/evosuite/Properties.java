@@ -483,11 +483,12 @@ public class Properties {
 	public static boolean BYTECODE_LOGGING_ENABLED = false;
 
 	@Parameter(key = "bytecode_logging_mode", group = "DSE", description = "How to log executed bytecode")
-	public static DSEBytecodeLoggingMode BYTECODE_LOGGING_MODE = DSEBytecodeLoggingMode.STANDARD_LOGGING;
+	public static DSEBytecodeLoggingMode BYTECODE_LOGGING_MODE = DSEBytecodeLoggingMode.STD_OUT;
 
-	// TODO (ilebrero): add other modes (i.e. dump to text file)
+	// TODO (ilebrero): add other modes
 	public enum DSEBytecodeLoggingMode {
-		STANDARD_LOGGING
+		STD_OUT,
+		FILE_DUMP
 	}
 
 	// --------- LS ---------

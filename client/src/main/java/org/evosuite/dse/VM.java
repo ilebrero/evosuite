@@ -121,6 +121,18 @@ public final class VM {
 	}
 
 	/**
+	 * Notifies the VMs that the concolic execution has finished.
+	 * Useful for closing any necessary connections and static states (if any).
+	 *
+	 * TODO (ilebrero): Eventually all VMs can be reused instead of just creating new ones.
+	 */
+	public void cleanUpListeners() {
+		for (IVM listener : this.listeners) {
+			listener.cleanUp();
+		}
+	}
+
+	/**
 	 * This method should be called before {@link #setListeners}. This method
 	 * queues listener ivm to be added to the list of listeners by setListeners.
 	 */
