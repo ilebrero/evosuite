@@ -34,8 +34,7 @@ import java.io.IOException;
 public final class FileDumpInstructionLogger extends AbstractInstructionLogger {
 
     private static final Logger logger = LoggerFactory.getLogger(FileDumpInstructionLogger.class);
-    public static final String EXECUTED_BYTECODE_FILE_NAME = "executedBytecode.txt";
-
+    public static final String EXECUTED_BYTECODE_FILE_NAME = "executedBytecode";
 
     private String filename;
     private FileWriter fstream;

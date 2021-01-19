@@ -36,13 +36,30 @@ public class InstructionLoggerFactory {
     public static final String LOGGING_MODE_NOT_PROVIDED = "A logging mode must be provided";
     public static final String LOGGING_MODE_NOT_YET_IMPLEMENTED = "logging mode not yet implemented: ";
 
-    /** Simple Delimiter for path creation */
+    /**
+     * Simple Delimiter for path creation
+     */
     private static final String PATH_DELIMITER = "/";
 
-    /** Simple Delimiter for file creation */
+    /**
+     * Simple Delimiter for file creation
+     */
     private static final String FILE_NAME_DELIMITER = "_";
 
-    /** Singleton instance */
+    /**
+     * Simple Delimiter for file extension
+     */
+    private static final String FILE_EXTENSION_DELIMITER = ".";
+
+    /**
+     * Text files extension
+     */
+    private static final String TEXT_FILE_EXTENSION = "txt";
+
+
+    /**
+     * Singleton instance
+     */
     private static final InstructionLoggerFactory self = new InstructionLoggerFactory();
 
     public static InstructionLoggerFactory getInstance() {
@@ -59,6 +76,7 @@ public class InstructionLoggerFactory {
                 return new StandardOutputInstructionLogger(buildFileName(Properties.TARGET_CLASS, Properties.TARGET_METHOD));
             case FILE_DUMP:
                 return new FileDumpInstructionLogger(buildFilePath(Properties.REPORT_DIR, buildFileName(
+                        TEXT_FILE_EXTENSION,
                         EXECUTED_BYTECODE_FILE_NAME,
                         Properties.TARGET_CLASS,
                         Properties.TARGET_METHOD)));
@@ -74,8 +92,8 @@ public class InstructionLoggerFactory {
      * @param params
      * @return
      */
-    private String buildFileName(String... params) {
-        return joinWithDelimeter(FILE_NAME_DELIMITER, params);
+    private String buildFileName(String extension, String... params) {
+        return joinWithDelimiter(FILE_EXTENSION_DELIMITER, joinWithDelimiter(FILE_NAME_DELIMITER, params), extension);
     }
 
     /**
@@ -86,7 +104,7 @@ public class InstructionLoggerFactory {
      * @return
      */
     private String buildFilePath(String... path) {
-        return joinWithDelimeter(PATH_DELIMITER, path);
+        return joinWithDelimiter(PATH_DELIMITER, path);
     }
 
     /**
@@ -97,7 +115,7 @@ public class InstructionLoggerFactory {
      * @param elements
      * @return
      */
-    private String joinWithDelimeter(String delimiter, String... elements) {
+    private String joinWithDelimiter(String delimiter, String... elements) {
         StringJoiner joiner = new StringJoiner(delimiter);
 
         for (String element : elements) {
