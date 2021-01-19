@@ -178,6 +178,10 @@ public final class VM {
 		 * Listeners are not supposed to throw exceptions to the VM except the
 		 * StopVMException.
 		 */
+
+		// Without differentiating between exceptions, execution is already finished so cleaning up first.
+		vm.cleanUpListeners();
+
 		if (t instanceof StopVMException) {
 			// No more callbacks are done since the list is erased
 			// TODO catch StopVMException in Listeners. Enforce no listener

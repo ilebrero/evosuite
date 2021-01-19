@@ -215,7 +215,12 @@ public class InstructionLoggerVM extends AbstractVM {
 
     protected void CALL_RESULT(Object res) {
         instructionLogger.log("\t ==> ");
-        instructionLogger.logln(res.toString());
+
+        if (res == null) {
+            instructionLogger.logln("null");
+        } else {
+            instructionLogger.logln(res.toString());
+        }
     }
 
     @Override

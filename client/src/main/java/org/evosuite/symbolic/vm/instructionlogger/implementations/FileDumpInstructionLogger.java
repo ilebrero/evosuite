@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Instruction Logger that outputs through a text file.
@@ -39,6 +40,7 @@ public final class FileDumpInstructionLogger extends AbstractInstructionLogger {
     private String filename;
     private FileWriter fstream;
     private BufferedWriter writer;
+    private PrintWriter pw;
 
     public FileDumpInstructionLogger(String filename) {
         this.filename = filename;
@@ -46,6 +48,7 @@ public final class FileDumpInstructionLogger extends AbstractInstructionLogger {
         try {
             this.fstream = new FileWriter(filename);
             this.writer = new BufferedWriter(this.fstream);
+            this.pw = new PrintWriter(this.writer);
         } catch (IOException e) {
             logger.error("Error when opening file " + filename);
             logger.error(e.getMessage());
@@ -54,27 +57,18 @@ public final class FileDumpInstructionLogger extends AbstractInstructionLogger {
 
     @Override
     public void log(String p) {
-        try {
-            writer.write(p);
-        } catch (IOException e) {
-            logger.error("Error when trying to write: " + p);
-            logger.error(e.getMessage());
-        }
+        pw.print(p);
     }
 
     @Override
     public void logln() {
-        try {
-            writer.write("\n");
-        } catch (IOException e) {
-            logger.error("Error when trying to write a new line");
-            logger.error(e.getMessage());
-        }
+        pw.println();
     }
 
     @Override
     public void cleanUp() {
         try {
+            pw.close();
             writer.close();
             fstream.close();
         } catch (IOException e) {

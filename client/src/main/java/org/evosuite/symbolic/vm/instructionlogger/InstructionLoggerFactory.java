@@ -22,8 +22,7 @@ package org.evosuite.symbolic.vm.instructionlogger;
 import org.evosuite.Properties;
 import org.evosuite.symbolic.vm.instructionlogger.implementations.FileDumpInstructionLogger;
 import org.evosuite.symbolic.vm.instructionlogger.implementations.StandardOutputInstructionLogger;
-
-import java.util.StringJoiner;
+import org.evosuite.utils.SystemPathUtil;
 
 import static org.evosuite.symbolic.vm.instructionlogger.implementations.FileDumpInstructionLogger.EXECUTED_BYTECODE_FILE_NAME;
 
@@ -35,27 +34,6 @@ import static org.evosuite.symbolic.vm.instructionlogger.implementations.FileDum
 public class InstructionLoggerFactory {
     public static final String LOGGING_MODE_NOT_PROVIDED = "A logging mode must be provided";
     public static final String LOGGING_MODE_NOT_YET_IMPLEMENTED = "logging mode not yet implemented: ";
-
-    /**
-     * Simple Delimiter for path creation
-     */
-    private static final String PATH_DELIMITER = "/";
-
-    /**
-     * Simple Delimiter for file creation
-     */
-    private static final String FILE_NAME_DELIMITER = "_";
-
-    /**
-     * Simple Delimiter for file extension
-     */
-    private static final String FILE_EXTENSION_DELIMITER = ".";
-
-    /**
-     * Text files extension
-     */
-    private static final String TEXT_FILE_EXTENSION = "txt";
-
 
     /**
      * Singleton instance
@@ -73,55 +51,15 @@ public class InstructionLoggerFactory {
 
         switch (bytecodeLoggingMode) {
             case STD_OUT:
-                return new StandardOutputInstructionLogger(buildFileName(Properties.TARGET_CLASS, Properties.TARGET_METHOD));
+                return new StandardOutputInstructionLogger(SystemPathUtil.buildPath(Properties.TARGET_CLASS, Properties.TARGET_METHOD));
             case FILE_DUMP:
-                return new FileDumpInstructionLogger(buildFilePath(Properties.REPORT_DIR, buildFileName(
-                        TEXT_FILE_EXTENSION,
+                return new FileDumpInstructionLogger(SystemPathUtil.buildFileName(
+                        SystemPathUtil.FileExtension.TXT,
                         EXECUTED_BYTECODE_FILE_NAME,
                         Properties.TARGET_CLASS,
-                        Properties.TARGET_METHOD)));
+                        Properties.TARGET_METHOD));
             default:
                 throw new IllegalStateException(LOGGING_MODE_NOT_YET_IMPLEMENTED + bytecodeLoggingMode.name());
         }
-    }
-
-    /**
-     * Creates a file name from a series of given Strings.
-     * TODO(ilebrero): Move this to some "filePathUtils" at some point.
-     *
-     * @param params
-     * @return
-     */
-    private String buildFileName(String extension, String... params) {
-        return joinWithDelimiter(FILE_EXTENSION_DELIMITER, joinWithDelimiter(FILE_NAME_DELIMITER, params), extension);
-    }
-
-    /**
-     * Creates a path from a series of given Strings.
-     * TODO(ilebrero): Move this to some "filePathUtils" at some point.
-     *
-     * @param path
-     * @return
-     */
-    private String buildFilePath(String... path) {
-        return joinWithDelimiter(PATH_DELIMITER, path);
-    }
-
-    /**
-     * Joins a series of String using a delimiter.
-     * TODO(ilebrero): Move this to some "filePathUtils" at some point.
-     *
-     * @param delimiter
-     * @param elements
-     * @return
-     */
-    private String joinWithDelimiter(String delimiter, String... elements) {
-        StringJoiner joiner = new StringJoiner(delimiter);
-
-        for (String element : elements) {
-            joiner.add(element);
-        }
-
-        return joiner.toString();
     }
 }
