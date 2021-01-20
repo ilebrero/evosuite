@@ -34,6 +34,7 @@ import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
 import org.evosuite.symbolic.instrument.ConcolicMethodAdapter;
 import org.evosuite.symbolic.vm.heap.SymbolicHeap;
 import org.evosuite.symbolic.vm.string.Types;
+import org.evosuite.utils.LoggingUtils;
 import org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
@@ -250,9 +251,16 @@ public final class CallVM extends AbstractVM {
 		Class<?>[] paramTypes = getArgumentClasses(methDesc);
 		final Deque<Operand> params = new LinkedList<>();
 		Iterator<Operand> it = env.topFrame().operandStack.iterator();
+
+		LoggingUtils.getEvoLogger().info("Entre con clase -> " + className);
+		LoggingUtils.getEvoLogger().info("Entre con metodo -> " + methName);
+		LoggingUtils.getEvoLogger().info("Entre con descriptor -> " + methDesc);
+		LoggingUtils.getEvoLogger().info("I'm expecting how much? -> " + (paramTypes.length - 1));
+
 		for (int i = paramTypes.length - 1; i >= 0; i--) {
 			// read parameters from caller operand srack
 			Operand param = it.next();
+			LoggingUtils.getEvoLogger().info("Levanto el parametro -> " + param.toString());
 			params.push(param);
 		}
 
@@ -460,7 +468,10 @@ public final class CallVM extends AbstractVM {
 		env.heap.buildNewLambdaConstant(anonymousClass, conf.isIgnored(owner));	// Add it as lambda owner
 		Type anonymousClassType = Type.getType(anonymousClass);
 		env.ensurePrepared(anonymousClass); // prepare symbolic fields
+
+		// Create reference
 		final ReferenceConstant symbolicRef = env.heap.buildNewReferenceConstant(anonymousClassType);
+		env.heap.initializeReference(indyResult, symbolicRef);
 
 		/**
 		 * emulate JVM's anonymous Lambda class instantiation: This
@@ -585,10 +596,61 @@ public final class CallVM extends AbstractVM {
 			env.topFrame().invokeInstrumentedCode(!lambdaReferenceType.callsNonInstrumentedCode());
 			env.topFrame().invokeLambdaSyntheticCodeThatInvokesNonInstrCode(lambdaReferenceType.callsNonInstrumentedCode());
 
+			// Nothing to do.
+			if (lambdaReferenceType.callsNonInstrumentedCode()) return;
+
 			// TODO(ilebrero): If this lambda is related to a method reference, we need to replace the lambda's symbolic
 			//                 receiver with the method reference's related instance as this is just a redirection,
 			//                 is this possible? Currently when trying to get a symbolic field, as the symbolic receiver
 			//                 is from the lambda, no previous symbolic elements of tat object instance are being used.
+
+			/**
+			 * for closures: In case we jump to a closure, we need to add the bounded closure elements to the stack
+			 * 				 as this is implicitly done by the JVM. Notice that at this point the descriptor won't
+			 * 				 tell us about this element (i.e (Ljava/lang/Object;)Ljava/lang/Object;) but the actual
+			 * 				 closure method will have extra elemenets on its descriptor (i.e.
+			 * 				 (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;))
+			 * - pop original operands
+			 * - pop receiver
+			 * - push captured (as receiver fields) operands
+			 * - push original operands
+			 */
+			if (anonymousClass.getDeclaredFields().length > 0) {
+
+				// Pop current symbolic operands
+				final int interfaceParamsAmount = getArgumentClasses(methDesc).length;
+				final Operand[] symbolicArguments = new Operand[interfaceParamsAmount];
+				for (int i = interfaceParamsAmount - 1; i >= 0; i--) {
+					symbolicArguments[i] = env.topFrame().operandStack.popOperand();
+				}
+
+				// Pop receiver
+				final ReferenceExpression receiverSymbolic = env.topFrame().operandStack.popRef();
+
+				// Push closure bounded fields expressions
+				final Field[] fields = anonymousClass.getDeclaredFields();
+    			final Expression[] fieldExpressions = new Expression[fields.length];
+
+    			for (Field field : fields) {
+    				int fieldLoc = Integer.parseInt(field.getName().substring(4)) - 1;
+    				fieldExpressions[fieldLoc] = env.heap.getField(anonymousClass.getName(), field.getName(), anonymousClass, receiverSymbolic);
+				}
+
+    			// Push receiver
+				env.topFrame().operandStack.pushRef(receiverSymbolic);
+
+    			// Push new operands
+				for (Expression expression: fieldExpressions) {
+					Operand operand = OperandUtils.expressionToOperand(expression);
+					env.topFrame().operandStack.pushOperand(operand);
+				}
+
+				// Push original operands
+				for (int i=0; i<interfaceParamsAmount; i++) {
+					env.topFrame().operandStack.pushOperand(symbolicArguments[i]);
+				}
+
+			}
 
 			return;
 		}

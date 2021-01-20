@@ -20,6 +20,7 @@
 package org.evosuite.dse;
 
 import com.examples.with.different.packagename.dse.interfaces.InterfacePrivateMethodExample;
+import com.examples.with.different.packagename.dse.invokedynamic.ClosureFieldTest;
 import com.examples.with.different.packagename.dse.invokedynamic.LambdaExample;
 import com.examples.with.different.packagename.dse.StreamAPIExample;
 import com.examples.with.different.packagename.dse.StringConcatenationExample;
@@ -43,6 +44,9 @@ public final class DSEJDK9SystemTest extends DSESystemTestBase {
 	}
 	@Test public void testClosure() {
 		testDSEExecution(8, 1, TestClosureClass.class);
+	}
+	@Test public void testClosureAsAField() {
+		testDSEExecution(8, 1, ClosureFieldTest.class);
 	}
 	@Test public void SAMConversion() {
 		testDSEExecution(3, 1, TestSAMConversions.class);
