@@ -212,7 +212,7 @@ public abstract class ExplorationAlgorithm extends ExplorationAlgorithmBase {
              int testCaseCount = testSuite.getTests().size();
 
              /** Setting up current method being targeted */
-             Properties.TARGET_METHOD = entryMethod.getName();
+             Properties.CURRENT_TARGET_METHOD = entryMethod.getName();
 
              explore(entryMethod);
              int numOfGeneratedTestCases = testSuite.getTests().size() - testCaseCount;

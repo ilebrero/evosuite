@@ -46,7 +46,7 @@ public final class DSEJDK9SystemTest extends DSESystemTestBase {
 		testDSEExecution(8, 1, TestClosureClass.class);
 	}
 	@Test public void testClosureAsAField() {
-		testDSEExecution(8, 1, ClosureFieldTest.class);
+		testDSEExecution(2, 1, ClosureFieldTest.class);
 	}
 	@Test public void SAMConversion() {
 		testDSEExecution(3, 1, TestSAMConversions.class);
@@ -54,7 +54,7 @@ public final class DSEJDK9SystemTest extends DSESystemTestBase {
 
 	/** Method references (JDK 8) */
 	@Test public void testMethodReference() {
-		testDSEExecution(6, 2, SingleMethodReference.class);
+		testDSEExecution(7, 1, SingleMethodReference.class);
 	}
 
 	/** We are not currently supporting the Stream API as it calls lambdas from a non-instrumented context. */

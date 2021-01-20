@@ -637,12 +637,8 @@ public class DSEAlgorithmSystemTest extends DSESystemTestBase {
 		assertTrue(best.getNumOfCoveredGoals() >= 3);
 	}
 
-	/**
-	 * So far, local classes goals are not being tracked by the static analysis stage of evosuite, so no tests are
-	 * outputted.
-	 */
 	@Test
 	public void testLocalClass() {
-		testDSEExecutionEmptyResult(LocalClassExample.class);
+		testDSEExecution(4, 1, LocalClassExample.class);
 	}
 }
