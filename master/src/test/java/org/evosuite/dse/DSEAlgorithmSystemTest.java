@@ -25,6 +25,7 @@ import com.examples.with.different.packagename.dse.ByteExample;
 import com.examples.with.different.packagename.dse.CharExample;
 import com.examples.with.different.packagename.dse.DoubleExample;
 import com.examples.with.different.packagename.dse.FloatExample;
+import com.examples.with.different.packagename.dse.LocalClassExample;
 import com.examples.with.different.packagename.dse.LongExample;
 import com.examples.with.different.packagename.dse.Max;
 import com.examples.with.different.packagename.dse.Min;
@@ -634,5 +635,14 @@ public class DSEAlgorithmSystemTest extends DSESystemTestBase {
 
 		assertFalse(best.getTests().isEmpty());
 		assertTrue(best.getNumOfCoveredGoals() >= 3);
+	}
+
+	/**
+	 * So far, local classes goals are not being tracked by the static analysis stage of evosuite, so no tests are
+	 * outputted.
+	 */
+	@Test
+	public void testLocalClass() {
+		testDSEExecutionEmptyResult(LocalClassExample.class);
 	}
 }

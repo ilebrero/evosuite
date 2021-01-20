@@ -1002,9 +1002,13 @@ public final class CallVM extends AbstractVM {
 			return false;
 
 		/* virtual method */
-
-		if (method.getDeclaringClass().isAnonymousClass()) {
-			// anonymous class
+		/** NOTE (ilebrero): are there other cases like this? */
+		/** TODO (ilebrero): Create a special case for local and anonymous classes goal tracking for DSE. So far,
+		 * 					 evosuite is skipping tracking those, even though in DSE they are symbolized and tests are
+		 * 					 created (In fact, they are being dropped by TestSuiteMinizer for not finding goals that
+		 * 					 they cover). */
+		if (method.getDeclaringClass().isAnonymousClass() || method.getDeclaringClass().isLocalClass()) {
+			// anonymous or local class
 			String name = method.getDeclaringClass().getName();
 			int indexOf = name.indexOf("$");
 			String fullyQualifiedTopLevelClassName = name.substring(0, indexOf);
