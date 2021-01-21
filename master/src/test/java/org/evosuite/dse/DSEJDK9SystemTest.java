@@ -21,12 +21,15 @@ package org.evosuite.dse;
 
 import com.examples.with.different.packagename.dse.interfaces.InterfacePrivateMethodExample;
 import com.examples.with.different.packagename.dse.invokedynamic.ClosureFieldTest;
+import com.examples.with.different.packagename.dse.invokedynamic.InvokeExactExample;
 import com.examples.with.different.packagename.dse.invokedynamic.LambdaExample;
 import com.examples.with.different.packagename.dse.StreamAPIExample;
 import com.examples.with.different.packagename.dse.StringConcatenationExample;
 import com.examples.with.different.packagename.dse.invokedynamic.TestClosureClass;
 import com.examples.with.different.packagename.dse.invokedynamic.TestSAMConversions;
 import com.examples.with.different.packagename.dse.invokedynamic.SingleMethodReference;
+import org.evosuite.EvoSuite;
+import org.evosuite.Properties;
 import org.junit.Test;
 
 /**
@@ -69,6 +72,10 @@ public final class DSEJDK9SystemTest extends DSESystemTestBase {
 
 	/** Method Handles (JDK 8) */
 	// TODO: complete eventually, for now we won't support it as we don't support the reflection API either
+	@Test public void testInvokeExact() {
+		// As we don't support the Method handles API, there should be an exception throughout execution and the result should be empty.
+		testDSEExecutionEmptyResult(InvokeExactExample.class);
+	}
 
 	/**************** Milling Project Coin ****************/
 	@Test public void testPrivateMethodsInInterfaces() {

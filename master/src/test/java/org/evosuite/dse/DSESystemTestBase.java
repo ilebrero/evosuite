@@ -57,14 +57,7 @@ public abstract class DSESystemTestBase extends SystemTestBase {
 	 * @param SUT
 	 */
 	protected void testDSEExecution(int expectedCoveredGoals, int expectedNotCoveredGoals, Class SUT) {
-		EvoSuite evosuite = new EvoSuite();
-		String targetClass = SUT.getCanonicalName();
-		Properties.TARGET_CLASS = targetClass;
-		Properties.SHOW_PROGRESS = true;
-
-		String[] command = new String[]{"-generateSuiteUsingDSE", "-class", targetClass};
-
-		Object result = evosuite.parseCommandLine(command);
+		Object result = executeDSE(SUT);
 		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
 		TestSuiteChromosome generatedTestSuite = dse.getGeneratedTestSuite();
 		System.out.println("Generated Test Suite:\n" + generatedTestSuite);
@@ -76,23 +69,27 @@ public abstract class DSESystemTestBase extends SystemTestBase {
 	}
 
 	/**
-	 * Runs DSE on a given SUT and checks for an expected amount of goals.
+	 * Runs DSE on a given SUT and checks that no result is returned
 	 *
 	 * @param SUT
 	 */
 	protected void testDSEExecutionEmptyResult(Class SUT) {
+		Object result = executeDSE(SUT);
+		checkDSEResultIsEmpty(result);
+	}
+
+	/**
+	 * Runs DSE on a given SUT.
+	 *
+	 * @param SUT
+	 */
+	private Object executeDSE(Class SUT) {
 		EvoSuite evosuite = new EvoSuite();
 		String targetClass = SUT.getCanonicalName();
 		Properties.TARGET_CLASS = targetClass;
 		Properties.SHOW_PROGRESS = true;
 
 		String[] command = new String[]{"-generateSuiteUsingDSE", "-class", targetClass};
-
-		Object result = evosuite.parseCommandLine(command);
-		ExplorationAlgorithmBase dse = getDSEAFromResult(result);
-		TestSuiteChromosome generatedTestSuite = dse.getGeneratedTestSuite();
-		System.out.println("Generated Test Suite:\n" + generatedTestSuite);
-
-		assertTrue(generatedTestSuite.getTests().isEmpty());
+		return evosuite.parseCommandLine(command);
 	}
 }
