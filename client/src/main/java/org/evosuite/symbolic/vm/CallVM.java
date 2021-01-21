@@ -34,7 +34,6 @@ import org.evosuite.symbolic.instrument.ConcolicInstrumentingClassLoader;
 import org.evosuite.symbolic.instrument.ConcolicMethodAdapter;
 import org.evosuite.symbolic.vm.heap.SymbolicHeap;
 import org.evosuite.symbolic.vm.string.Types;
-import org.evosuite.utils.LoggingUtils;
 import org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
@@ -252,15 +251,9 @@ public final class CallVM extends AbstractVM {
 		final Deque<Operand> params = new LinkedList<>();
 		Iterator<Operand> it = env.topFrame().operandStack.iterator();
 
-		LoggingUtils.getEvoLogger().info("Entre con clase -> " + className);
-		LoggingUtils.getEvoLogger().info("Entre con metodo -> " + methName);
-		LoggingUtils.getEvoLogger().info("Entre con descriptor -> " + methDesc);
-		LoggingUtils.getEvoLogger().info("I'm expecting how much? -> " + (paramTypes.length - 1));
-
 		for (int i = paramTypes.length - 1; i >= 0; i--) {
 			// read parameters from caller operand srack
 			Operand param = it.next();
-			LoggingUtils.getEvoLogger().info("Levanto el parametro -> " + param.toString());
 			params.push(param);
 		}
 

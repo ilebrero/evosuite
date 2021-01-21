@@ -63,7 +63,7 @@ public class InstructionLoggerFactory {
                                 SystemPathUtil.FileExtension.TXT,
                                 EXECUTED_BYTECODE_FILE_NAME,
                                 Properties.TARGET_CLASS,
-                                Properties.TARGET_METHOD));
+                                Properties.CURRENT_TARGET_METHOD));
             default:
                 throw new IllegalStateException(LOGGING_MODE_NOT_YET_IMPLEMENTED + bytecodeLoggingMode.name());
         }
