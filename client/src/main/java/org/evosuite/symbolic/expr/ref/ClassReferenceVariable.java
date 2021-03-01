@@ -17,31 +17,35 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.expr.reftype;
+package org.evosuite.symbolic.expr.ref;
 
 import org.evosuite.symbolic.expr.ExpressionVisitor;
-import org.evosuite.symbolic.expr.Variable;
-
-import java.util.Collections;
-import java.util.Set;
+import org.objectweb.asm.Type;
 
 /**
- * This is the superclass of all literal classes
+ * Represents a non array reference variable.
  *
  * @author Ignacio Lebrero
  */
-public class LiteralClassType extends ReferenceTypeExpression {
-    public LiteralClassType(Class concreteValue) {
-        super(concreteValue, 1, false);
-    }
+public class ClassReferenceVariable extends ReferenceVariable {
 
-    @Override
-	public Set<Variable<?>> getVariables() {
-		return Collections.emptySet();
+	/**
+	 * Creates a new reference variable using the type of the reference, an
+	 * instance id, the name of the variable and the concrete object reference.
+	 * The resulting variable is initialized.
+	 *
+	 * @param objectType
+	 * @param instanceId
+	 * @param name
+	 * @param concreteValue
+	 */
+	public ClassReferenceVariable(Type objectType, int instanceId, String name, Object concreteValue) {
+		super(objectType, instanceId, name, concreteValue);
 	}
 
-    @Override
-    public <K, V> K accept(ExpressionVisitor<K, V> v, V arg) {
-        return v.visit(this, arg);
-    }
+	@Override
+	public <K, V> K accept(ExpressionVisitor<K, V> v, V arg) {
+		return v.visit(this, arg);
+	}
+
 }

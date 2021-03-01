@@ -17,19 +17,26 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.expr.ref.array;
+package org.evosuite.symbolic.expr.reftype.type;
 
-import org.evosuite.symbolic.expr.Expression;
-import org.evosuite.symbolic.expr.SymbolicValue;
+import java.lang.reflect.Type;
 
 /**
- * interface for array related expressions
+ * Represents the null type.
  *
  * @author Ignacio Lebrero
  */
-public interface ArrayValue extends Expression<Object>, SymbolicValue{
-  interface RealArrayValue extends ArrayValue {}
-  interface StringArrayValue extends ArrayValue {}
-  interface IntegerArrayValue extends ArrayValue {}
-  interface ReferenceArrayValue extends ArrayValue {}
+public class NullType implements Type {
+
+    private static NullType instance;
+
+    public static NullType getInstance() {
+        if (instance == null) {
+            instance = new NullType();
+        }
+
+        return instance;
+    }
+
+    private NullType() {}
 }

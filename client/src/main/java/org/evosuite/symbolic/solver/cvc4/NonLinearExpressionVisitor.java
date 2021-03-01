@@ -21,6 +21,8 @@ package org.evosuite.symbolic.solver.cvc4;
 
 import org.evosuite.symbolic.expr.Expression;
 import org.evosuite.symbolic.expr.ExpressionVisitor;
+import org.evosuite.symbolic.expr.ref.ClassReferenceConstant;
+import org.evosuite.symbolic.expr.ref.NullReferenceConstant;
 import org.evosuite.symbolic.expr.ref.array.ArrayConstant;
 import org.evosuite.symbolic.expr.ref.array.ArraySelect;
 import org.evosuite.symbolic.expr.ref.array.ArrayStore;
@@ -46,11 +48,11 @@ import org.evosuite.symbolic.expr.fp.RealUnaryExpression;
 import org.evosuite.symbolic.expr.fp.RealVariable;
 import org.evosuite.symbolic.expr.reader.StringReaderExpr;
 import org.evosuite.symbolic.expr.ref.GetFieldExpression;
-import org.evosuite.symbolic.expr.ref.ReferenceConstant;
-import org.evosuite.symbolic.expr.ref.ReferenceVariable;
-import org.evosuite.symbolic.expr.reftype.LambdaSyntheticType;
-import org.evosuite.symbolic.expr.reftype.LiteralClassType;
-import org.evosuite.symbolic.expr.reftype.LiteralNullType;
+import org.evosuite.symbolic.expr.ref.ClassReferenceVariable;
+import org.evosuite.symbolic.expr.reftype.ArrayTypeConstant;
+import org.evosuite.symbolic.expr.reftype.LambdaSyntheticTypeConstant;
+import org.evosuite.symbolic.expr.reftype.ClassTypeConstant;
+import org.evosuite.symbolic.expr.reftype.NullTypeConstant;
 import org.evosuite.symbolic.expr.str.IntegerToStringCast;
 import org.evosuite.symbolic.expr.str.RealToStringCast;
 import org.evosuite.symbolic.expr.str.StringBinaryExpression;
@@ -354,13 +356,7 @@ final class NonLinearExpressionVisitor implements ExpressionVisitor<Boolean, Voi
 	}
 
 	@Override
-	public Boolean visit(ReferenceConstant referenceConstant, Void arg) {
-		throw new UnsupportedOperationException(
-				"Removal of Non-Linear expressions for ReferenceConstant is not yet implemented!");
-	}
-
-	@Override
-	public Boolean visit(ReferenceVariable r, Void arg) {
+	public Boolean visit(ClassReferenceVariable r, Void arg) {
 		throw new UnsupportedOperationException(
 				"Removal of Non-Linear expressions for ReferenceVariable is not yet implemented!");
 	}
@@ -369,6 +365,18 @@ final class NonLinearExpressionVisitor implements ExpressionVisitor<Boolean, Voi
 	public Boolean visit(GetFieldExpression r, Void arg) {
 		throw new UnsupportedOperationException(
 				"Removal of Non-Linear expressions for GetFieldExpression is not yet implemented!");
+	}
+
+	@Override
+	public Boolean visit(NullReferenceConstant r, Void arg) {
+		throw new UnsupportedOperationException(
+				"Removal of Non-Linear expressions for NullReferenceExpression is not yet implemented!");
+	}
+
+	@Override
+	public Boolean visit(ClassReferenceConstant r, Void args) {
+		throw new UnsupportedOperationException(
+				"Removal of Non-Linear expressions for ClassReferenceExpression is not yet implemented!");
 	}
 
 	@Override
@@ -496,11 +504,14 @@ final class NonLinearExpressionVisitor implements ExpressionVisitor<Boolean, Voi
 	}
 
 	@Override
-	public Boolean visit(LambdaSyntheticType r, Void arg) { return false; }
+	public Boolean visit(LambdaSyntheticTypeConstant r, Void arg) { return false; }
 
 	@Override
-    public Boolean visit(LiteralNullType r, Void arg) { return false; }
+    public Boolean visit(NullTypeConstant r, Void arg) { return false; }
 
     @Override
-    public Boolean visit(LiteralClassType r, Void arg) { return false; }
+    public Boolean visit(ClassTypeConstant r, Void arg) { return false; }
+
+	@Override
+	public Boolean visit(ArrayTypeConstant r, Void arg) { return null; }
 }

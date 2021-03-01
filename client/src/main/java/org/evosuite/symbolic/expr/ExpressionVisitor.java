@@ -19,6 +19,8 @@
  */
 package org.evosuite.symbolic.expr;
 
+import org.evosuite.symbolic.expr.ref.ClassReferenceConstant;
+import org.evosuite.symbolic.expr.ref.NullReferenceConstant;
 import org.evosuite.symbolic.expr.ref.array.ArrayConstant;
 import org.evosuite.symbolic.expr.ref.array.ArraySelect;
 import org.evosuite.symbolic.expr.ref.array.ArrayStore;
@@ -44,11 +46,11 @@ import org.evosuite.symbolic.expr.fp.RealUnaryExpression;
 import org.evosuite.symbolic.expr.fp.RealVariable;
 import org.evosuite.symbolic.expr.reader.StringReaderExpr;
 import org.evosuite.symbolic.expr.ref.GetFieldExpression;
-import org.evosuite.symbolic.expr.ref.ReferenceConstant;
-import org.evosuite.symbolic.expr.ref.ReferenceVariable;
-import org.evosuite.symbolic.expr.reftype.LambdaSyntheticType;
-import org.evosuite.symbolic.expr.reftype.LiteralClassType;
-import org.evosuite.symbolic.expr.reftype.LiteralNullType;
+import org.evosuite.symbolic.expr.ref.ClassReferenceVariable;
+import org.evosuite.symbolic.expr.reftype.ArrayTypeConstant;
+import org.evosuite.symbolic.expr.reftype.LambdaSyntheticTypeConstant;
+import org.evosuite.symbolic.expr.reftype.ClassTypeConstant;
+import org.evosuite.symbolic.expr.reftype.NullTypeConstant;
 import org.evosuite.symbolic.expr.str.IntegerToStringCast;
 import org.evosuite.symbolic.expr.str.RealToStringCast;
 import org.evosuite.symbolic.expr.str.StringBinaryExpression;
@@ -125,12 +127,6 @@ public interface ExpressionVisitor<K, V> {
 
     K visit(StringNextTokenExpr n, V arg);
 
-    K visit(ReferenceConstant r, V arg);
-
-    K visit(ReferenceVariable r, V arg);
-
-    K visit(GetFieldExpression r, V arg);
-
     /********************** Arrays *********************/
 
     K visit(ArrayStore.IntegerArrayStore r, V arg);
@@ -161,9 +157,23 @@ public interface ExpressionVisitor<K, V> {
 
     K visit(ArrayVariable.ReferenceArrayVariable r, V arg);
 
-    K visit(LambdaSyntheticType r, V arg);
+    /********************** Reference Types *********************/
 
-    K visit(LiteralNullType r, V args);
+    K visit(LambdaSyntheticTypeConstant r, V arg);
 
-    K visit(LiteralClassType r, V arg);
+    K visit(NullTypeConstant r, V args);
+
+    K visit(ClassTypeConstant r, V arg);
+
+    K visit(ArrayTypeConstant r, V arg);
+
+    /********************** References *********************/
+
+    K visit(ClassReferenceVariable r, V arg);
+
+    K visit(GetFieldExpression r, V arg);
+
+    K visit(NullReferenceConstant r, V arg);
+
+    K visit(ClassReferenceConstant r, V args);
 }

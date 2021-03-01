@@ -17,19 +17,24 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with EvoSuite. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.evosuite.symbolic.expr.ref.array;
+package org.evosuite.symbolic.expr.reftype;
 
-import org.evosuite.symbolic.expr.Expression;
-import org.evosuite.symbolic.expr.SymbolicValue;
+import org.objectweb.asm.Type;
+import org.evosuite.symbolic.expr.ExpressionVisitor;
 
 /**
- * interface for array related expressions
+ * Represents a class type.
  *
  * @author Ignacio Lebrero
  */
-public interface ArrayValue extends Expression<Object>, SymbolicValue{
-  interface RealArrayValue extends ArrayValue {}
-  interface StringArrayValue extends ArrayValue {}
-  interface IntegerArrayValue extends ArrayValue {}
-  interface ReferenceArrayValue extends ArrayValue {}
+public final class ClassTypeConstant extends NonNullReferenceTypeConstant {
+
+    public ClassTypeConstant(Type concreteValue, int referenceTypeId) {
+        super(concreteValue, referenceTypeId);
+    }
+
+    @Override
+    public <K, V> K accept(ExpressionVisitor<K, V> v, V arg) {
+        return v.visit(this, arg);
+    }
 }
